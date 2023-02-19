@@ -1,0 +1,16 @@
+html, body{
+    height : 100vh;
+}
+
+.block{
+    background-color: aqua;
+    background-image: url('https://images.hindustantimes.com/rf/image_size_960x540/HT/p2/2020/04/17/Pictures/iconic-pillars-installed-iit-the-entrance-ropar_125b41aa-8099-11ea-a716-f322ae116ff6.jpg');
+    background-repeat: no-repeat, repeat;
+    background-size: cover; /* Resize the background image to cover the entire container */
+    
+}
+
+.contentt{
+    background-color: white;
+    height: 100vh;
+}
