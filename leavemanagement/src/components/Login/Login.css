@@ -1,0 +1,19 @@
+.background-image {
+	background-image: url('../../img/iitropar.jpg');
+	background-repeat: no-repeat;
+	background-size: cover;
+	height: 100vh;
+  }
+  
+@media (max-width: 768px) {
+.background-image {
+	background-color: "#7393B3";
+	background-image: url('');
+}
+}
+
+.submit-button {
+	display:flex;
+    justify-content:center;
+    align-item:center
+}
