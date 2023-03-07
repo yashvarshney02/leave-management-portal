@@ -1,71 +1,24 @@
-import React, { useState } from "react"
-import { Calendar, DateObject } from "react-multi-date-picker"
-import DatePickerHeader from "react-multi-date-picker/plugins/date_picker_header"
-import DatePanel from "react-multi-date-picker/plugins/date_panel"
-import multiColors from "react-multi-date-picker/plugins/colors"
-import Settings from "react-multi-date-picker/plugins/settings"
-import Toolbar from "react-multi-date-picker/plugins/toolbar"
-
-const dateObject = new DateObject()
-
-const toDateObject = day => new DateObject(dateObject).setDay(day)
-
-const colors = {
-  green: [2, 10, 17].map(toDateObject),
-  blue: [5, 6, 14].map(toDateObject),
-  red: [13, 19, 25].map(toDateObject),
-  yellow: [15, 22, 28].map(toDateObject)
-}
-
-Object.keys(colors).forEach(color => {
-  colors[color].forEach((date, index) => {
-      colors[color][index].color = color
-  })
-})
-
-const initialProps = {
-  value: [
-    ...colors.green,
-    ...colors.blue,
-    ...colors.red,
-    ...colors.yellow
-  ], 
-  multiple: true
-}
+import DatePicker from "react-multi-date-picker"
+import DatePanel from "react-multi-date-picker/plugins/date_panel";
+import { useState } from "react";
 
 export default function Dates() {
-  const [props, setProps] = useState(initialProps)
-  const isRTL = ["fa", "ar"].includes(props.locale?.name?.split?.("_")?.[1])
+  const [dates, setDates] = useState([
+    new Date(),
+    new Date({ year: 2020, month: 9, day: 8 }),
+    "December 09 2020",
+    1597994736000 //unix time in milliseconds (August 21 2020)
+  ])
 
   return (
-    <div 
-      style={{ 
-        display: "flex", 
-        justifyContent: "center" 
-      }}
-    >
-      <Calendar
-        {...props}
-        plugins={[
-          <DatePickerHeader 
-            position="top" 
-            size="medium" 
-          />,
-          <DatePanel
-            position={isRTL ? "left" : "right"}
-            sort="date"
-            eachDaysInRange={!props.onlyMonthPicker && !props.onlyYearPicker}
-          />,
-          multiColors({ position: isRTL ? "right" : "left" }),
-          <Settings 
-            position="bottom" 
-            defaultActive="locale" 
-          />,
-          <Toolbar 
-            position="bottom" 
-          />
-        ]}
-      />
-    </div>
+    <DatePicker
+      value={dates}
+      onChange={setDates}
+      format="MMMM DD YYYY"
+      sort
+      plugins={[
+        <DatePanel />
+      ]}
+    />
   )
 }

@@ -19,7 +19,7 @@ export default function PastApplications({ toast }) {
 
 	const fetchLeaves = async (e) => {
 		try {
-			const resp = await httpClient.post(`${process.env.REACT_APP_API_HOST}}/past_applications`);
+			const resp = await httpClient.post(`${process.env.REACT_APP_API_HOST}/past_applications`);
 			if (resp.data.status == "success") {
 				// toast.success("Leaves fetched Successfully", toast.POSITION.BOTTOM_RIGHT);
 			} else {
