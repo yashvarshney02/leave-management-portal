@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import "./Table.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSearch } from '@fortawesome/free-solid-svg-icons'
+import { faSearch } from '@fortawesome/free-solid-svg-icons';
+import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 
 
 class Table extends Component {
