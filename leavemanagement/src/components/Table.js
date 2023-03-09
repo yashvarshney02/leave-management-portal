@@ -1,192 +1,111 @@
-import React, { Component } from 'react';
-import "./Table.css";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSearch } from '@fortawesome/free-solid-svg-icons';
-import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
+import { useState } from 'react';
+import { Button, Modal } from 'react-bootstrap';
+import * as FaIcons from 'react-icons/fa';
+import { Badge } from 'react-bootstrap';
 
+export default function Table({ title, headers, initialData }) {
+  const [data, setData] = useState(initialData);
 
-class Table extends Component {
-
-  constructor(props) {
-    super(props);
-    this.state = {
-      headers: this.props.headers,
-      initialData: this.props.initialData,
-      sortby: null,
-      descending: false,
-      edit: {},
-      search: true,
-
-    };
-	this.handleShow = this.props.handleShow
-    this._sort = this._sort.bind(this);
-    this._showEditor = this._showEditor.bind(this);
-    this._save = this._save.bind(this);
-    this._renderSearch = this._renderSearch.bind(this);
-    this._search = this._search.bind(this);
-    this._toggleSearch = this._toggleSearch.bind(this);
-    this._renderToolbar = this._renderToolbar.bind(this);
-    this._preSearchData = this.state.initialData;
-
-
-  }
-
-  _sort(e) {
-    let column = e.target.cellIndex;
-    let initialData = this.state.initialData.slice();
-    let descending = this.state.sortby === column && !this.state.descending;
-
-    initialData.sort(function (a, b) {
-      return descending
-        ? (a[column] < b[column] ? 1 : -1)
-        : (a[column] > b[column] ? 1 : -1);
-    });
-
-    this.setState({
-      initialData: initialData,
-      sortby: column,
-      descending: descending,
-    });
-  }
-
-  _showEditor(e) {    
-    this.setState({
-      edit: {
-        row: parseInt(e.target.dataset.row, 10),
-        cell: e.target.cellIndex,
+  function handleSearch(val) {
+    let finalData = [];
+    for (let idx in initialData) {
+      for (let i in initialData[idx]) {
+        if (String(initialData[idx][i]).toLowerCase().includes(val.toLowerCase())) {
+          finalData.push(initialData[idx]);
+          break;
+        }
       }
-    });
-  }
-
-  _save(e) {
-    e.preventDefault();
-    let input = e.target.firstChild;
-    let initialData = this.state.initialData.slice();
-    initialData[this.state.edit.row][this.state.edit.cell] = input.value;
-    this.setState({
-      edit: null,
-      initialData: initialData,
-    });
-  }
-
-  _toggleSearch() {
-    if (this.state.search) {
-      this.setState({
-        initialData: this._preSearchData,
-        search: false,
-      });
-      this._preSearchData = null;
-    } else {
-      this._preSearchData = this.state.initialData;
-      this.setState({
-        search: true,
-      });
     }
+    setData(finalData);
   }
 
-  _preSearchData = null;
+  return (
 
-  _search(e) {
-    var needle = e.target.value.toLowerCase();
-    if (!needle) {
-      this.setState({ initialData: this._preSearchData });
-      return;
-    }
-    var idx = e.target.dataset.idx;
-    var searchdata = this._preSearchData.filter((row) => {
-      return row[idx].toString().toLowerCase().indexOf(needle) > -1;
-    });
-    this.setState({ initialData: searchdata });
-  }
+    <div class="container ">
+      <div className="crud shadow-lg p-3 mb-5 mt-5 bg-body rounded">
+        <div class="row ">
 
-
-  _renderSearch() {
-    if (!this.state.search) {
-      return null;
-    }
-    return (
-      <tr class="search-row" onChange={this._search}>
-        {this.props.headers.map(function (_ignore, idx) {
-          return <td key={idx}>
-            <div class="search-div" >
-              <input type="text" data-idx={idx}></input>
-              <i><FontAwesomeIcon icon={faSearch} /></i>
+          <div class="col-sm-3 mt-5 mb-4 text-gred">
+            <div className="search">
+              <form class="form-inline">
+                <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" onChange={(e) => { handleSearch(e.target.value) }} />
+              </form>
             </div>
-          </td>
-        })}
-      </tr>
-    );
-  }
-  _renderToolbar() {
-    return <button onClick={this._toggleSearch} className='btn btn-primary'>
-      Filter Leaves
-    </button >
-  }
-
-
-  _renderTable() {
-    return (
-      <div className="container">
-        <table className="table">
-          <thead>
-            <tr>
-              {this.state.headers.map((v, i) => {
-                if (this.state.sortby === i) {
-                  v += this.state.descending ? ' \u2191' : ' \u2193'
-                }
-                return (
-                  <th key={i} onClick={this._sort}>
-                    {v}
-                  </th>
-                )
-              }, this)
-              }
-            </tr>
-          </thead>
-          <tbody className="table-body" onDoubleClick={this._showEditor}>
-            {this._renderSearch()}
-            {this.state.initialData.map((row, rowidx) => {
-              console.log("row: ", row);
-              return (
-                <tr key={rowidx} className="cell-1" data-toggle="modal" data-target={"#modal-" + row[0]}>
-                  {row.map((cell, idx) => {
-                    var content = cell;
-                    var edit = this.state.edit;
-                    if (edit && edit.row === rowidx && edit.cell === idx) {
-                      content = (
-                        <form onSubmit={this._save}>
-                          <input type="text" defaultValue={cell} />
-                        </form>
+          </div>
+          <div class="col-sm-3 offset-sm-2 mt-5 mb-4 text-gred" style={{ color: "green" }}><h2><b>{title}</b></h2></div>
+        </div>
+        <div class="row">
+          <div class="table-responsive " >
+            <table class="table table-striped table-hover table-bordered">
+              <thead>
+                <tr>
+                  {
+                    headers.map((item, idx) => {
+                      return (
+                        <th key={idx}>
+                          {item}
+                        </th>
                       )
-                    }
-                    return (
-                      <td key={idx} data-row={rowidx}>{content}</td>
-                    )
-                  }, this)
+                    })
+                  }
+                  {
+                    (title != 'Remaining Number of Leaves') ? (
+                      <th>
+                        Action
+                      </th>) : ''
                   }
                 </tr>
-              )
-            }, this)
-            }
-          </tbody>
-        </table >
+              </thead>
+              <tbody>
+                {
+                  data.map((row, idx) => {
+                    return (
+                      <tr key={idx} className="cell-1">
+                        {
+                          row.map((item, i) => {
+                            if (String(item).toLowerCase().startsWith("approved")) {
+                              return (
+                                <Badge pill bg='success' text='light'>{item}</Badge>
+                              )
+                            }
+                            else if (String(item).toLowerCase().startsWith("disapproved")) {
+                              return (
+                                <Badge pill bg='danger' text='light'>{item}</Badge>
+                              )
+                            }
+                            else if (String(item).toLowerCase().startsWith("pending")) {
+                              return (
+                                <Badge pill bg='info' text='light'>{item}</Badge>
+                              )
+                            }
+                            return (
+                              <td key={i}>
+                                {item}
+                              </td>
+                            )
+                          })
+                        }
+                        {
+                          (title != 'Remaining Number of Leaves') ? (
+                            <td>
+                              <FaIcons.FaEye style={{ cursor: "pointer" }} color='green' onClick={(e) => {
+                                e.currentTarget.dataset.toggle = 'modal';
+                                e.currentTarget.dataset.target = "#modal-" + row[0];
+                              }} />&nbsp;
+                              {/* <FaIcons.FaPencilAlt style={{cursor: "pointer"}} color='blue'/>&nbsp;
+                        <FaIcons.FaPrescriptionBottle style={{cursor: "pointer"}} color='red'/>&nbsp; */}
+
+                            </td>) : ''
+                        }
+                      </tr>
+                    )
+                  })
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
-    )
-  }
-
-
-
-
-
-  render() {
-    return (
-      <div>
-        {this._renderTable()}
-        {/* {this._renderToolbar()} */}
-      </div>
-    )
-  }
+    </div>
+  );
 }
-
-export default Table;
-

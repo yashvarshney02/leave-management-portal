@@ -29,11 +29,10 @@ export default function PastApplications({ toast }) {
 			const temp_data = resp.data.data
 			let temp = [];
 			for (let i = 0; i < temp_data.length; i++) {
-				console.log(i)
 				temp.push([temp_data[i].id, temp_data[i].nature, temp_data[i].start_date.slice(0, -12), temp_data[i].duration, temp_data[i].status]);
 			}
 			setData(temp);
-			setShowLeaves(temp_data)			
+			setShowLeaves(temp_data)
 		} catch (error) {
 			// toast.error("something went wrong", toast.POSITION.BOTTOM_RIGHT);
 		}
@@ -84,10 +83,10 @@ export default function PastApplications({ toast }) {
 
 	return (
 		<div>
-			<h2>Applied Leaves</h2>
+			<br />
 
 			{(data[0] != -1) ? (
-				<Table headers={headers} initialData={data} />
+				<Table title={"Applied Leaves"} headers={headers} initialData={data} />
 			) : (
 				<LoadingIndicator color={"blue"} />
 			)}
