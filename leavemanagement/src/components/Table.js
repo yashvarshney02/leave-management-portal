@@ -65,17 +65,23 @@ export default function Table({ title, headers, initialData }) {
                           row.map((item, i) => {
                             if (String(item).toLowerCase().startsWith("approved")) {
                               return (
-                                <Badge pill bg='success' text='light'>{item}</Badge>
+                                <td key={i}>
+                                  <Badge pill bg='success' text='light'>{item}</Badge>
+                                </td>
                               )
                             }
                             else if (String(item).toLowerCase().startsWith("disapproved")) {
                               return (
-                                <Badge pill bg='danger' text='light'>{item}</Badge>
+                                <td key={i}>
+                                  <Badge pill bg='danger' text='light'>{item}</Badge>
+                                </td>
                               )
                             }
                             else if (String(item).toLowerCase().startsWith("pending")) {
                               return (
-                                <Badge pill bg='info' text='light'>{item}</Badge>
+                                <td key={i}>
+                                  <Badge pill bg='info' text='light'>{item}</Badge>
+                                </td>
                               )
                             }
                             return (

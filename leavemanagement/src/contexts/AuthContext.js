@@ -75,12 +75,10 @@ export function AuthProvider({ children }) {
 
 	async function loginWithGoogle() {
 		const googleProvider = new GoogleAuthProvider();
-		const res = await auth.signInWithPopup(googleProvider);
-		console.log(res);
+		const res = await auth.signInWithPopup(googleProvider);		
 	}
 	async function refresh_user() {
-		let res = await httpClient.get(`${process.env.REACT_APP_API_HOST}/get_user_info`);
-		console.log(res);
+		let res = await httpClient.get(`${process.env.REACT_APP_API_HOST}/get_user_info`);		
 		setCurrentUser(res.data.data);
 	}
 

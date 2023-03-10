@@ -15,7 +15,7 @@ export default function PastApplications({ toast }) {
 	const { currentUser } = useAuth();
 	const [showLeaves, setShowLeaves] = useState([])
 	const [headers, setHeaders] = useState(["Leave Id", "Nature", "Start Date", "Duration", "Status"]);
-	const [data, setData] = useState([-1]);
+	const [data, setData] = useState(null);
 
 	const fetchLeaves = async (e) => {
 		try {
@@ -85,7 +85,7 @@ export default function PastApplications({ toast }) {
 		<div>
 			<br />
 
-			{(data[0] != -1) ? (
+			{(data) ? (
 				<Table title={"Applied Leaves"} headers={headers} initialData={data} />
 			) : (
 				<LoadingIndicator color={"blue"} />

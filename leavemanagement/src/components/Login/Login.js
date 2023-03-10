@@ -26,8 +26,7 @@ export default function Login(props) {
         });
         return;
       }
-      let res = await send_otp(email);
-      console.log(res);
+      let res = await send_otp(email);      
       if (res.data['status'] == 'success') {
         props.toast.success(res.data['data'], {
           position: props.toast.POSITION.BOTTOM_RIGHT
@@ -98,7 +97,7 @@ export default function Login(props) {
         await refresh_user();       
         navigate("/")
       } else {
-        props.toast.success(`${res.data['emsg']}`, {
+        props.toast.error(`${res.data['emsg']}`, {
           position: props.toast.POSITION.BOTTOM_RIGHT
         });
       }
@@ -107,8 +106,7 @@ export default function Login(props) {
         position: props.toast.POSITION.BOTTOM_RIGHT
       });
     }
-  }
-  console.log("hi");
+  }  
 
   return (
     <div>      

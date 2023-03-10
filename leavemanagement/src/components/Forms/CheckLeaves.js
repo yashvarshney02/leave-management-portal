@@ -10,14 +10,14 @@ import LoadingIndicator from '../LoadingIndicator';
 export default function CheckLeaves({ toast }) {
 
   const [leaves, setLeaves] = useState([]);
-  const [headers, setHeaders] = useState(["Leave Id", "Nature", "Name", "Start Date", "Status"]);
-  const [headers2, setHeaders2] = useState(["Email ID", "Name", "Position", "Department", "Casual Leaves"]);
-  const [data, setData] = useState([-1]);
-  const [numberOfLeaves, setNumberOfLeaves] = useState([-1]);
+  const headers = ["Leave Id", "Nature", "Name", "Start Date", "Status"];
+  const headers2 = ["Email ID", "Name", "Position", "Department", "Casual Leaves"];
+  const [data, setData] = useState(null);
+  const [numberOfLeaves, setNumberOfLeaves] = useState(null);
   const { currentUser } = useAuth()
 
   const fetchLeaves = async (e) => {
-    try {
+    try {      
       const resp = await httpClient.post(`${process.env.REACT_APP_API_HOST}/check_applications`);
       if (resp.data.status == "success") {
         // toast.success("Leaves fetched Successfully", toast.POSITION.BOTTOM_RIGHT);
@@ -28,7 +28,7 @@ export default function CheckLeaves({ toast }) {
       let temp = [], data = resp.data.data;
       for (let i = 0; i < data.length; i++) {
         temp.push([data[i].id, data[i].nature, data[i].name, data[i].start_date.slice(0, -12), data[i].status]);
-      }
+      }      
       setData(temp);
       setLeaves(data)
     } catch (error) {
@@ -61,52 +61,45 @@ export default function CheckLeaves({ toast }) {
 
   const approveLeave = async (leave_id) => {
     try {
-      console.log("Leave Id: ", leave_id);
-      console.log("Leaves", leaves);
-      let temp = leaves;
-      for (let i = 0; i < temp.length; i++) {
-        if (temp[i].id == leave_id) {
-          temp[i].status = "Approved by Hod";
-        }
-      }
-      setLeaves(temp);      
-
       const resp = await httpClient.post(`${process.env.REACT_APP_API_HOST}/approve_leave`, { leave_id, level: currentUser.level });
+      if (resp.data.status == 'error') {
+        toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
+      } else {
+        toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
+      }      
       window.location.reload();
     } catch (error) {
-      alert("Some error occurred");
+      toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
     }
   }
 
   const disapproveLeave = async (leave_id) => {
     try {
-      console.log("Leave Id: ", leave_id);
-      console.log("Leaves", leaves);
-      let temp = leaves;
-      for (let i = 0; i < temp.length; i++) {
-        if (temp[i].id == leave_id) {
-          temp[i].status = "Disapproved by Hod";
-        }
-      }
-      setLeaves(temp);
-      console.log(leaves);
-
       const resp = await httpClient.post(`${process.env.REACT_APP_API_HOST}/disapprove_leave`, { leave_id });
+      if (resp.data.status == 'error') {
+        toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
+      } else {
+        toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
+      }      
       window.location.reload();
     } catch (error) {
-      alert("Some error occurred");
+      toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
     }
   }
 
   const addComment = async (leave_id) => {
     try {
       const uid = "comment-" + leave_id;
-      const comment = document.getElementById(uid).value;
-      console.log("Comment:", comment);
+      const comment = document.getElementById(uid).value;      
       const resp = await httpClient.post(`${process.env.REACT_APP_API_HOST}/add_comment`, { comment, leave_id });
+      if (resp.data.status == 'error') {
+        toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
+      } else {
+        toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
+      }
       window.location.reload();
     } catch (error) {
-      alert("Some error occurred");
+      toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
     }
   }
 
@@ -117,19 +110,19 @@ export default function CheckLeaves({ toast }) {
   };
 
   return (
-    <div>      
-      {(data[0] != -1) ? (
+    <div>
+      {(data) ? (
         <Table title={"Check Leave Applications"} headers={headers} initialData={data} />
       ) : (
         <LoadingIndicator color={"blue"} />
       )}
-      {(numberOfLeaves[0] != -1) ? (
+      {(numberOfLeaves) ? (
         <Table title={"Remaining Number of Leaves"} headers={headers2} initialData={numberOfLeaves} />
       ) : (
         <LoadingIndicator color={"blue"} />
       )}
 
-      {leaves.map((leave) => {      
+      {leaves.map((leave) => {        
         return (
           <div className="modal fade" id={"modal-" + leave.id} tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel"
             aria-hidden="true">
@@ -297,13 +290,14 @@ export default function CheckLeaves({ toast }) {
                   <textarea id={"comment-" + leave.id} placeholder="Add Comment" style={{ "width": "250px" }}></textarea>
                 </div>
                 <div className="modal-footer">
-                  {(leave.status == "Pending" || (currentUser.level == "dean" && leave.status == "Approved By Hod")) ? (
-                    <>
-                      <button type="button" className="btn btn-outline-success" onClick={() => { approveLeave(leave.id) }}>Approve</button>
-                      <button type="button" className="btn btn-outline-danger" onClick={() => { disapproveLeave(leave.id) }}>Disapprove</button>
-                    </>
-                  ) : (leave.status)
-                  }
+                  <>
+                    <button type="button" className="btn btn-outline-success" onClick={async () => { await approveLeave(leave.id) }}>Approve</button>
+                    <button type="button" className="btn btn-outline-danger" onClick={async () => { await disapproveLeave(leave.id) }}>Disapprove</button>
+                  </>
+                  {/* {(leave.status == "Pending" || (currentUser.level == "dean" && leave.status == "Approved By Hod")) ? (
+
+                  ): (leave.status)
+                  } */}
                   <button type="button" className="btn btn-outline-primary" onClick={() => { addComment(leave.id) }}>Add Comment</button>
                   <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
                 </div>
