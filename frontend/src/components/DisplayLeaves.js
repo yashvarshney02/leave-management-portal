@@ -18,7 +18,7 @@ export default function DisplayLeaves({ user }) {
 
   const fetchLeaves = async (e) => {
     try {
-      const resp = await httpClient.post("https://yashiitrpr.pythonanywhere.com/fetchLeaves");
+      const resp = await httpClient.post("http://localhost:5000//fetchLeaves");
       setLeaves(resp["data"]['result'])
       setShowLeaves(resp["data"]['result'])
       console.log(resp['data']['result'])

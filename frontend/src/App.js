@@ -24,7 +24,7 @@ function App() {
   useEffect(() => {
     (async () => {
       try {
-        const resp = await httpClient.get("https://yashiitrpr.pythonanywhere.com/@me");
+        const resp = await httpClient.get("http://localhost:5000//@me");
         const data = resp.data;
         setUser(prevUser => ({ ...prevUser, imageURL: data['imageURL'] }));
         setUser(prevUser => ({ ...prevUser, level: data['level'] }));

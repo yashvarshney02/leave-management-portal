@@ -1,3 +1,8 @@
+import shutil
+from pydrive.drive import GoogleDrive
+import requests
+import json
+from pydrive.auth import GoogleAuth
 from tkinter import E
 from flask import Flask, jsonify, render_template, url_for, request, session, redirect, Response
 from flask_pymongo import PyMongo
@@ -10,100 +15,81 @@ from authlib.integrations.flask_client import OAuth
 from flask_cors import CORS, cross_origin
 import bcrypt
 import random
-import smtplib, os
+import smtplib
+import os
 import pandas as pd
 from pymysql import NULL
 import pprint
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
+CORS(app, supports_credentials=True)
+
+app.config.update(SESSION_COOKIE_SAMESITE="None", SESSION_COOKIE_SECURE=True)
 
 # oAuth Setup
 oauth = OAuth(app)
 
-# credentials = open("C:\\Academics\\6th Sem\\CP301_DP\\oAuthCredentials.txt").readlines()
-# my_client_id = credentials[0].strip()
-# my_secret = credentials[1].strip()
-
-# google = oauth.register(
-#     name='google',
-#     client_id=my_client_id,
-#     client_secret=my_secret,
-#     access_token_url='https://accounts.google.com/o/oauth2/token',
-#     access_token_params=None,
-#     authorize_url='https://accounts.google.com/o/oauth2/auth',
-#     authorize_params=None,
-#     api_base_url='https://www.googleapis.com/oauth2/v1/',
-#     userinfo_endpoint='https://openidconnect.googleapis.com/v1/userinfo',  # This is only needed if using openId to fetch user info
-#     client_kwargs={'scope': 'openid email profile'},
-# )
-
-# app.config['MYSQL_HOST'] = 'localhost'
-# app.config['MYSQL_USER'] = 'root'
-# app.config['MYSQL_PASSWORD'] = 'password123'
-# app.config['MYSQL_DB'] = 'yash_db'
-# db = MySQL(app)
-db = mysql.connector.connect(
-    host="sql12.freemysqlhosting.net",
-    user="sql12599367",
-    passwd="41XYHlH5lg",
-    database="sql12599367"
-)
-
-# db = mysql.connector.connect(
-#     host="yashiitrpr.mysql.pythonanywhere-services.com",
-#     user="yashiitrpr",
-#     passwd="password@dep123",
-#     database="password@dep123"
-# )
-
-print(db)
 
 success_code = Response(status=200)
 failiure_code = Response(status=400)
 
 
+def get_db_connection():
+    db = mysql.connector.connect(
+        host="sql12.freemysqlhosting.net",
+        user="sql12599367",
+        passwd="41XYHlH5lg",
+        database="sql12599367"
+    )
+    return db
+
+
 def is_valid_email(email_id):
-    print(email_id)
-    connect = db    
+    connect = get_db_connection()
     cursor = connect.cursor()
     cursor.execute("SELECT * FROM user")
     data = cursor.fetchall()
+    connect.close()
     print("data: ", data)
-    return 1    
+    return 1
     if not data:
         session.clear()
         return 0
     else:
         return 1
 
+
 def get_user_data(email_id):
-    connect = db
+    connect = get_db_connection()
     cursor = connect.cursor()
-    cursor.execute("SELECT * FROM user WHERE email_id = %s",(email_id, ))
+    cursor.execute("SELECT * FROM user WHERE email_id = %s", (email_id, ))
     data = cursor.fetchall()
+    connect.close()
     print(data)
     return data
 
+
 def insert_leave(l):
-    connect = db
+    connect = get_db_connection()
     cursor = connect.cursor()
-    cursor.execute("SELECT user_id, department, position FROM user WHERE email_id = %s",(l['email'], ))
+    cursor.execute(
+        "SELECT user_id, department, position FROM user WHERE email_id = %s", (l['email'], ))
     data = cursor.fetchall()
     user_id = data[0][0]
     department = data[0][1]
     position = data[0][2]
-    
-    
+
     cursor.execute("INSERT INTO leaves\
         (department, user_id, nature, purpose, is_station, request_date, start_date, end_date, duration, status, level,file_uploaded) \
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s)",
-        (department, user_id, l['nature'], l['purpose'], l['isStation'], l['rdate'], l['sdate'], l['edate'], l['duration'], 'Pending', position,l['attached_documents']))
+                   (department, user_id, l['nature'], l['purpose'], l['isStation'], l['rdate'], l['sdate'], l['edate'], l['duration'], 'Pending', position, l['attached_documents']))
     connect.commit()
+    connect.close()
     return 1
 
+
 def initialize():
-    connect = db
+    connect = get_db_connection()
     cursor = connect.cursor()
     cursor.execute("drop table if exists leaves")
     cursor.execute("drop table if exists user")
@@ -152,6 +138,7 @@ def initialize():
         FOREIGN KEY (user_id) REFERENCES user(user_id)\
     );")
     connect.commit()
+    connect.close()
 
 
 def get_user_dic(email):
@@ -183,22 +170,24 @@ def get_user_dic(email):
 
     return dic
 
-def send_update_mail(leave_id):
 
-    connect = db
+def send_update_mail(leave_id):
+    connect = get_db_connection()
     cursor = connect.cursor()
-    cursor.execute('SELECT duration,request_date,start_date,end_date,status,authority_comment,user_id,nature FROM leaves WHERE leave_id = %s',(leave_id))
+    cursor.execute(
+        'SELECT duration,request_date,start_date,end_date,status,authority_comment,user_id,nature FROM leaves WHERE leave_id = %s', (leave_id))
     tmp = cursor.fetchall()[0]
     duration = tmp[0]
     request_date = tmp[1]
     start_date = tmp[2]
     end_date = tmp[3]
     status = tmp[4]
-    authority_comment = tmp[5]    
+    authority_comment = tmp[5]
     user_id = tmp[6]
     nature = tmp[7]
 
-    cursor.execute('SELECT total_casual_leaves,taken_casual_leaves,email_id,name FROM user WHERE user_id = %s',(user_id))
+    cursor.execute(
+        'SELECT total_casual_leaves,taken_casual_leaves,email_id,name FROM user WHERE user_id = %s', (user_id))
     tmp = cursor.fetchall()[0]
     total_leaves = tmp[0]
     taken_leaves = tmp[1]
@@ -218,20 +207,23 @@ def send_update_mail(leave_id):
         Total Casual Leaves - {} days \n\
         Taken Casual Leaves - {} days \n\
         Remaining Casual Leaves - {} days \n\
-    """.format(name,nature,status,leave_id,duration,request_date,start_date,end_date,status,authority_comment,total_leaves,taken_leaves,remaining_leaves)
+    """.format(name, nature, status, leave_id, duration, request_date, start_date, end_date, status, authority_comment, total_leaves, taken_leaves, remaining_leaves)
 
     s = smtplib.SMTP('smtp.gmail.com', 587)
     s.starttls()
     s.login("sangramjagadale2017@gmail.com", "ifitfwphppuwtgfl")
-    s.sendmail('IIT Rpr Leave OTP',email_id,msg)
+    s.sendmail('IIT Rpr Leave OTP', email_id, msg)
+    connect.close()
+
 
 def findNextLeaveID():
-    connect = db
+    connect = get_db_connection()
     cursor = connect.cursor()
     cursor.execute("select max(leave_id) from leaves;")
     data = cursor.fetchall()
+    connect.close()
     if not data:
-        return 1    
+        return 1
     if not data[0]:
         return 1
     try:
@@ -239,41 +231,44 @@ def findNextLeaveID():
     except:
         return 1
 
-from pydrive.drive import GoogleDrive
-from pydrive.auth import GoogleAuth
-import os,shutil
 
 access_token = "ya29.A0ARrdaM-5wVuIL8TgP48E5-g7zB7MGPzRQPNzW2U2soXr-Q9L0UEudP680MClxvrT2_0aS4GdZVuGBmI6QO7etyaIe9nvM9sANlT4mAGNWq4xloXC77DWAR59LquOY_k5wCaa2LnM2PsSqCwM3Z13wSMdnotE"
 
-import json
-import requests
+
 class GoogleDrive:
-    def __init__(self,access_token):
+    def __init__(self, access_token):
         self.headers = {"Authorization": "Bearer {}".format(access_token)}
-    def uploadFile(self,file_path, filename):
-        para = {"name": filename, "parents": ["1ylWUFqR6s5QadjELxCodWAo6qIwXr4MD"]} # name of the file after upoading
+
+    def uploadFile(self, file_path, filename):
+        # name of the file after upoading
+        para = {"name": filename, "parents": [
+            "1ylWUFqR6s5QadjELxCodWAo6qIwXr4MD"]}
         files = {
             'data': ('metadata', json.dumps(para), 'application/json; charset=UTF-8'),
             'file': open(file_path, "rb")
         }
-        r = requests.post("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",headers=self.headers,files=files)
+        r = requests.post(
+            "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", headers=self.headers, files=files)
         print(r.text)
-        
-        file_link = "https://drive.google.com/file/d/"+r.json()['id']+"/view?usp=sharing"
+
+        file_link = "https://drive.google.com/file/d/" + \
+            r.json()['id']+"/view?usp=sharing"
         print("File Link", file_link)
         return file_link
+
 
 GD = GoogleDrive(access_token)
 # GD.uploadFile("C:\\Users\\ACER\\3D Objects\\Leave-Portal-main\\server\\Invoice- April Cycle.pdf")
 
 # def upload(path,file_name):
 #     gauth = GoogleAuth()
-#     gauth.LocalWebserverAuth()	
+#     gauth.LocalWebserverAuth()
 #     drive = GoogleDrive(gauth)
 #     f = drive.CreateFile({'title': file_name})
 #     f.SetContentFile(path)
 #     f.Upload()
 #     f = None
+
 
 def empty_the_folder(folder_path):
     folder = folder_path
@@ -284,20 +279,23 @@ def empty_the_folder(folder_path):
                 os.unlink(file_path)
             elif os.path.isdir(file_path):
                 shutil.rmtree(file_path)
-            
+
         except Exception as e:
             print('Failed to delete %s. Reason: %s' % (file_path, e))
             return 0
     return 1
 
+
 print("hi")
+
+
 @app.route('/')
 @cross_origin(supports_credentials=True)
 def home():
     return 'Hello'
 
 
-@app.route('/login_oauth', methods = ['POST'])
+@app.route('/login_oauth', methods=['POST'])
 @cross_origin(supports_credentials=True)
 def login_oauth():
     user_info = request.json["user_info"]
@@ -313,11 +311,13 @@ def login_oauth():
 
 
 OriginalOTP = -1
+
+
 @cross_origin(supports_credentials=True)
 def send_otp(email):
     global OriginalOTP
     print("SEND OTP:", email)
-    OTP = random.randint(10**5,10**6-1)
+    OTP = random.randint(10**5, 10**6-1)
     print(OTP)
     session['otp'] = OTP
     print(session)
@@ -326,11 +326,12 @@ def send_otp(email):
     s = smtplib.SMTP('smtp.gmail.com', 587)
     s.starttls()
     s.login("head.dep2023@gmail.com", "osgkkqldbkkinnqj")
-    s.sendmail('IIT Rpr Leave OTP',email,msg)
+    s.sendmail('IIT Rpr Leave OTP', email, msg)
     print("HHHHHHHHHHHHHHHHHHHHHHHHHHHHH", session['otp'])
     return success_code
 
-@app.route('/login_otp', methods = ['POST'])
+
+@app.route('/login_otp', methods=['POST'])
 @cross_origin(supports_credentials=True)
 def login_otp():
     email = request.json['email']
@@ -346,13 +347,14 @@ def login_otp():
     else:
         return failiure_code
 
-@app.route('/validate_otp' , methods = ['POST'])
+
+@app.route('/validate_otp', methods=['POST'])
 @cross_origin(supports_credentials=True)
 def validate_otp():
     otp = request.json['otp']
-    print(otp , session['otp'],'==================')
+    print(otp, session['otp'], '==================')
     if str(otp) == str(session['otp']):
-        
+
         session['logged_in'] = True
         session['user_info']['imageUrl'] = ""
 
@@ -360,6 +362,7 @@ def validate_otp():
     else:
         session.clear()
         return failiure_code
+
 
 @app.route('/@me')
 # @cross_origin(supports_credentials=True)
@@ -386,11 +389,12 @@ def get_current_user():
     else:
         return jsonify("")
 
+
 @app.route('/leave_application', methods=['POST'])
 @cross_origin(supports_credentials=True)
 def leave_application():
-    print("tem1p",request.files.keys())
-    print("tem2p",request.form.keys())
+    print("tem1p", request.files.keys())
+    print("tem2p", request.form.keys())
     dataa = request.form.copy()
     if 'docc' in request.files:
         dataa['docc'] = request.files['docc']
@@ -412,32 +416,36 @@ def leave_application():
         return success_code
     else:
         return failiure_code
-        
-@app.route('/dashboard',methods = ["POST","GET"])
+
+
+@app.route('/dashboard', methods=["POST", "GET"])
 @cross_origin(supports_credentials=True)
 def dashboard():
-    print('Dashboard' , session)
+    print('Dashboard', session)
     data = get_user_dic(session['user_info']['email'])
     return jsonify(data)
 
-@app.route('/fetchLeaves', methods = ['POST'])
+
+@app.route('/fetchLeaves', methods=['POST'])
 @cross_origin(supports_credentials=True)
 def fetchLeaves():
     email = session['user_info']['email']
     data = get_user_data(email)[0]
     user_id = data[0]
-    connect = db
+    connect = get_db_connection()
     cursor = connect.cursor()
-    cursor.execute("SELECT * FROM leaves WHERE user_id = %s",(user_id, ))
+    cursor.execute("SELECT * FROM leaves WHERE user_id = %s", (user_id, ))
     data = cursor.fetchall()
     payload = []
     for i in data:
         # department, user_id, nature, purpose, is_station, request_date, start_date, end_date, duration, status, level
-        content = {'id': i[0], 'department': i[1], 'user_id': i[2],'nature': i[3],'purpose': i[4],'is_station': i[5],'request_date': i[6],'start_date': i[7],'end_date': i[8], 'authority_comment': i[9], 'duration': i[10],'status': i[11],'level': i[12], 'attached_documents': i[13]}
+        content = {'id': i[0], 'department': i[1], 'user_id': i[2], 'nature': i[3], 'purpose': i[4], 'is_station': i[5], 'request_date': i[6],
+                   'start_date': i[7], 'end_date': i[8], 'authority_comment': i[9], 'duration': i[10], 'status': i[11], 'level': i[12], 'attached_documents': i[13]}
         user_id = i[2]
-        connect = db
+        connect = get_db_connection()
         cursor = connect.cursor()
-        cursor.execute('SELECT email_id FROM user WHERE user_id = %s',(user_id, ))
+        cursor.execute(
+            'SELECT email_id FROM user WHERE user_id = %s', (user_id, ))
         data = cursor.fetchall()
         email = data[0][0]
         cur_user = get_user_dic(email)
@@ -450,17 +458,51 @@ def fetchLeaves():
         nature = '_'.join(nature)
         u_st1 = 'total_' + nature + 's'
         u_st2 = 'taken_' + nature + 's'
-        
+
         content[c_st1] = cur_user[u_st1]
         content[c_st2] = cur_user[u_st2]
         content["key1"] = c_st1
         content["key2"] = c_st2
-        
+
         payload.append(content)
+    connect.close()
 
     return jsonify(result=payload)
 
-@app.route('/check_leaves',methods = ['GET','POST'])
+
+@app.route('/fetchNumberOfLeaves', methods=['POST'])
+@cross_origin(supports_credentials=True)
+def fetchNumberOfLeaves():
+    email = session['user_info']['email']
+    data = get_user_data(email)[0]
+    if data[3] !='dean':
+        return jsonify(result=[])
+    user_id = data[0]
+    connect = get_db_connection()
+    cursor = connect.cursor()
+    cursor.execute("SELECT * FROM user")
+    data = cursor.fetchall()
+    pprint.pprint(data)
+    payload = []
+    for i in data:
+        if (i[3] == 'hod'):
+            # department, user_id, nature, purpose, is_station, request_date, start_date, end_date, duration, status, level
+            content = [i[2], i[1], i[3], i[4], i[5] - i[6]]
+        # content = {
+        #     'Name': i[1],
+        #     'Email ID': i[2],
+        #     "Position": i[3],
+        #     "Department": i[4],
+        #     "Casual Leaves": i[5]
+
+        # }
+            payload.append(content)
+    connect.close()
+
+    return jsonify(result=payload)
+
+
+@app.route('/check_leaves', methods=['GET', 'POST'])
 @cross_origin(supports_credentials=True)
 def check_leaves():
     email = session['user_info']['email']
@@ -468,26 +510,26 @@ def check_leaves():
     user_id = data['user_id']
     department = data['department']
     position = data['position']
-    connect = db
-    cursor = connect.cursor()
-    print("HERE : ", position)
+    connect = get_db_connection()
+    cursor = connect.cursor()    
     if position == "hod":
         cursor.execute('SELECT * FROM leaves WHERE\
-            department = %s and level = %s',(department, "Faculty"))
+            department = %s and level = %s', (department, "Faculty"))
     elif position == 'dean':
         cursor.execute('SELECT * FROM leaves')
     elif position == 'establishment':
         cursor.execute("SELECT * FROM leaves")
-    leaves = cursor.fetchall()    
+    leaves = cursor.fetchall()
     payload = []
 
     for i in leaves:
-        content = {'id': i[0], 'department': i[1], 'user_id': i[2],'nature': i[3],'purpose': i[4],'is_station': i[5],'request_date': i[6],'start_date': i[7],'end_date': i[8], 'authority_comment': i[9], 'duration': i[10],'status': i[11],'level': i[12], 'attached_documents': i[13]}
-        pprint.pprint(content)
+        content = {'id': i[0], 'department': i[1], 'user_id': i[2], 'nature': i[3], 'purpose': i[4], 'is_station': i[5], 'request_date': i[6],
+                   'start_date': i[7], 'end_date': i[8], 'authority_comment': i[9], 'duration': i[10], 'status': i[11], 'level': i[12], 'attached_documents': i[13]}        
         user_id = i[2]
-        connect = db
+        connect = get_db_connection()
         cursor = connect.cursor()
-        cursor.execute('SELECT email_id FROM user WHERE user_id = %s',(user_id, ))
+        cursor.execute(
+            'SELECT email_id FROM user WHERE user_id = %s', (user_id, ))
         data = cursor.fetchall()
         email = data[0][0]
         cur_user = get_user_dic(email)
@@ -500,15 +542,13 @@ def check_leaves():
         nature = '_'.join(nature)
         u_st1 = 'total_' + nature + 's'
         u_st2 = 'taken_' + nature + 's'
-        
+
         content[c_st1] = cur_user[u_st1]
         content[c_st2] = cur_user[u_st2]
         content["key1"] = c_st1
-        content["key2"] = c_st2
-        print("position: ", position)
-        if position == 'dean':
-            print("here: ", nature, content['level'])
-            if (nature=="casual_leave" or nature=="restricted_leave") and (content['level'] == 'hod'):                
+        content["key2"] = c_st2        
+        if position == 'dean':            
+            if (nature == "casual_leave" or nature == "restricted_leave") and (content['level'] == 'hod') and (content['status'] == 'Pending'):
                 payload.append(content)
             elif nature == "casual_leave" or nature == "restricted_leave":
                 continue
@@ -519,10 +559,13 @@ def check_leaves():
         elif position == 'establishment':
             if content['status'] == 'Approved By Hod':
                 payload.append(content)
+    print("payload: ", payload)
+    connect.close()
 
-    return jsonify(result = payload)
+    return jsonify(result=payload)
 
-@app.route('/approve_leave', methods = ['POST'])
+
+@app.route('/approve_leave', methods=['POST'])
 @cross_origin(supports_credentials=True)
 def approve_leave():
     leave_id = request.json['leave_id']
@@ -533,15 +576,18 @@ def approve_leave():
     session['approved'][leave_id] = 1
     user = get_user_dic(session['user_info']['email'])
 
-    connect = db
+    connect = get_db_connection()
     cursor = connect.cursor()
     if user["position"] == "hod":
-        cursor.execute("UPDATE leaves SET status = 'Approved By Hod' WHERE leave_id = %s",(leave_id, ))
+        cursor.execute(
+            "UPDATE leaves SET status = 'Approved By Hod' WHERE leave_id = %s", (leave_id, ))
     elif user["position"] == "dean":
-        cursor.execute("UPDATE leaves SET status = 'Approved By Dean' WHERE leave_id = %s",(leave_id, ))
+        cursor.execute(
+            "UPDATE leaves SET status = 'Approved By Dean' WHERE leave_id = %s", (leave_id, ))
     connect.commit()
 
-    cursor.execute("Select user_id, nature, duration from leaves where leave_id = %s", (leave_id, ))
+    cursor.execute(
+        "Select user_id, nature, duration from leaves where leave_id = %s", (leave_id, ))
     data = cursor.fetchall()[0]
     user_id = data[0]
     nature = data[1]
@@ -555,35 +601,45 @@ def approve_leave():
     cursor.execute(query)
     data = cursor.fetchall()[0]
     taken_cnt = float(data[0]) + duration
-    if (nature == "casual_leave" or nature == "restricted_leave") and (user['position']=='hod' or user['position']=='dean'):
-        query = "Update user set %s = %s where user_id = %s" % (u_st2, taken_cnt, user_id)
+    if (nature == "casual_leave" or nature == "restricted_leave") and (user['position'] == 'hod' or user['position'] == 'dean'):
+        query = "Update user set %s = %s where user_id = %s" % (
+            u_st2, taken_cnt, user_id)
         cursor.execute(query)
-    elif nature != "casual_leave" and nature != "restricted_leave" and user['position']=='dean':
-        query = "Update user set %s = %s where user_id = %s" % (u_st2, taken_cnt, user_id)
+    elif nature != "casual_leave" and nature != "restricted_leave" and user['position'] == 'dean':
+        query = "Update user set %s = %s where user_id = %s" % (
+            u_st2, taken_cnt, user_id)
         cursor.execute(query)
     connect.commit()
+    connect.close()
     # send_update_mail(leave_id)
     return success_code
 
-@app.route('/disapprove_leave', methods = ['POST'])
+
+@app.route('/disapprove_leave', methods=['POST'])
 @cross_origin(supports_credentials=True)
 def disapprove_leave():
     leave_id = request.json['leave_id']
-    connect = db
+    connect = get_db_connection()
     cursor = connect.cursor()
-    cursor.execute("UPDATE leaves SET status = 'Disapproved By Hod' WHERE leave_id = %s",(leave_id))
+    cursor.execute(
+        "UPDATE leaves SET status = 'Disapproved By Hod' WHERE leave_id = %s", (leave_id))
     connect.commit()
+    connect.close()
     return success_code
 
-@app.route('/add_comment', methods = ['POST'])
+
+@app.route('/add_comment', methods=['POST'])
 def add_comment():
     leave_id = request.json['leave_id']
     comment = request.json['comment']
-    connect = db
+    connect = get_db_connection()
     cursor = connect.cursor()
-    cursor.execute("UPDATE leaves SET authority_comment = %s WHERE leave_id = %s",(comment, leave_id))
+    cursor.execute(
+        "UPDATE leaves SET authority_comment = %s WHERE leave_id = %s", (comment, leave_id))
     connect.commit()
+    connect.close()
     return success_code
+
 
 @app.route('/add_users', methods=['GET', 'POST'])
 @cross_origin(supports_credentials=True)
@@ -593,15 +649,17 @@ def add_users():
     dfs = pd.read_excel("data.xlsx", sheet_name=None)
     d = dfs["Sheet1"]
     initialize()
-    for i in range (len(d)):
-        query = "insert into user(name, email_id, position, department, total_casual_leaves, taken_casual_leaves, total_restricted_leaves, taken_restricted_leaves, total_earned_leaves, taken_earned_leaves, total_vacation_leaves, taken_vacation_leaves, total_special_leaves, taken_special_leaves, total_commuted_leaves, taken_commuted_leaves, total_hospital_leaves, taken_hospital_leaves, total_study_leaves, taken_study_leaves, total_childcare_leaves, taken_childcare_leaves) values ('%s', '%s', '%s', '%s', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);" % (d.iloc[i,0], d.iloc[i,1], d.iloc[i,2], d.iloc[i,3], d.iloc[i,4], d.iloc[i,5], d.iloc[i,6], d.iloc[i,7], d.iloc[i,8], d.iloc[i,9], d.iloc[i,10], d.iloc[i,11], d.iloc[i,12], d.iloc[i,13], d.iloc[i,14], d.iloc[i,15], d.iloc[i,16], d.iloc[i,17], d.iloc[i,18], d.iloc[i,19], d.iloc[i,20], d.iloc[i,21])
-        connect = db
+    for i in range(len(d)):
+        query = "insert into user(name, email_id, position, department, total_casual_leaves, taken_casual_leaves, total_restricted_leaves, taken_restricted_leaves, total_earned_leaves, taken_earned_leaves, total_vacation_leaves, taken_vacation_leaves, total_special_leaves, taken_special_leaves, total_commuted_leaves, taken_commuted_leaves, total_hospital_leaves, taken_hospital_leaves, total_study_leaves, taken_study_leaves, total_childcare_leaves, taken_childcare_leaves) values ('%s', '%s', '%s', '%s', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);" % (
+            d.iloc[i, 0], d.iloc[i, 1], d.iloc[i, 2], d.iloc[i, 3], d.iloc[i, 4], d.iloc[i, 5], d.iloc[i, 6], d.iloc[i, 7], d.iloc[i, 8], d.iloc[i, 9], d.iloc[i, 10], d.iloc[i, 11], d.iloc[i, 12], d.iloc[i, 13], d.iloc[i, 14], d.iloc[i, 15], d.iloc[i, 16], d.iloc[i, 17], d.iloc[i, 18], d.iloc[i, 19], d.iloc[i, 20], d.iloc[i, 21])
+        connect = get_db_connection()
         cursor = connect.cursor()
         cursor.execute(query)
         connect.commit()
+        connect.close()
 
     return success_code
-    
+
 # @app.route('/register', methods=['POST', 'GET'])
 # def register():
 #     if request.method == 'POST':
@@ -622,13 +680,15 @@ def add_users():
 #             return "Username already exists."
 #     return render_template('register.html')
 
+
 @app.route('/logout')
 @cross_origin(supports_credentials=True)
 def logout():
     session.clear()
     return success_code
 
+
 if __name__ == '__main__':
-    app.secret_key='secret123'
+    app.secret_key = 'secret123'
     print("hi")
     app.run(debug=True)

@@ -4,7 +4,7 @@ import httpClient from "../httpClient";
 export default function Navbar({ user }) {
   // console.log(user);
   const logout = async (e) => {
-    await httpClient.get("https://yashiitrpr.pythonanywhere.com/logout");
+    await httpClient.get("http://localhost:5000//logout");
     window.location.href = "/";
   }
   return (

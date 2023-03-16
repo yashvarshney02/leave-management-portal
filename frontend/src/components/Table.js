@@ -146,6 +146,7 @@ class Table extends Component {
           <tbody className="table-body" onDoubleClick={this._showEditor}>
             {this._renderSearch()}
             {this.state.initialData.map((row, rowidx) => {
+              console.log("row: ", row);
               return (
                 <tr key={rowidx} className="cell-1" data-toggle="modal" data-target={"#modal-" + row[0]}>
                   {row.map((cell, idx) => {

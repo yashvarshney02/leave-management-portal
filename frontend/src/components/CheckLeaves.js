@@ -13,13 +13,26 @@ export default function CheckLeaves({ user }) {
 
   const [leaves, setLeaves] = useState([]);
   const [headers, setHeaders] = useState(["Leave Id", "Nature", "Name", "Start Date", "Status"]);
+  const [headers2, setHeaders2] = useState(["Email ID", "Name", "Position", "Department", "Casual Leaves"]);
   const [data, setData] = useState([-1]);
+  const [numberOfLeaves, setNumberOfLeaves] = useState([-1]);
 
   const fetchLeaves = async (e) => {
     try {
-      const resp = await httpClient.post("https://yashiitrpr.pythonanywhere.com/check_leaves");
-      setLeaves(resp["data"]['result'])
-      console.log("Dataa", resp["data"]["result"])
+      const resp = await httpClient.post("http://localhost:5000//check_leaves");
+      setLeaves(resp["data"]['result'])      
+      return resp["data"]["result"]
+
+    } catch (error) {
+      if (error.response.status === 400) {
+        alert("Error occured");
+      }
+    }
+  }
+  const fetchNumberOfLeaves = async (e) => {
+    try {
+      const resp = await httpClient.post("http://localhost:5000//fetchNumberOfLeaves");      
+      console.log(resp['data']['result']);
       return resp["data"]["result"]
 
     } catch (error) {
@@ -42,6 +55,10 @@ export default function CheckLeaves({ user }) {
     fetchLeaves();
     (async () => {
       const xx = await fetchLeaves();
+      console.log("xx : ", xx);
+      const resp = await fetchNumberOfLeaves();          
+      console.log(resp);
+      setNumberOfLeaves(resp);
       updateData(xx);
       // console.log("xx", xx);
     })();
@@ -61,7 +78,7 @@ export default function CheckLeaves({ user }) {
       setLeaves(temp);
       console.log(leaves);
 
-      const resp = await httpClient.post("https://yashiitrpr.pythonanywhere.com/approve_leave", { leave_id, level: user.level });
+      const resp = await httpClient.post("http://localhost:5000//approve_leave", { leave_id, level: user.level });
       window.location.reload();
     } catch (error) {
       alert("Some error occurred");
@@ -81,7 +98,7 @@ export default function CheckLeaves({ user }) {
       setLeaves(temp);
       console.log(leaves);
 
-      const resp = await httpClient.post("https://yashiitrpr.pythonanywhere.com/disapprove_leave", { leave_id });
+      const resp = await httpClient.post("http://localhost:5000//disapprove_leave", { leave_id });
       window.location.reload();
     } catch (error) {
       alert("Some error occurred");
@@ -93,7 +110,7 @@ export default function CheckLeaves({ user }) {
       const uid = "comment-" + leave_id;
       const comment = document.getElementById(uid).value;
       console.log("Comment:", comment);
-      const resp = await httpClient.post("https://yashiitrpr.pythonanywhere.com/add_comment", { comment, leave_id });
+      const resp = await httpClient.post("http://localhost:5000//add_comment", { comment, leave_id });
       window.location.reload();
     } catch (error) {
       alert("Some error occurred");
@@ -112,6 +129,11 @@ export default function CheckLeaves({ user }) {
 
       {(data[0] != -1) ? (
         <Table headers={headers} initialData={data} />
+      ) : (
+        <p>loading...</p>
+      )}
+      {(numberOfLeaves[0] != -1) ? (
+        <Table headers={headers2} initialData={numberOfLeaves} />
       ) : (
         <p>loading...</p>
       )}

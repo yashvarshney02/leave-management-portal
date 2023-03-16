@@ -7,7 +7,7 @@ export default function LoginForm() {
     try {
       e.preventDefault()
       const otp = document.getElementById("Password").value
-      const resp = await httpClient.post("https://yashiitrpr.pythonanywhere.com/validate_otp", {otp});
+      const resp = await httpClient.post("http://localhost:5000//validate_otp", {otp});
       window.location.href="dashboard";
     } catch (error) {
       if (error.response.status === 400) {

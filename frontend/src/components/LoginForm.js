@@ -7,8 +7,9 @@ import GoogleLogin from 'react-google-login';
 export default function LoginForm() {
   const responseGoogle = async (res) => {
     try {
+      console.log(res);
       const user_info = res.profileObj
-      const resp = await httpClient.post("https://yashiitrpr.pythonanywhere.com/login_oauth", { user_info });
+      const resp = await httpClient.post("http://localhost:5000//login_oauth", { user_info });
       console.log(resp);
       window.location.href = "/dashboard";
     } catch (error) {
@@ -21,7 +22,7 @@ export default function LoginForm() {
     try {
       e.preventDefault()
       const email = document.getElementById("Username").value;
-      const resp = await httpClient.post("https://yashiitrpr.pythonanywhere.com/login_otp", { email });
+      const resp = await httpClient.post("http://localhost:5000//login_otp", { email });
       console.log(resp)
       window.location.href = '/otpVerification';
     } catch (error) {
@@ -52,7 +53,7 @@ export default function LoginForm() {
             </div>
             <div className="text-center"><button onClick={otpLogin}
               className="btn btn-primary  mb-5 w-100 rounded-pill" >Send OTP</button></div>
-            <GoogleLogin clientId="1055217702575-fejsv10ueq0tt48aatj1ln1p35nogder.apps.googleusercontent.com"
+            <GoogleLogin clientId="145347950197-k36hp883k0ic0afktgi06h1v0kokjb7g.apps.googleusercontent.com"
               buttonText="Login with Google"
               onSuccess={responseGoogle}
               onFailure={responseGoogle}

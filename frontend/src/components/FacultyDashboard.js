@@ -38,7 +38,7 @@ export default function Dashboard({ user }) {
     const formData = new FormData();
     formData.append('file', state);
     fetch(
-      'https://yashiitrpr.pythonanywhere.com/add_users',
+      'http://localhost:5000//add_users',
       {
         method: 'POST',
         body: formData,
@@ -52,7 +52,7 @@ export default function Dashboard({ user }) {
     let isMounted = true;
     (async () => {
       try {
-        const resp = await httpClient.get("https://yashiitrpr.pythonanywhere.com/dashboard");
+        const resp = await httpClient.get("http://localhost:5000//dashboard");
         // console.log(resp.data);
         set_user_data(resp.data);
       }

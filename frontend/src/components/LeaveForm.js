@@ -130,7 +130,7 @@ export default function LeaveForm({ user }) {
 
     document.querySelector('.leaveform button').classList.add('disabled');
     try {
-      const resp = await httpClient.post("https://yashiitrpr.pythonanywhere.com/leave_application", data, {
+      const resp = await httpClient.post("http://localhost:5000//leave_application", data, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
