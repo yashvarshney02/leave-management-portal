@@ -13,15 +13,19 @@
     font-family: Roboto, Arial, sans-serif;
     /* font-size: 16px; */
     /* color: #666; */
-    box-shadow: 0px 2px 1px 1px gray;
+    /* box-shadow: 0px 2px 1px 1px gray; */
+}
+
+.leaveform:hover {
+    box-shadow: 5px 10px 20px rgba(0, 0, 0, 0.5) !important
 }
 
 form{
     margin: 50px 0px;
 }
 
-legend{
-    font-size:15px;
+legend {
+    font-size:1.2em;
     text-align: left;
 }
 

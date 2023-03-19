@@ -44,7 +44,9 @@ table{
     box-shadow: 0.5px 0.5px 0.5px 0.5px gray;
     margin-top: 10px;
 }
-
+.container:hover {
+    box-shadow: 5px 10px 20px rgba(0, 0, 0, 0.5)
+}
 
 tr{
     background-color: white;

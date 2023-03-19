@@ -11,3 +11,19 @@
     margin: 5px auto;
     margin-bottom: 20px;
 }
+
+
+.leaves-container {
+  display: flex;
+  align-items: center;
+}
+
+.remaining-leaves i,
+.taken-leaves i {
+  font-size: 2em;
+  color: red;
+}
+
+.taken-leaves i {
+  color: gray;
+}
