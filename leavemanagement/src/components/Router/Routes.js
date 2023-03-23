@@ -21,7 +21,7 @@ const Paths = (props) => {
         <Route path='/forms/pastapplications' element={<PrivateRoute user={["all"]} toast={props.toast}/>}>
           <Route path="/forms/pastapplications" element={<PastApplications toast={props.toast}/>} />
         </Route>
-        <Route path='/forms/dates' element={<PrivateRoute user={["admin"]} toast={props.toast}/>}>
+        <Route path='/forms/dates' element={<PrivateRoute user={["dean"]} toast={props.toast}/>}>
           <Route path="/forms/dates" element={<Dates toast={props.toast}/>} />
         </Route>
         <Route path='/forms/checkapplications' element={<PrivateRoute user={["dean", "hod", "faculty"]} toast={props.toast}/>}>
