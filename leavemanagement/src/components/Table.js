@@ -28,12 +28,40 @@ export default function Table({ title, headers, initialData }) {
 
   async function handleDeleteLeaveApplication(leaveID) {
     const resp = await httpClient.post(`${process.env.REACT_APP_API_HOST}/delete_application`, {
-      leave_id: leaveID,      
+      leave_id: leaveID,
     });
     if (resp.data.status == 'error') {
       toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
     } else {
       toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
+    }
+  }
+
+  function getActions(title, row) {
+    if (title == 'Applied Leaves') {
+      return (
+        <td>
+          <FaIcons.FaEye style={{ cursor: "pointer" }} color='green' onClick={(e) => {
+            e.currentTarget.dataset.toggle = 'modal';
+            e.currentTarget.dataset.target = "#modal-" + row[0];
+          }} />&nbsp;
+          <FaIcons.FaTrash style={{ cursor: "pointer" }} color='red' onClick={(e) => {
+            setDeleteLeaveID(row[0])
+            handleShow()
+          }} />&nbsp;
+        </td>
+      )
+    } else if (title == 'Check Leave Applications') {
+      return (
+        <td>
+          <FaIcons.FaEye style={{ cursor: "pointer" }} color='green' onClick={(e) => {
+            e.currentTarget.dataset.toggle = 'modal';
+            e.currentTarget.dataset.target = "#modal-" + row[0];
+          }} />&nbsp;
+        </td>
+      )
+    } else {
+      return ''
     }
   }
 
@@ -46,16 +74,16 @@ export default function Table({ title, headers, initialData }) {
         </Modal.Header>
         <Modal.Body>{`Are you sure you want to delete the leave with ID: ${deleteLeaveID}`} </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={()=>{
+          <Button variant="secondary" onClick={() => {
             setDeleteLeaveID("");
             handleClose()
           }}>
             Discard
           </Button>
-          <Button variant="danger" onClick={async() => {
-              await handleDeleteLeaveApplication(deleteLeaveID);
-              setDeleteLeaveID("");
-              handleClose();              
+          <Button variant="danger" onClick={async () => {
+            await handleDeleteLeaveApplication(deleteLeaveID);
+            setDeleteLeaveID("");
+            handleClose();
           }}>
             <FaIcons.FaTrash></FaIcons.FaTrash>
           </Button>
@@ -88,7 +116,7 @@ export default function Table({ title, headers, initialData }) {
                     })
                   }
                   {
-                    (title == 'Applied Leaves') ? (
+                    (title == 'Applied Leaves' || title == 'Check Leave Applications') ? (
                       <th>
                         Action
                       </th>) : ''
@@ -131,20 +159,7 @@ export default function Table({ title, headers, initialData }) {
                           })
                         }
                         {
-                          (title == 'Applied Leaves') ? (
-                            <td>
-                              <FaIcons.FaEye style={{ cursor: "pointer" }} color='green' onClick={(e) => {
-                                e.currentTarget.dataset.toggle = 'modal';
-                                e.currentTarget.dataset.target = "#modal-" + row[0];
-                              }} />&nbsp;
-                              <FaIcons.FaTrash style={{ cursor: "pointer" }} color='red' onClick={(e) => {
-                                setDeleteLeaveID(row[0])
-                                handleShow()
-                              }} />&nbsp;
-                              {/* <FaIcons.FaPencilAlt style={{cursor: "pointer"}} color='blue'/>&nbsp;
-                        <FaIcons.FaPrescriptionBottle style={{cursor: "pointer"}} color='red'/>&nbsp; */}
-
-                            </td>) : ''
+                          getActions(title, row)
                         }
                       </tr>
                     )
