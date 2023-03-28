@@ -10,7 +10,7 @@ import { useAuth } from '../../contexts/AuthContext';
 
 const Nav = styled.div`
   background: linear-gradient(135deg, #08328B, #265ACB);
-  height: 80px;
+  height: 60px;
   display: flex;
   justify-content: flex-start;
   align-items: center;
@@ -45,7 +45,7 @@ const SidebarWrap = styled.div`
 const Sidebar = () => {
   const [sidebar, setSidebar] = useState(false);
   const { currentUser } = useAuth();
-
+  const [name, setName] = useState(currentUser.name)
   const showSidebar = () => setSidebar(!sidebar);
   
 
@@ -55,7 +55,10 @@ const Sidebar = () => {
         <Nav>
           <NavIcon to='#'>
             <FaIcons.FaBars onClick={showSidebar} />
-          </NavIcon>                    
+          </NavIcon>  
+          <div style={{marginLeft:"auto",width:"200px",color:"white"}}>
+            Hi, {name}!
+          </div>                  
         </Nav>        
         <SidebarNav sidebar={sidebar}>
           <SidebarWrap>
