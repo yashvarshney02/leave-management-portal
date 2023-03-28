@@ -9,7 +9,7 @@ import { IconContext } from 'react-icons/lib';
 import { useAuth } from '../../contexts/AuthContext';
 
 const Nav = styled.div`
-  background: linear-gradient(135deg, #356bf0, #71b7e6);
+  background: linear-gradient(135deg, #08328B, #265ACB);
   height: 80px;
   display: flex;
   justify-content: flex-start;
@@ -26,7 +26,7 @@ const NavIcon = styled(Link)`
 `;
 
 const SidebarNav = styled.nav`
-  background: linear-gradient(135deg, #356bf0, #71b7e6);
+  background: linear-gradient(135deg, #08328B, #08328B);
   width: 250px;
   height: 100vh;
   display: flex;
