@@ -1,0 +1,212 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
+
+textarea {
+    resize: none;
+    padding: 10px;
+    background-color: #eef6fc;
+    border-radius: 10px;
+    font-weight: 500;
+}
+
+select {
+
+    height: 45px;
+    width: calc(100% / 3 - 50px);
+    outline: none;
+    font-size: 16px;
+    border-radius: 5px;
+    padding-left: 15px;
+    border: 1px solid #ccc;
+    border-bottom-width: 2px;
+    transition: all 0.3s ease;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* body{
+  height: 150vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  background: linear-gradient(135deg, #71b7e6, #f2f1f3);
+} */
+
+.container-al {
+    max-width: 80%;
+    width: 80%;
+    background-color: #fff;
+    padding: 25px 30px;
+    margin-top: 10px;
+    margin-left: 150px;
+    margin-bottom: 50px;
+    border-radius: 5px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
+}
+
+.container-al:hover {
+    box-shadow: 5px 10px 20px rgba(0, 0, 0, 0.5) !important
+}
+.dropdown-al {
+    display: flex;
+    height: 45px;
+    width: 100%;
+    outline: none;
+    font-size: 16px;
+    border-radius: 5px;
+    padding-left: 15px;
+    border: 1px solid #ccc;
+    border-bottom-width: 2px;
+    transition: all 0.3s ease;
+}
+
+.container-al .title-al {
+    padding: 5px;
+    font-size: 25px;
+    font-weight: 500;
+    position: relative;
+}
+
+.container-al .title-al::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 3px;
+    width: 100%;
+    border-radius: 5px;
+    background: linear-gradient(135deg, #71b7e6, #9b59b6);
+}
+
+.content-al form .user-details-al {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin: 20px 0 12px 0;
+}
+
+form .user-details-al .input-box-al {
+    margin-bottom: 15px;
+    width: calc(100% / 2 - 20px);
+}
+
+form .input-box-al span.details-al {
+    text-align: left;
+    display: block;
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.user-details-al .input-box-al input {
+    height: 45px;
+    width: 100%;
+    outline: none;
+    font-size: 16px;
+    border-radius: 5px;
+    padding-left: 15px;
+    border: 1px solid #ccc;
+    border-bottom-width: 2px;
+    transition: all 0.3s ease;
+}
+
+.user-details-al .input-box-al input:focus,
+.user-details-al .input-box-al input:valid {
+    border-color: #71b7e6;
+}
+
+form .gender-details-al .gender-title-al {
+    font-size: 20px;
+    font-weight: 500;
+}
+
+form .category-al {
+    display: flex;
+    width: 80%;
+    margin: 14px 0;
+    justify-content: space-between;
+}
+
+form .category-al label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+form .category-al label .dot-al {
+    height: 18px;
+    width: 18px;
+    border-radius: 50%;
+    margin-right: 10px;
+    background: #d9d9d9;
+    border: 5px solid transparent;
+    transition: all 0.3s ease;
+}
+
+#dot-1:checked~.category-al label .one,
+#dot-2:checked~.category-al label .two {
+    background: #9b59b6;
+    border-color: #d9d9d9;
+}
+
+form input[type="radio"] {
+    display: none;
+}
+
+form .button-al {
+    height: 45px;
+    margin: 35px 0
+}
+
+form .button-al input {
+    height: 100%;
+    width: 100%;
+    border-radius: 5px;
+    border: none;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #82bce3, #8dc1e4);
+}
+
+form .button-al input:hover {
+    background: linear-gradient(-135deg, #66b4e7, #66b4e7);
+}
+
+@media(max-width: 584px) {
+    .container-al {
+        margin: 50px;
+        max-width: 100%;
+    }
+
+    form .user-details-al .input-box-al {
+        margin-bottom: 15px;
+        width: 100%;
+    }
+
+    form .category-al {
+        width: 100%;
+    }
+
+    .content-al form .user-details-al {
+        max-height: 300px;
+        overflow-y: scroll;
+    }
+
+    .user-details-al::-webkit-scrollbar {
+        width: 5px;
+    }
+}
+
+@media(max-width: 459px) {
+    .container-al .content-al .category-al {
+        flex-direction: column;
+    }
+}
