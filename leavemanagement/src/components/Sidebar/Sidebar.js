@@ -44,8 +44,7 @@ const SidebarWrap = styled.div`
 
 const Sidebar = () => {
   const [sidebar, setSidebar] = useState(false);
-  const { currentUser } = useAuth();
-  const [name, setName] = useState(currentUser.name)
+  const { currentUser } = useAuth();  
   const showSidebar = () => setSidebar(!sidebar);
   
 
@@ -57,7 +56,7 @@ const Sidebar = () => {
             <FaIcons.FaBars onClick={showSidebar} />
           </NavIcon>  
           <div style={{marginLeft:"auto",width:"200px",color:"white"}}>
-            Hi, {name}!
+            Hi, {currentUser ? currentUser.name : 'User'}
           </div>                  
         </Nav>        
         <SidebarNav sidebar={sidebar}>
