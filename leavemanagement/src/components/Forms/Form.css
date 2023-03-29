@@ -8,6 +8,33 @@ textarea {
     font-weight: 500;
 }
 
+legend {
+    font-size:1.2em;
+    text-align: left;
+}
+
+div.card-body {
+    outline: none;
+}
+
+.row-al {
+    display: flex;
+    width:200%;
+    padding: 5px;
+
+}
+
+.col-al {
+    width:100%;
+    display: grid;
+    padding: 5px;
+
+}
+
+.user-details-al {
+    display: grid;
+}
+
 select {
 
     height: 45px;
@@ -38,10 +65,15 @@ select {
 } */
 
 .container-al {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+
     max-width: 80%;
     width: 80%;
     background-color: #fff;
-    padding: 25px 30px;
+    /* padding: 25px 30px; */
     margin-top: 10px;
     margin-left: 150px;
     margin-bottom: 50px;
@@ -66,6 +98,7 @@ select {
 }
 
 .container-al .title-al {
+    padding-bottom: 10px;
     padding: 5px;
     font-size: 25px;
     font-weight: 500;
@@ -180,10 +213,49 @@ form .button-al input:hover {
     background: linear-gradient(-135deg, #66b4e7, #66b4e7);
 }
 
+@media(max-width: 820px) {
+    .container-al {
+        flex-direction: column;
+        margin: 50px;
+        max-width: 100%;
+    }
+
+    .row-al {
+        width: 100%;
+        display:grid;
+    }
+    
+    form .user-details-al .input-box-al {
+        margin-bottom: 15px;
+        width: 100%;
+    }
+
+    form .category-al {
+        width: 100%;
+    }
+
+    .content-al form .user-details-al {
+        max-height: 300px;
+        overflow-y: scroll;
+    }
+
+    .user-details-al::-webkit-scrollbar {
+        width: 5px;
+    }
+}
+
 @media(max-width: 584px) {
     .container-al {
         margin: 50px;
         max-width: 100%;
+    }
+
+    .row-al {
+        width: 100%;
+        display:block;
+    }
+    .col {
+        width: 100%;
     }
 
     form .user-details-al .input-box-al {
