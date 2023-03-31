@@ -12,17 +12,31 @@ import { Badge } from 'react-bootstrap';
 import { FaEdit, FaMobileAlt } from 'react-icons/fa';
 
 
-export default function Dashboard({toast}) {
+export default function Dashboard({ toast }) {
 
   const { currentUser, refresh_user, editProfile } = useAuth();
-  const [showEditProfileModal, setShowEditProfileModal] = useState(false);
+  const [showEditProfileModal, setShowEditProfileModal] = useState(false);  
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState(currentUser.name)
   const [mobile, setMobile] = useState(currentUser.mobile)
   const handleEdit = () => setShowEditProfileModal(!showEditProfileModal);
   const navigate = useNavigate();
 
-  useEffect(() => {
+  async function fetchRemainingNumberOfLeaves() {
+    const resp = await httpClient.get(`${process.env.REACT_APP_API_HOST}/fetch_remaining_leaves`);    
+    if (resp.data.status == "success") {            
+      // toast.success("Leaves fetched Successfully", toast.POSITION.BOTTOM_RIGHT);
+    } else {
+      // toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
+      return;
+    }
+  }
+
+  useEffect(() => {    
+    async function test() {
+      await fetchRemainingNumberOfLeaves();
+    }
+    test();
   }, []);
 
   return (
@@ -41,27 +55,27 @@ export default function Dashboard({toast}) {
               <Modal.Title>Edit Profile</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-            <Form>
-              <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
-                <Form.Label>Name</Form.Label>
-                <Form.Control                  
-                  value={name}
-                  onChange={(e)=>{setName(e.target.value)}}
-                  autoFocus                  
-                />
-                <Form.Label>Mobile Number</Form.Label>
-                <Form.Control                  
-                  value={mobile}
-                  onChange={(e)=>{setMobile(e.target.value)}}
-                  autoFocus                  
-                />
-              </Form.Group>
-            </Form></Modal.Body>
+              <Form>
+                <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
+                  <Form.Label>Name</Form.Label>
+                  <Form.Control
+                    value={name}
+                    onChange={(e) => { setName(e.target.value) }}
+                    autoFocus
+                  />
+                  <Form.Label>Mobile Number</Form.Label>
+                  <Form.Control
+                    value={mobile}
+                    onChange={(e) => { setMobile(e.target.value) }}
+                    autoFocus
+                  />
+                </Form.Group>
+              </Form></Modal.Body>
             <Modal.Footer>
               <Button variant="secondary" onClick={handleEdit}>
                 Close
               </Button>
-              <Button variant="primary" onClick={async ()=>{
+              <Button variant="primary" onClick={async () => {
                 let res = await editProfile(name, mobile);
                 setLoading(true);
                 await refresh_user();
@@ -73,9 +87,9 @@ export default function Dashboard({toast}) {
                 setLoading(false);
                 handleEdit();
               }}>
-              {
-                (loading) ? (<LoadingIndicator color={"white"} />) : ("Save Changes")
-              }                
+                {
+                  (loading) ? (<LoadingIndicator color={"white"} />) : ("Save Changes")
+                }
               </Button>
             </Modal.Footer>
           </Modal>
@@ -86,13 +100,13 @@ export default function Dashboard({toast}) {
                   <div className="d-flex flex-column align-items-center text-center">
                     {(currentUser.picture == "") ? (<img src={require("../../img/loginIcon.png")} alt="Admin" className="rounded-circle" width="150" />) : (<img src={currentUser.picture} alt="Admin" className="rounded-circle" width="150" />)}
                     <div className="mt-3">
-                      <Badge pill bg="light" text="dark">{currentUser.name.toUpperCase()} <FaEdit style={{ cursor: 'pointer' }} onClick={handleEdit}></FaEdit></Badge>< br/>
+                      <Badge pill bg="light" text="dark">{currentUser.name.toUpperCase()} <FaEdit style={{ cursor: 'pointer' }} onClick={handleEdit}></FaEdit></Badge>< br />
                       <Badge pill bg="light" text="dark">{currentUser.position.toUpperCase()}</Badge><br />
                       <Badge pill bg="light" text="dark">{currentUser.department.toUpperCase()}</Badge><br />
-                      {(currentUser.mobile) ? (<div><FaMobileAlt></FaMobileAlt><Badge pill bg="light" text="dark">{currentUser.mobile.toUpperCase()}</Badge><br /></div>) : ''}                      
-                     <Badge pill bg="light" text="dark">{currentUser.email}</Badge><br />
+                      {(currentUser.mobile) ? (<div><FaMobileAlt></FaMobileAlt><Badge pill bg="light" text="dark">{currentUser.mobile.toUpperCase()}</Badge><br /></div>) : ''}
+                      <Badge pill bg="light" text="dark">{currentUser.email}</Badge><br />
                       {(currentUser.position == "faculty" || currentUser.position == "staff" || currentUser.position == "hod") ? (
-                        <Badge bg="info" text="dark" style={{cursor: "pointer"}} onClick={() => { navigate('/forms/applyleave') }}>Apply Leave</Badge>
+                        <Badge bg="info" text="dark" style={{ cursor: "pointer" }} onClick={() => { navigate('/forms/applyleave') }}>Apply Leave</Badge>
                       ) : ('')}
                     </div>
                   </div>

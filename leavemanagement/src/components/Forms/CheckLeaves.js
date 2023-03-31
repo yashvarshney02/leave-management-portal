@@ -19,6 +19,7 @@ export default function CheckLeaves({ toast }) {
   const fetchLeaves = async (e) => {
     try {      
       const resp = await httpClient.post(`${process.env.REACT_APP_API_HOST}/check_applications`);
+      console.log(resp);
       if (resp.data.status == "success") {
         // toast.success("Leaves fetched Successfully", toast.POSITION.BOTTOM_RIGHT);
       } else {

@@ -14,7 +14,7 @@ export default function PastApplications({ toast }) {
 
 	const { currentUser } = useAuth();
 	const [showLeaves, setShowLeaves] = useState([])
-	const [headers, setHeaders] = useState(["Leave Id", "Nature", "Start Date", "Duration", "Status"]);
+	const [headers, setHeaders] = useState(["Leave Id", "Nature","Type of Leave", "Start Date", "Duration", "Status"]);
 	const [data, setData] = useState(null);
 
 	const fetchLeaves = async (e) => {
@@ -28,8 +28,8 @@ export default function PastApplications({ toast }) {
 			}
 			const temp_data = resp.data.data
 			let temp = [];
-			for (let i = 0; i < temp_data.length; i++) {
-				temp.push([temp_data[i].id, temp_data[i].nature, temp_data[i].start_date.slice(0, -12), temp_data[i].duration, temp_data[i].status]);
+			for (let i = 0; i < temp_data.length; i++) {				
+				temp.push([temp_data[i].id, temp_data[i].nature,temp_data[i].type_of_leave, temp_data[i].start_date.slice(0, -12), temp_data[i].duration, temp_data[i].status]);
 			}
 			setData(temp);
 			setShowLeaves(temp_data)
