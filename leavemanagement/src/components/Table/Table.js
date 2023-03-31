@@ -8,83 +8,78 @@ import { filterColoumns, globalFiltering, makeAbb } from "./helperFunctions";
 import "./Table.css";
 
 export default function Table({ title, headers, initialData }) {
-  //to set initial search values = ""
-  let initColSearchKey = {};
-  for(let head in headers) {
-    initColSearchKey[headers[head]] = "";
-  }
-  let pendingTopData = [...filterColoumns(headers,initialData,"Status","pending"),
-  ...filterColoumns(headers,initialData,"Status","approved"),
-  ...filterColoumns(headers,initialData,"Status","withdrawn")];
+	//to set initial search values = ""
+	let initColSearchKey = {};
+	for (let head in headers) {
+		initColSearchKey[headers[head]] = "";
+	}
+	let pendingTopData = [
+		...filterColoumns(headers, initialData, "Status", "pending"),
+		...filterColoumns(headers, initialData, "Status", "approved"),
+		...filterColoumns(headers, initialData, "Status", "withdrawn"),
+	];
 
-  initialData = pendingTopData;
+	initialData = pendingTopData;
 
-  const [colSearchKey,setColSearchKey] = useState({initColSearchKey});
+	const [colSearchKey, setColSearchKey] = useState({ initColSearchKey });
 	const [data, setData] = useState(initialData);
 	const [deleteLeaveID, setDeleteLeaveID] = useState("");
 	const [showConfirmDeleteAction, setShowConfirmDeleteAction] = useState(false);
 	const [displayTab, setDisplayTab] = useState(0);
-  const [pendingCount,setPendingCount] = useState(0);  
-	
-  const handleTabChange = (displayTab,colHeading) => {
-    let toShow = "";
-		if (displayTab === 0) toShow = "";
-		if (displayTab === 1) toShow = "pending";
-		if (displayTab === 2) toShow = "approved";
-		if (displayTab === 3) toShow = "withdrawn";
-    let finalData = filterColoumns(headers,initialData,colHeading,toShow);
-    setColSearchKey(initColSearchKey);
-		setData(finalData);
-  }
+	const [pendingCount, setPendingCount] = useState(0);
 
-  const handleSearch = (val) => {
-    setDisplayTab(0);
-    setColSearchKey(initColSearchKey);
-    let finalData = globalFiltering(initialData,val);
-		setData(finalData);
-	}
-	
-	const handleColumnSearch = (val, colHeading) => {
-    let finalData = filterColoumns(headers,initialData,colHeading,val);
-    let toShow = "";
+	const handleTabChange = (displayTab, colHeading) => {
+		let toShow = "";
 		if (displayTab === 0) toShow = "";
 		if (displayTab === 1) toShow = "pending";
 		if (displayTab === 2) toShow = "approved";
 		if (displayTab === 3) toShow = "withdrawn";
-    let tabData = filterColoumns(headers,finalData,"Status",toShow);
-		setData(tabData);
-    let newColState = colSearchKey;
-    newColState[colHeading] = val;
-    setColSearchKey(newColState);
+		let finalData = filterColoumns(headers, initialData, colHeading, toShow);
+		setColSearchKey(initColSearchKey);
+		setData(finalData);
 	};
 
-  
+	const handleSearch = (val) => {
+		setDisplayTab(0);
+		setColSearchKey(initColSearchKey);
+		let finalData = globalFiltering(initialData, val);
+		setData(finalData);
+	};
 
-  useEffect( ()=>{
-    //count number of pending requests
-    let colHeading = "Status";
-    let toCount = "Pending"
-    let arrpos = headers.findIndex((x) => x === colHeading);
-    let cnt = 0;
-    for(let idx in initialData){
-      if( initialData[idx][arrpos] === toCount ) {
-        cnt++;
-      }
-    }
-    setPendingCount(cnt);
-  },[data] )
+	const handleColumnSearch = (val, colHeading) => {
+		let finalData = filterColoumns(headers, initialData, colHeading, val);
+		let toShow = "";
+		if (displayTab === 0) toShow = "";
+		if (displayTab === 1) toShow = "pending";
+		if (displayTab === 2) toShow = "approved";
+		if (displayTab === 3) toShow = "withdrawn";
+		let tabData = filterColoumns(headers, finalData, "Status", toShow);
+		setData(tabData);
+		let newColState = colSearchKey;
+		newColState[colHeading] = val;
+		setColSearchKey(newColState);
+	};
+
+	useEffect(() => {
+		//count number of pending requests
+		let colHeading = "Status";
+		let toCount = "Pending";
+		let arrpos = headers.findIndex((x) => x === colHeading);
+		let cnt = 0;
+		for (let idx in initialData) {
+			if (initialData[idx][arrpos] === toCount) {
+				cnt++;
+			}
+		}
+		setPendingCount(cnt);
+	}, [data]);
 
 	useEffect(() => {
 		handleTabChange(displayTab, "Status");
 	}, [displayTab]);
 
-  
-
-
 	const handleClose = () => setShowConfirmDeleteAction(false);
 	const handleShow = () => setShowConfirmDeleteAction(true);
-
-	
 
 	async function handleDeleteLeaveApplication(leaveID) {
 		const resp = await httpClient.post(
@@ -181,8 +176,8 @@ export default function Table({ title, headers, initialData }) {
 							<b>{title}</b>
 						</h2>
 					</div>
-        </div>
-        <div className="row">
+				</div>
+				<div className="row">
 					<div className="search">
 						<input
 							className="form-control"
@@ -206,8 +201,7 @@ export default function Table({ title, headers, initialData }) {
 						className={displayTab === 1 ? "isActive tab-button" : "tab-button"}
 						onClick={() => setDisplayTab(1)}
 					>
-						Pending
-            ({pendingCount})
+						Pending ({pendingCount})
 					</button>
 					<button
 						className={displayTab === 2 ? "isActive tab-button" : "tab-button"}
@@ -237,7 +231,7 @@ export default function Table({ title, headers, initialData }) {
 														onChange={(e) => {
 															handleColumnSearch(e.target.value, item);
 														}}
-                            value = {colSearchKey[item]}
+														value={colSearchKey[item]}
 														className="form-control mr-sm-2"
 													/>
 												</div>
@@ -288,7 +282,22 @@ export default function Table({ title, headers, initialData }) {
 												} else if (
 													i == 1 //it is in leave nature column
 												) {
-													return <td key={i}>{makeAbb(item)}</td>;
+													return (
+														<td key={i}>
+															{makeAbb(item)}
+															&nbsp;
+															<button
+																type="button"
+																className="leave-nature-hover"
+																data-toggle="tooltip"
+																data-placement="right"
+																title={item}
+															>
+																<FaIcons.FaQuestionCircle></FaIcons.FaQuestionCircle>
+															</button>
+															
+														</td>
+													);
 												}
 												return <td key={i}>{item}</td>;
 											})}

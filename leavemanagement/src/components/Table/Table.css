@@ -115,3 +115,8 @@ tr {
 	border-radius: 50%;
 	width: 20px;
 }
+
+.leave-nature-hover {
+	background-color: rgba(0, 0, 0, 0);
+	border: none;
+}
