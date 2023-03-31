@@ -1,9 +1,21 @@
 .background-image {
-	background-image: url('../../img/iitropar.jpg');
+	background-image: url('../../img/iitrpr1.jpg');
 	background-repeat: no-repeat;
 	background-size: cover;
-	height: 100vh;
+	max-width: 100%;
+	height:100vh;
   }
+
+  .mb-33 {
+	/* background-color: aqua; */
+	display: flex;
+	justify-content: center;
+  }
+
+.cont {
+	background: inherit;
+	background-color: black;
+}
   
 @media (max-width: 768px) {
 .background-image {

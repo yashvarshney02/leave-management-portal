@@ -2,7 +2,7 @@ import React from 'react'
 import { useState, useEffect } from 'react'
 import httpClient from '../../httpClient';
 import "./PastApplications.css";
-import Table from '../Table';
+import Table from '../Table/Table';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPrint } from '@fortawesome/free-solid-svg-icons'
 import html2canvas from "html2canvas";

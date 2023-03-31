@@ -114,19 +114,21 @@ export default function Login(props) {
         <Container>
           <Row className="vh-100 d-flex justify-content-center align-items-center">
             <Col md={8} lg={6} xs={12}>
-              <div className="border border-3 border-primary"></div>
-              <Card className="shadow">
-                <Card.Body>
+              <Card className="shadow" style={{backgroundColor: "black"}}>
+                <Card.Body className="cont">
                   <div className="mb-3 mt-md-4">
-                    <h2 className="fw-bold mb-2 text-uppercase ">Leave Management Portal</h2>
-                    <p className=" mb-5">Please enter your email</p>
+                    <h2 className="fw-bold mb-2 text-uppercase " style={{color: "white"}}>Leave Management Portal</h2>
+                    <p className=" mb-5" style={{color:"white"}}>Please enter your email</p>
                     <div className="mb-3">
                       <Form>
                         <Form.Group className="mb-3" controlId="formBasicEmail">
-                          <Form.Label className="text-center">
+                          <Form.Label className="text-center" style={{color: "white"}}>
                             Email address
                           </Form.Label>
-                          <Form.Control type="email" value={email} placeholder="Enter email" onChange={(e) => { setEmail(e.target.value) }} />
+                          <div className="mb-33">
+                          <Form.Control type="email" value={email} placeholder="Enter email" style={{width:"80%"}} onChange={(e) => { setEmail(e.target.value) }} />
+                          </div>
+                          
                         </Form.Group>
 
                         <Form.Group
@@ -134,8 +136,11 @@ export default function Login(props) {
                           controlId="formBasicPassword"
                           style={{ display: displayOTPBox }}
                         >
-                          <Form.Label>OTP</Form.Label>
-                          <Form.Control type="text" placeholder="OTP" onChange={(e) => { setOTP(e.target.value) }} />
+                          <Form.Label style={{color:"white"}}>OTP</Form.Label>
+                          <div className="mb-33">
+                          <Form.Control type="text" style={{width:"80%"}} placeholder="OTP" onChange={(e) => { setOTP(e.target.value) }} />
+                          </div>
+                          
                         </Form.Group>
                         <Form.Group
                           className="mb-3"
@@ -155,7 +160,7 @@ export default function Login(props) {
                             Login
                           </Button>
                         </div>
-                        or
+                        <span style={{color:"white"}}>or</span>
                         <div className="d-grid submit-button" >
                           <GoogleLogin
                             onSuccess={(data) => { handleLoginWithGoogle(data) }}

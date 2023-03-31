@@ -122,10 +122,10 @@ export default function Dashboard({toast}) {
                       <div className="col-sm-6">
 
                         <div className="progress">
-                          <div class="progress-bar" role="progressbar" style={{ "width": 100 - ((currentUser.taken_casual_leaves * 100) / currentUser.total_casual_leaves) + "%" }}>
+                          <div className="progress-bar" role="progressbar" style={{ "width": 100 - ((currentUser.taken_casual_leaves * 100) / currentUser.total_casual_leaves) + "%" }}>
                             Remaining - {currentUser.total_casual_leaves - currentUser.taken_casual_leaves}
                           </div>
-                          <div class="progress-bar bg-danger" role="progressbar" style={{ "width": ((currentUser.taken_casual_leaves) * 100) / currentUser.total_casual_leaves + "%" }}>
+                          <div className="progress-bar bg-danger" role="progressbar" style={{ "width": ((currentUser.taken_casual_leaves) * 100) / currentUser.total_casual_leaves + "%" }}>
                             Taken - {currentUser.taken_casual_leaves}
                           </div>
                         </div>
@@ -139,11 +139,11 @@ export default function Dashboard({toast}) {
                       </div>
                       <div className="col-sm-6">
 
-                        <div class="progress">
-                          <div class="progress-bar" role="progressbar" style={{ "width": 100 - ((currentUser.taken_restricted_leaves * 100) / currentUser.total_restricted_leaves) + "%" }}>
+                        <div className="progress">
+                          <div className="progress-bar" role="progressbar" style={{ "width": 100 - ((currentUser.taken_restricted_leaves * 100) / currentUser.total_restricted_leaves) + "%" }}>
                             Remaining - {currentUser.total_restricted_leaves - currentUser.taken_restricted_leaves}
                           </div>
-                          <div class="progress-bar bg-danger" role="progressbar" style={{ "width": ((currentUser.taken_restricted_leaves) * 100) / currentUser.total_restricted_leaves + "%" }}>
+                          <div className="progress-bar bg-danger" role="progressbar" style={{ "width": ((currentUser.taken_restricted_leaves) * 100) / currentUser.total_restricted_leaves + "%" }}>
                             Taken - {currentUser.taken_restricted_leaves}
                           </div>
                         </div>
@@ -157,10 +157,10 @@ export default function Dashboard({toast}) {
                       <div className="col-sm-6">
 
                         <div className="progress">
-                          <div class="progress-bar" role="progressbar" style={{ "width": 100 - ((currentUser.taken_earned_leaves * 100) / currentUser.total_earned_leaves) + "%" }}>
+                          <div className="progress-bar" role="progressbar" style={{ "width": 100 - ((currentUser.taken_earned_leaves * 100) / currentUser.total_earned_leaves) + "%" }}>
                             Remaining - {currentUser.total_earned_leaves - currentUser.taken_earned_leaves}
                           </div>
-                          <div class="progress-bar bg-danger" role="progressbar" style={{ "width": ((currentUser.taken_earned_leaves) * 100) / currentUser.total_earned_leaves + "%" }}>
+                          <div className="progress-bar bg-danger" role="progressbar" style={{ "width": ((currentUser.taken_earned_leaves) * 100) / currentUser.total_earned_leaves + "%" }}>
                             Taken - {currentUser.taken_earned_leaves}
                           </div>
                         </div>
@@ -174,10 +174,10 @@ export default function Dashboard({toast}) {
                       <div className="col-sm-6">
 
                         <div className="progress">
-                          <div class="progress-bar" role="progressbar" style={{ "width": 100 - ((currentUser.taken_vacation_leaves * 100) / currentUser.total_vacation_leaves) + "%" }}>
+                          <div className="progress-bar" role="progressbar" style={{ "width": 100 - ((currentUser.taken_vacation_leaves * 100) / currentUser.total_vacation_leaves) + "%" }}>
                             Remaining - {currentUser.total_vacation_leaves - currentUser.taken_vacation_leaves}
                           </div>
-                          <div class="progress-bar bg-danger" role="progressbar" style={{ "width": ((currentUser.taken_vacation_leaves) * 100) / currentUser.total_vacation_leaves + "%" }}>
+                          <div className="progress-bar bg-danger" role="progressbar" style={{ "width": ((currentUser.taken_vacation_leaves) * 100) / currentUser.total_vacation_leaves + "%" }}>
                             Taken - {currentUser.taken_vacation_leaves}
                           </div>
                         </div>
@@ -191,10 +191,10 @@ export default function Dashboard({toast}) {
                       <div className="col-sm-6">
 
                         <div className="progress">
-                          <div class="progress-bar" role="progressbar" style={{ "width": 100 - ((currentUser.taken_study_leaves * 100) / currentUser.total_study_leaves) + "%" }}>
+                          <div className="progress-bar" role="progressbar" style={{ "width": 100 - ((currentUser.taken_study_leaves * 100) / currentUser.total_study_leaves) + "%" }}>
                             Remaining - {currentUser.total_study_leaves - currentUser.taken_study_leaves}
                           </div>
-                          <div class="progress-bar bg-danger" role="progressbar" style={{ "width": ((currentUser.taken_study_leaves) * 100) / currentUser.total_study_leaves + "%" }}>
+                          <div className="progress-bar bg-danger" role="progressbar" style={{ "width": ((currentUser.taken_study_leaves) * 100) / currentUser.total_study_leaves + "%" }}>
                             Taken - {currentUser.taken_study_leaves}
                           </div>
                         </div>
