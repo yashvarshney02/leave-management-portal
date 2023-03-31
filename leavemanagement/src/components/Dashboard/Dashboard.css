@@ -27,3 +27,153 @@
 .taken-leaves i {
   color: gray;
 }
+
+body {
+  background-color: #7E57C2;
+}
+
+.mt-100 {
+  margin-top: 200px;
+}
+
+/* .circular-progress {
+  position: relative;
+  height: 150px;
+  width: 150px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+
+.circular-progress:before {
+  content: "";
+  position: absolute;
+  height: 84%;
+  width: 84%;
+  background-color: #ffffff;
+  border-radius: 50%;
+}
+
+.value-container {
+  position: relative;
+  font-family: "Poppins", sans-serif;
+  font-size: 30px;
+  color: #231c3d;
+} */
+
+.Leaves-remaining {
+  display: flex;
+  margin-top: 30px;
+  justify-content: space-evenly;
+}
+
+.calendar {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: auto;
+  /* border: 1px solid #ccc; */
+  border-collapse: collapse;
+  align-items: center;
+}
+
+.week {
+  display: flex;
+  flex-direction: row;
+  width: 90%;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.day {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  height: 35px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.header {
+  color: #fff;
+  background-color: #3b44f1;
+}
+
+.not-taken {
+  background-color: #fff;
+}
+
+.taken {
+  background-color: rgb(240, 59, 59);
+  color: #fff;
+}
+
+.recent-application{
+  text-align: left;
+  border: 2px solid #7E57C2;
+}
+
+span{
+  font-size: 25px;
+  font-family:'Times New Roman', Times, serif;
+}
+
+.mt-4 > button {
+  font-size: 20px;
+  font-family: 'Times New Roman', Times, serif;
+  margin-top: 10px;
+}
+
+#profile{
+  border-radius: 30px;
+}
+
+#profile_parent{
+  /* display: flex; */
+  margin-top: 10%;
+  align-items: center;
+}
+
+.recent-box {
+  text-align: left;
+}
+
+.recent-box>span{
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.recent-application>div{
+  font-family:'Times New Roman', Times, serif;
+}
+
+.card-header{
+  font-size: 25px;
+  font-weight: bolder;
+}
+
+.dates{
+  display: flex;
+  justify-content: space-between;
+  width: 30rem;
+}
+
+.content{
+  display: flex;
+  justify-content: space-between;
+}
+
+.buttons{
+  display: flex;
+  flex-direction:column;
+}
+
+.btn-sm{
+  margin-top: 5px;
+}

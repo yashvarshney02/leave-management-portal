@@ -15,7 +15,7 @@ export default function Table({ title, headers, initialData, from }) {
 	let initColSearchKey = {};
 	for (let head in headers) {
 		initColSearchKey[headers[head]] = "";
-	}
+}	
 	let pendingTopData = [
 		...filterColoumns(headers, initialData, "Status", "pending"),
 		...filterColoumns(headers, initialData, "Status", "approved"),
