@@ -3,7 +3,7 @@ import React from 'react'
 import { useState, useEffect } from 'react'
 import httpClient from '../../httpClient';
 import "./CheckLeaves.css"
-import Table from '../Table';
+import Table from '../Table/Table';
 import { useAuth } from '../../contexts/AuthContext';
 import LoadingIndicator from '../LoadingIndicator';
 

@@ -9,8 +9,8 @@ import { IconContext } from 'react-icons/lib';
 import { useAuth } from '../../contexts/AuthContext';
 
 const Nav = styled.div`
-  background: linear-gradient(135deg, #356bf0, #71b7e6);
-  height: 80px;
+  background: linear-gradient(135deg, #08328B, #265ACB);
+  height: 60px;
   display: flex;
   justify-content: flex-start;
   align-items: center;
@@ -26,7 +26,7 @@ const NavIcon = styled(Link)`
 `;
 
 const SidebarNav = styled.nav`
-  background: linear-gradient(135deg, #356bf0, #71b7e6);
+  background: linear-gradient(135deg, #08328B, #08328B);
   width: 250px;
   height: 100vh;
   display: flex;
@@ -44,8 +44,7 @@ const SidebarWrap = styled.div`
 
 const Sidebar = () => {
   const [sidebar, setSidebar] = useState(false);
-  const { currentUser } = useAuth();
-
+  const { currentUser } = useAuth();  
   const showSidebar = () => setSidebar(!sidebar);
   
 
@@ -55,7 +54,10 @@ const Sidebar = () => {
         <Nav>
           <NavIcon to='#'>
             <FaIcons.FaBars onClick={showSidebar} />
-          </NavIcon>                    
+          </NavIcon>  
+          <div style={{marginLeft:"auto",width:"200px",color:"white"}}>
+            Hi, {currentUser ? currentUser.name : 'User'}
+          </div>                  
         </Nav>        
         <SidebarNav sidebar={sidebar}>
           <SidebarWrap>

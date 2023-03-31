@@ -37,13 +37,13 @@ export default function DatesTable({ toast, title, headers, initialData }) {
 
   return (
 
-    <div class="container ">
+    <div className="container ">
       <div className="crud shadow-lg p-3 mb-5 mt-5 bg-body rounded">
-        <div class="row ">
+        <div className="row ">
 
-          <div class="col-sm-3 mt-5 mb-4 text-gred">
+          <div className="col-sm-3 mt-5 mb-4 text-gred">
             <div className="search">
-              <form class="form-inline">
+              <form className="form-inline">
                 <DatePicker
                   style={{ width: "300px", height: "50px" }}
                   value={dates}
@@ -71,11 +71,11 @@ export default function DatesTable({ toast, title, headers, initialData }) {
               </form>
             </div>
           </div>
-          <div class="col-sm-3 offset-sm-2 mt-5 mb-4 text-gred" style={{ color: "green" }}><h2><b>{title}</b></h2></div>
+          <div className="col-sm-3 offset-sm-2 mt-5 mb-4 text-gred" style={{ color: "green" }}><h2><b>{title}</b></h2></div>
         </div>
-        <div class="row">
-          <div class="table-responsive " >
-            <table class="table table-striped table-hover table-bordered">
+        <div className="row">
+          <div className="table-responsive " >
+            <table className="table table-striped table-hover table-bordered">
               <thead>
                 <tr>
                   {
