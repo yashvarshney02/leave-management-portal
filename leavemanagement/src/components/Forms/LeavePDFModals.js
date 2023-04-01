@@ -136,7 +136,7 @@ const LeavePDFModals = ({ toast, from }) => {
 	}, []);
 	return (
 		<>
-			{leave && leavesData && (from == 'past_applications' ? true : true) ? (
+			{true ? (
 				<div>
 					Download pdf <FaDownload style={{ cursor: "pointer" }} onClick={() => saveLeave(leave.id)} />
 					<div className="container" style={{ width: "1000px" }} id={"first-page-" + leave?.id}>

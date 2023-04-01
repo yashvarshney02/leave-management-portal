@@ -87,7 +87,7 @@ def insert_user(columns,values):
 			', '.join(columns), ', '.join(['%s'] * len(values)))
 	cursor.execute(query, tuple(values))
 	db.commit()
-	
+
 def insert_leave_application(columns,values):
 	db.reconnect()
 	cursor = db.cursor()
@@ -113,9 +113,9 @@ def get_columns_for_user_table(name, email_id, position, department, mobile):
 		values.append(department)
 	if not pd.isna(mobile):
 		columns.append('mobile')
-		values.append(mobile)
+		values.append(str(mobile))
 	return columns, values
-	
+
 def get_columns_for_leaves_table(email_id,nature,duration,is_station,start_date,end_date,status,type_of_leave):
 	user_data = get_user_dic(email_id)
 	department = user_data['department']
@@ -175,6 +175,32 @@ def insert_leave(leave):
 		print(E)
 		return False
 
+def leaves_data_util(user_id):
+	connect = db
+	cursor = connect.cursor()
+	year = dt.date.today().year
+	cursor.execute("SELECT * FROM leaves_data WHERE user_id=%s and year=%s", (user_id, year))
+	data = cursor.fetchall()
+	default_leaves = get_default_number_of_leaves()
+	columns = ["user_id"]
+	for e in default_leaves:
+		columns.append(e)
+	columns.append("year")
+	if len(data) == 0:
+		values = [user_id]
+		for e in default_leaves:
+			values.append(default_leaves[e])
+		values.append(year)
+		query = "INSERT INTO leaves_data ({}) VALUES ({})".format(
+		', '.join(columns), ', '.join(['%s'] * len(values)))
+		cursor.execute(query, tuple(values))
+		connect.commit()
+		return default_leaves
+	else:
+		payload = {key: val for key,val in zip(columns,data[0])}
+		return payload
+
+
 @app.route('/home', methods = ['GET'])
 @cross_origin(supports_credentials=True)
 def home():
@@ -212,6 +238,8 @@ def process_query():
 					continue
 				columns, values = get_columns_for_user_table(name, email_id, position, department, mobile)
 				insert_user(columns,values)
+				user_id = get_user_dic(email_id)['user_id']
+				leaves_data_util(user_id)
 		elif mode == "leaves_sample":
 			for email_id,nature,duration,is_station,start_date,end_date,status,type_of_leave in zip(data.email_id.values, data.nature.values,data.duration.values, data.is_station.values, data.start_date.values, data.end_date.values, data.status.values,data.type_of_leave.values):
 				if pd.isna(email_id)or pd.isna(duration) or pd.isna(nature) or pd.isna(is_station) or pd.isna(start_date) or pd.isna(end_date) or pd.isna(status) or pd.isna(type_of_leave):
@@ -222,7 +250,7 @@ def process_query():
 				columns,values = get_columns_for_leaves_table(email_id,nature,duration,is_station,start_date,end_date,status,type_of_leave)
 				print(columns,values)
 				insert_leave_application(columns,values)
-				
+
 
 
 		return get_success_response(True)
@@ -357,6 +385,7 @@ def past_applications():
 		cursor.execute("SELECT * FROM leaves WHERE user_id = %s", (user_id, ))
 		data = cursor.fetchall()
 		payload = []
+		cur_user = get_user_dic(email)
 		for i in data:
 			content = {
 				'id': i[0],
@@ -378,7 +407,6 @@ def past_applications():
 				'file_data': base64.b64encode(i[16]).decode('utf-8') if i[16] else None
 			}
 			user_id = i[2]
-			cur_user = get_user_dic(email)
 			content['email'] = cur_user['email']
 			content['name'] = cur_user['name']
 
@@ -442,7 +470,8 @@ def check_applications():
 			cursor.execute('SELECT * FROM leaves WHERE\
 				department = %s and level = %s', (department, "faculty"))
 		elif position == 'dean':
-			cursor.execute('SELECT * FROM leaves')
+			cursor.execute('SELECT * FROM leaves WHERE\
+				department = %s and level = %s', (department, "hod"))
 		elif position == 'establishment':
 			cursor.execute("SELECT * FROM leaves")
 		leaves = cursor.fetchall()
@@ -450,15 +479,11 @@ def check_applications():
 		for i in leaves:
 			content = {'id': i[0], 'department': i[1], 'user_id': i[2], 'nature': i[3], 'purpose': i[4], 'is_station': i[5], 'request_date': i[6],
 					'start_date': i[7], 'end_date': i[8], 'authority_comment': i[9], 'duration': i[10], 'status': i[11], 'level': i[12], 'attached_documents': i[13]}
-			user_id = i[2]
-			db.reconnect()
-			connect = db
-			cursor = connect.cursor()
 			cursor.execute(
-				'SELECT * FROM users WHERE user_id = %s', (user_id, ))
+			'SELECT email_id FROM user WHERE user_id = %s', (user_id, ))
 			data = cursor.fetchall()
-			email = data[0][2]
-			applicant_position = data[0][3]
+			applicant_position = data['position']
+			email = data[0][0]
 			cur_user = get_user_dic(email)
 			content['email'] = cur_user['email']
 			content['name'] = cur_user['name']
@@ -480,29 +505,8 @@ def fetch_remaining_leaves():
 		email = session['user_info']['email']
 		data = get_user_data(email)[0]
 		user_id = data[0]
-		year = dt.date.today().year
-		connect = db
-		cursor = connect.cursor()
-		cursor.execute("SELECT * FROM leaves_data WHERE user_id=%s and year=%s", (user_id, year))
-		data = cursor.fetchall()
-		default_leaves = get_default_number_of_leaves()
-		columns = ["user_id"]
-		for e in default_leaves:
-			columns.append(e)
-		columns.append("year")
-		if len(data) == 0:
-			values = [user_id]
-			for e in default_leaves:
-				values.append(default_leaves[e])
-			values.append(year)
-			query = "INSERT INTO leaves_data ({}) VALUES ({})".format(
-			', '.join(columns), ', '.join(['%s'] * len(values)))
-			cursor.execute(query, tuple(values))
-			connect.commit()
-			return get_success_response(default_leaves)
-		else:
-			payload = {key: val for key,val in zip(columns,data[0])}
-			return get_success_response(payload)
+		leaves_data = leaves_data_util(user_id)
+		return get_success_response(leaves)
 	except Exception as E:
 		return get_error_response(E)
 
@@ -632,7 +636,7 @@ def delete_application():
 			return get_error_response("This leave has already been approved, can't be deleted")
 		if ("Disapproved" in status):
 			return get_error_response("This leave has already been disapproved, can't be deleted")
-		
+
 		cursor.execute("UPDATE leaves set status='Pending Withdrawn' where leave_id = %s", (leave_id,))
 		connect.commit()
 		connect.close()
@@ -704,7 +708,7 @@ def get_emails():
 		return get_success_response(payload)
 	except Exception as E:
 		return get_error_response(E)
-		
+
 @app.route('/collective_data', methods=['GET', 'POST'])
 @cross_origin(supports_credentials=True)
 def collective_data():
@@ -724,15 +728,14 @@ def collective_data():
 		for data in users:
 			dic = {key: value for key, value in zip(users_cols,data)}
 			uid = dic['user_id']
-			cursor.execute('SELECT * FROM leaves_data WHERE user_id = %s', (uid,))
-			leaves_data = cursor.fetchall()
-			if len(leaves_data):
-				leaves_data = leaves_data[0]
-				cursor.execute('SHOW columns from leaves_data')
-				leaves_data_cols = cursor.fetchall()   # list of tuples whose first value of tuple is the column name
-				leaves_data_cols = [e[0] for e in leaves_data_cols]
-				leaves_dic = {key: value for key, value in zip(leaves_data_cols,leaves_data)}
-				dic.update(leaves_dic)
+			# get total number of leaves from here
+			leaves_dic = leaves_data_util(uid)
+			dic.update(leaves_dic)
+			# now get the ids of all leaves of that user_id
+			cursor.execute('SELECT leave_id, status FROM leaves WHERE user_id = %s', (uid,))
+			leave_ids = cursor.fetchall()
+			leave_ids = [[e[0],e[1]] for e in leave_ids]
+			dic.update({"leave_ids": leave_ids})
 			users_data.append(dic)
 		return get_success_response(users_data)
 	except Exception as E:
