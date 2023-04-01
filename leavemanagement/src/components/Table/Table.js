@@ -4,7 +4,12 @@ import { toast } from "react-toastify";
 import * as FaIcons from "react-icons/fa";
 import { Badge } from "react-bootstrap";
 import httpClient from "../../httpClient";
-import { filterColoumns, globalFiltering, makeAbb, prepData } from "./helperFunctions";
+import {
+	filterColoumns,
+	globalFiltering,
+	makeAbb,
+	prepData,
+} from "./helperFunctions";
 import "./Table.css";
 import { useNavigate } from "react-router-dom";
 
@@ -46,7 +51,28 @@ export default function Table({ title, headers, initialData, from }) {
 		if (displayTab === 1) toShow = "pending";
 		if (displayTab === 2) toShow = "approved";
 		if (displayTab === 3) toShow = "withdrawn";
-		let finalData = filterColoumns(headers, initialData, colHeading, toShow);
+		let finalData = [];
+
+		if (toShow === "") {
+			finalData = initialData;
+		} else if (toShow === "pending") {
+			finalData = [...prepData(headers, initialData, "Status", "pending")];
+		} else if (toShow === "approved") {
+			finalData = [
+				...prepData(headers, initialData, "Status", "approved by hod"),
+				...prepData(headers, initialData, "Status", "approved by dean"),
+				...prepData(headers, initialData, "Status", "approved by faculty"),
+				...prepData(headers, initialData, "Status", "disapproved by dean"),
+				...prepData(headers, initialData, "Status", "disapproved by hod"),
+				...prepData(headers, initialData, "Status", "disapproved by faculty")
+			];
+		} else if (toShow === "withdrawn") {
+			finalData = [
+				...prepData(headers, initialData, "Status", "pending withdrawn"),
+				...prepData(headers, initialData, "Status", "approved withdrawn")
+			];
+		}
+
 		setColSearchKey(initColSearchKey);
 		setData(finalData);
 	};
@@ -249,7 +275,7 @@ export default function Table({ title, headers, initialData, from }) {
 										);
 									})}
 									{title == "Applied Leaves" ||
-										title == "Check Leave Applications" ? (
+									title == "Check Leave Applications" ? (
 										<th>Action</th>
 									) : (
 										""
@@ -257,7 +283,7 @@ export default function Table({ title, headers, initialData, from }) {
 								</tr>
 							</thead>
 							<tbody>
-								{data.map((row, idx) => {									
+								{data.map((row, idx) => {
 									return (
 										<tr key={idx} className="cell-1">
 											{row.map((item, i) => {
