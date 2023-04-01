@@ -479,15 +479,17 @@ def check_applications():
 		for i in leaves:
 			content = {'id': i[0], 'department': i[1], 'user_id': i[2], 'nature': i[3], 'purpose': i[4], 'is_station': i[5], 'request_date': i[6],
 					'start_date': i[7], 'end_date': i[8], 'authority_comment': i[9], 'duration': i[10], 'status': i[11], 'level': i[12], 'attached_documents': i[13]}
-			cursor.execute(
-			'SELECT email_id FROM user WHERE user_id = %s', (user_id, ))
+			if content['department'] != department:
+				continue
+			cursor.execute('SELECT email_id FROM users WHERE user_id = %s', (i[2], ))
 			data = cursor.fetchall()
-			applicant_position = data['position']
+			print("test",i[0], data)
 			email = data[0][0]
 			cur_user = get_user_dic(email)
 			content['email'] = cur_user['email']
 			content['name'] = cur_user['name']
-			payload.append(content)
+			applicant_position = cur_user['position']
+			print(applicant_position, position)
 			if position == 'dean' and applicant_position == 'hod':
 				payload.append(content)
 			elif position == 'hod' and applicant_position == 'faculty':
@@ -726,6 +728,8 @@ def collective_data():
 		users = cursor.fetchall()
 		users_data = []
 		for data in users:
+			if data[4] != department:
+				continue
 			dic = {key: value for key, value in zip(users_cols,data)}
 			uid = dic['user_id']
 			# get total number of leaves from here

@@ -9,8 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { Document, Page } from 'react-pdf';
 
 const LeavePDFModals = ({ toast, from }) => {
-	const [leave, setLeave] = useState(null);
-	const [leavesData, setLeavesData] = useState();
+	const [leave, setLeave] = useState(null);	
 	const { currentUser } = useAuth();
 	let currentUrl =
 		window.location.href.split("/")[window.location.href.split("/").length - 1];
@@ -56,8 +55,7 @@ const LeavePDFModals = ({ toast, from }) => {
 			const resp = await httpClient.post(
 				`${process.env.REACT_APP_API_HOST}/get_leave_info_by_id`,
 				{ leave_id }
-			);
-			console.log(resp.data.data)
+			);			
 			if (resp.data.status == "success") {
 				setLeave(resp.data.data[0]);
 			} else {
@@ -83,16 +81,8 @@ const LeavePDFModals = ({ toast, from }) => {
 		}
 	};
 
-	async function fetchRemainingNumberOfLeaves() {
-		const resp = await httpClient.get(`${process.env.REACT_APP_API_HOST}/fetch_remaining_leaves`);
-		if (resp.data.status == "success") {
-			setLeavesData(resp.data.data);
-		} else {
-			return;
-		}
-	}
 
-	function MyComponent(pdfData ) {		
+	function MyComponent(pdfData) {
 		// const pdfUrl = `data:application/pdf;base64,${pdfData}`;
 		// console.log(pdfUrl)
 
@@ -128,9 +118,8 @@ const LeavePDFModals = ({ toast, from }) => {
 	};
 
 	useEffect(() => {
-		async function test() {
-			await fetchLeaveInfo();
-			await fetchRemainingNumberOfLeaves();
+		async function test() {			
+			await fetchLeaveInfo();			
 		}
 		test();
 	}, []);
@@ -197,10 +186,16 @@ const LeavePDFModals = ({ toast, from }) => {
 								<div className="col-6" style={{ textAlign: "left" }}>
 									आवश्यक छुट्टी का मवरूऩ : आकस्ममक छुट्टी /
 									राज.अव./त्रव.आ.छुट्टी <br />
-									Nature of Leave Required : CL / RH / SCL/ ON DUTY
+									Nature of Leave Required : CL / RH / SCL/ OD
+									<p>
+										{leave?.type_of_leave[0]}{leave?.type_of_leave.split(" ")[1][0]}
+									</p>
 								</div>
 								<div className="col-1" style={{ textAlign: "left" }}>:</div>
-								<div className="col-5" style={{ textAlign: "left" }}>{leave?.nature}</div>
+								<div className="col-5" style={{ textAlign: "left" }}>
+								<p>दिनों की संख्या / No of days&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{leave?.duration}</p>
+								{/* <p>From: {leave?.start_date.split("00:00:0}से/To ___________ तक</p> */}
+								</div>
 							</div>
 							<div className="row" style={{ border: "1px solid" }}>
 								<div className="col-6" style={{ textAlign: "left" }}>
@@ -285,13 +280,13 @@ const LeavePDFModals = ({ toast, from }) => {
 							</div>
 							<div className="row">
 								<div className="col-4" style={{ border: "1px solid" }}>
-									{leavesData?.total_casual_leaves}
+									{leave?.total_casual_leaves - leave?.taken_casual_leaves}
 								</div>
 								<div className="col-4" style={{ border: "1px solid" }}>
 									{leave?.duration}
 								</div>
 								<div className="col-4" style={{ border: "1px solid" }}>
-									{leavesData?.total_casual_leaves - leavesData?.taken_casual_leaves}
+									{leave?.total_casual_leaves - leave?.taken_casual_leaves - leave?.duration}
 								</div>
 							</div>
 							<br />
@@ -367,7 +362,7 @@ const LeavePDFModals = ({ toast, from }) => {
 						{from === "check_applications" ? (
 							<>
 								<div className='text-center'>
-									<textarea id={"comment-" + leave.id} placeholder="Add Comment" style={{ "width": "250px" }}></textarea>
+									<textarea id={"comment-" + leave?.id} placeholder="Add Comment" style={{ "width": "250px" }}></textarea>
 								</div>
 								<button
 									type="button"
