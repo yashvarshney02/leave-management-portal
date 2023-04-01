@@ -40,8 +40,8 @@ const PieChart = (props) => {
 const OuterContainer = styled.div`
   .circular-progress {
     position: relative;
-    height: 180px;
-    width: 180px;
+    height: 170px;
+    width: 170px;
     border-radius: 50%;
     display: grid;
     place-items: center;

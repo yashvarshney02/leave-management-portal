@@ -11,7 +11,7 @@ import Modal from 'react-bootstrap/Modal';
 import { Badge } from 'react-bootstrap';
 import { FaEdit, FaMobileAlt } from 'react-icons/fa';
 import PieChart from './PieChart';
-
+import Calendar from './Calendar';
 
 export default function Dashboard({toast}) {
 
@@ -23,181 +23,19 @@ export default function Dashboard({toast}) {
   const handleEdit = () => setShowEditProfileModal(!showEditProfileModal);
   const navigate = useNavigate();
 
-  // const [leaveValObject, setLeaveValObject] = useState({
-  //   casual: 50,
-  //   casual_value: 50,
-  //   vacations: 0,
-  //   vacations_value: 0,
-  //   restricted : 0,
-  //   restricted_value : 0,
-  //   earned : 0,
-  //   earned_value : 0,
-  //   study : 0,
-  //   study_value : 0
-  // })
-
-
-  let progressValue = 0;
-  let casual_end_value = 50;
-  let vacations_end_value = 84;
-  let restricted_end_value = 24;
-  let earned_end_value = 42;
-  let study_end_value = 96;
-  let speed = 20;
-
-  const [progress, setProgress] = useState();
-  useEffect(() => {
-    let casual = document.querySelector(".casual-leaves");
-    let casual_value = document.querySelector(".value-casual-leaves");
-    let vacations = document.querySelector(".vacation-leaves");
-    let vacations_value = document.querySelector(".value-vacation-leaves");
-    let restricted = document.querySelector(".restricted-leaves");
-    let restricted_value = document.querySelector(".value-restricted-leaves");
-    let earned = document.querySelector(".earned-leaves");
-    let earned_value = document.querySelector(".value-earned-leaves");
-    let study = document.querySelector(".study-leaves");
-    let study_value = document.querySelector(".value-study-leaves");
-    setProgress(setInterval(() => {
-      progressValue++;
-      if (progressValue <= casual_end_value) {
-        casual_value.textContent = `${progressValue}%`;
-        casual.style.background = `conic-gradient(
-        #4d5bf9 ${progressValue * 3.6}deg,
-        #cadcff ${progressValue * 3.6}deg
-      )`;
-      }
-      if (progressValue <= vacations_end_value) {
-        vacations_value.textContent = `${progressValue}%`;
-        vacations.style.background = `conic-gradient(
-        #4d5bf9 ${progressValue * 3.6}deg,
-        #cadcff ${progressValue * 3.6}deg
-      )`;
-      }
-      if (progressValue <= restricted_end_value) {
-        restricted_value.textContent = `${progressValue}%`;
-        restricted.style.background = `conic-gradient(
-        #4d5bf9 ${progressValue * 3.6}deg,
-        #cadcff ${progressValue * 3.6}deg
-      )`;
-      }
-      if (progressValue <= earned_end_value) {
-        earned_value.textContent = `${progressValue}%`;
-        earned.style.background = `conic-gradient(
-        #4d5bf9 ${progressValue * 3.6}deg,
-        #cadcff ${progressValue * 3.6}deg
-      )`;
-      }
-      if (progressValue <= study_end_value) {
-        study_value.textContent = `${progressValue}%`;
-        study.style.background = `conic-gradient(
-        #4d5bf9 ${progressValue * 3.6}deg,
-        #cadcff ${progressValue * 3.6}deg
-      )`;
-      }
-      if (progressValue == 100) {
-        clearInterval(progress);
-      }
-    }, speed));
-    
-  },[])
-  
-
-  const [month, setMonth] = useState(new Date());
-  const numDays = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
-  const firstDay = new Date(month.getFullYear(), month.getMonth(), 1).getDay();
-  let data = [];
-
-  console.log("first Day = " + firstDay)
-  for (let i = 0; i < numDays; i++){
-    if (i % 2) data.push({ day: i + 1, isLeaveTaken: false });
-    else data.push({ day: i + 1, isLeaveTaken: true });
-  }
-
-  // const data = [
-  //   { day: 1, isLeaveTaken: false },
-  //   { day: 2, isLeaveTaken: true },
-  //   { day: 3, isLeaveTaken: false },
-  //   { day: 4, isLeaveTaken: true },
-  //   { day: 5, isLeaveTaken: false }, 
-  //   { day: 6, isLeaveTaken: false }, 
-  //   { day: 7, isLeaveTaken: true }, 
-  //   { day: 8, isLeaveTaken: true }, 
-  //   { day: 9, isLeaveTaken: true }, 
-  //   { day: 10, isLeaveTaken: false }, 
-  //   { day: 11, isLeaveTaken: false },
-  //   { day: 12, isLeaveTaken: true },
-  //   { day: 13, isLeaveTaken: false },
-  //   { day: 14, isLeaveTaken: true },
-  //   { day: 15, isLeaveTaken: false }, 
-  //   { day: 16, isLeaveTaken: false }, 
-  //   { day: 17, isLeaveTaken: true }, 
-  //   { day: 18, isLeaveTaken: true }, 
-  //   { day: 19, isLeaveTaken: true }, 
-  //   { day: 20, isLeaveTaken: false }, 
-  //   { day: 21, isLeaveTaken: false },
-  //   { day: 22, isLeaveTaken: true },
-  //   { day: 23, isLeaveTaken: false },
-  //   { day: 24, isLeaveTaken: true },
-  //   { day: 25, isLeaveTaken: false }, 
-  //   { day: 26, isLeaveTaken: false }, 
-  //   { day: 27, isLeaveTaken: true }, 
-  //   { day: 28, isLeaveTaken: true }, 
-  //   { day: 29, isLeaveTaken: true }, 
-  //   { day: 30, isLeaveTaken: false }, 
-  // ];
-
-  const weeks = [];
-  let week = [];
-
-  // Group the data into weeks
-  // data.forEach((day, index) => {
-  //   week.push(day);
-  //   if (index % 7 === 6) {
-  //     weeks.push(week);
-  //     week = [];
-  //   }
-  // });
-  for (let j = 0; j < firstDay; j++){
-    week.push(0);
-  }
-
-  data.forEach((day, index) => {
-    week.push(day);
-    if (index === data.length - 1) {
-      while (week.length != 7) {
-        week.push(0);
-      }
-    }
-    if (index === data.length - 1 || (week.length) % 7 === 0) {
-      weeks.push(week);
-      week = [];
-    }
-  });
-
-  // if (weeks.length > 0 && weeks[weeks.length - 1].length < 7) {
-  //   const lastWeek = weeks[weeks.length - 1];
-  //   const emptyCells = 7 - lastWeek.length;
-  //   lastWeek.push(...Array.from({ length: emptyCells }, () => null));
-  // }
-
-  console.log(weeks)
-
-  useEffect(() => {
-  }, []);
-
   return (
-    // <div className="dashboard" style={{ height: "100vh", backgroundImage: `url(${background})`, backgroundPosition: "fixed", backgroundRepeat: "None", backgroundSize: "cover" }}>
+    // <div class="dashboard" style={{ height: "100vh", backgroundImage: `url(${background})`, backgroundPosition: "fixed", backgroundRepeat: "None", backgroundSize: "cover" }}>
     <div
-      className="dashboard"
+      class="dashboard"
       style={{ margin: "0px", height: "100vh", backgroundColor: "aliceblue" }}
     >
-      {/* <div className="Dashboard"> */}
-      {/* <header className="jumbotron text-center"> */}
-      {/* <h2 className="heading">Dashboard</h2> */}
-      {/* <div className="heading-line"></div> */}
+      {/* <div class="Dashboard"> */}
+      {/* <header class="jumbotron text-center"> */}
+      {/* <h2 class="heading">Dashboard</h2> */}
+      {/* <div class="heading-line"></div> */}
 
-      <div className="container">
-        <div className="main-body">
+      <div class="container">
+        <div class="main-body">
           {/* edit profile modal */}
           <Modal show={showEditProfileModal} onHide={handleEdit}>
             <Modal.Header closeButton>
@@ -206,7 +44,7 @@ export default function Dashboard({toast}) {
             <Modal.Body>
               <Form>
                 <Form.Group
-                  className="mb-3"
+                  class="mb-3"
                   controlId="exampleForm.ControlInput1"
                 >
                   <Form.Label>Name</Form.Label>
@@ -258,31 +96,31 @@ export default function Dashboard({toast}) {
               </Button>
             </Modal.Footer>
           </Modal>
-          <div className="row gutters-sm">
-            <div className="col-md-4 mb-3" id="profile_parent">
+          <div class="row gutters-sm">
+            <div class="col-md-4 mb-3" id="profile_parent">
               <div
-                className="card"
+                class="card"
                 id="profile"
                 style={{ border: "2px solid grey" }}
               >
-                <div className="card-body">
-                  <div className="d-flex flex-column align-items-center text-center">
+                <div class="card-body">
+                  <div class="d-flex flex-column align-items-center text-center">
                     {currentUser.picture == "" ? (
                       <img
                         src={require("../../img/loginIcon.png")}
                         alt="Admin"
-                        className="rounded-circle"
+                        class="rounded-circle"
                         width="150"
                       />
                     ) : (
                       <img
                         src={currentUser.picture}
                         alt="Admin"
-                        className="rounded-circle"
+                        class="rounded-circle"
                         width="150"
                       />
                     )}
-                    <div className="mt-4">
+                    <div class="mt-4">
                       {/* <Badge pill bg="light" text="dark">{currentUser.name.toUpperCase()} <FaEdit style={{ cursor: 'pointer' }} onClick={handleEdit}></FaEdit></Badge>< br/> */}
                       {/* <Badge pill bg="light" text="dark">{currentUser.position.toUpperCase()}</Badge><br /> */}
                       {/* <Badge pill bg="light" text="dark">{currentUser.department.toUpperCase()}</Badge><br /> */}
@@ -341,7 +179,7 @@ export default function Dashboard({toast}) {
                 </div>
               </div>
             </div>
-            <div className="col-md-8">
+            <div class="col-md-8">
               <div class="Leaves-remaining container">
                 <PieChart
                   leavesTaken={28}
@@ -357,31 +195,7 @@ export default function Dashboard({toast}) {
                 />
               </div>
               <br />
-              <div className="calendar">
-                <div className="week">
-                  <span className="day header">Sun</span>
-                  <span className="day header">Mon</span>
-                  <span className="day header">Tue</span>
-                  <span className="day header">Wed</span>
-                  <span className="day header">Thu</span>
-                  <span className="day header">Fri</span>
-                  <span className="day header">Sat</span>
-                </div>
-                {weeks.map((week, index) => (
-                  <div className="week" key={index}>
-                    {week.map((day) => (
-                      <span
-                        key={day.day}
-                        className={`day ${
-                          day.isLeaveTaken ? "taken" : "not-taken"
-                        }`}
-                      >
-                        {day.day}
-                      </span>
-                    ))}
-                  </div>
-                ))}
-              </div>
+              <Calendar />
               <br />
               <div class="recent-box">
                 <span>Recent Application </span>
@@ -391,12 +205,12 @@ export default function Dashboard({toast}) {
                     <div class="content">
                       <div class="dates">
                         <div>
-                          <h5 class="card-title text-primary">Start Date</h5>
-                          <h5>2023-03-31</h5>
+                          <div class="card-title text-primary">Start Date</div>
+                          <div class="date">2023-03-31</div>
                         </div>
                         <div>
-                          <h5 class="card-title text-primary">End Date</h5>
-                          <h5>2023-04-02</h5>
+                          <div class="card-title text-primary">End Date</div>
+                          <div class="date">2023-04-02</div>
                         </div>
                       </div>
                       <div class="buttons">
@@ -422,38 +236,38 @@ export default function Dashboard({toast}) {
                   </div>
               </div> */}
               {/* {weeks.length > 0 && weeks[weeks.length - 1].length < 7 && (
-                <div className="week">
+                <div class="week">
                   {Array.from({ length: 7 }, (_, index) => (
-                    <span key={index} className="day"></span>
+                    <span key={index} class="day"></span>
                   ))}
                 </div>
               )} */}
               {/* {(currentUser.position == "admin") ? ('') : (
-                <div className="card mb-3" style={{ "border": "2px solid grey" }}>
-                  <div className="card-body" >
-                    <div className="row">
-                      <div className="col-sm-6">
-                        <h6 className="mb-0"><b>Leave Type</b></h6>
+                <div class="card mb-3" style={{ "border": "2px solid grey" }}>
+                  <div class="card-body" >
+                    <div class="row">
+                      <div class="col-sm-6">
+                        <h6 class="mb-0"><b>Leave Type</b></h6>
                       </div>
-                      <div className="col-sm-3">
-                        <h6 className="mb-0"><b>Remaining</b></h6>
+                      <div class="col-sm-3">
+                        <h6 class="mb-0"><b>Remaining</b></h6>
                       </div>
-                      <div className="col-sm-3">
-                        <h6 className="mb-0"><b>Taken</b></h6>
+                      <div class="col-sm-3">
+                        <h6 class="mb-0"><b>Taken</b></h6>
                       </div>
                     </div>
                     <hr />
-                    <div className='row'>
-                      <div className="col-sm-6">
-                        <h6 className="mb-0">Casual Leaves</h6>
+                    <div class='row'>
+                      <div class="col-sm-6">
+                        <h6 class="mb-0">Casual Leaves</h6>
                       </div>
-                      <div className="col-sm-6">
+                      <div class="col-sm-6">
 
-                        <div className="progress">
-                          <div className="progress-bar" role="progressbar" style={{ "width": 100 - ((currentUser.taken_casual_leaves * 100) / currentUser.total_casual_leaves) + "%" }}>
+                        <div class="progress">
+                          <div class="progress-bar" role="progressbar" style={{ "width": 100 - ((currentUser.taken_casual_leaves * 100) / currentUser.total_casual_leaves) + "%" }}>
                             Remaining - {currentUser.total_casual_leaves - currentUser.taken_casual_leaves}
                           </div>
-                          <div className="progress-bar bg-danger" role="progressbar" style={{ "width": ((currentUser.taken_casual_leaves) * 100) / currentUser.total_casual_leaves + "%" }}>
+                          <div class="progress-bar bg-danger" role="progressbar" style={{ "width": ((currentUser.taken_casual_leaves) * 100) / currentUser.total_casual_leaves + "%" }}>
                             Taken - {currentUser.taken_casual_leaves}
                           </div>
                         </div>
@@ -461,76 +275,76 @@ export default function Dashboard({toast}) {
                     </div>
                     <hr />
 
-                    <div className="row">
-                      <div className="col-sm-6">
-                        <h6 className="mb-0">Restricted Leaves</h6>
+                    <div class="row">
+                      <div class="col-sm-6">
+                        <h6 class="mb-0">Restricted Leaves</h6>
                       </div>
-                      <div className="col-sm-6">
+                      <div class="col-sm-6">
 
-                        <div className="progress">
-                          <div className="progress-bar" role="progressbar" style={{ "width": 100 - ((currentUser.taken_restricted_leaves * 100) / currentUser.total_restricted_leaves) + "%" }}>
+                        <div class="progress">
+                          <div class="progress-bar" role="progressbar" style={{ "width": 100 - ((currentUser.taken_restricted_leaves * 100) / currentUser.total_restricted_leaves) + "%" }}>
                             Remaining - {currentUser.total_restricted_leaves - currentUser.taken_restricted_leaves}
                           </div>
-                          <div className="progress-bar bg-danger" role="progressbar" style={{ "width": ((currentUser.taken_restricted_leaves) * 100) / currentUser.total_restricted_leaves + "%" }}>
+                          <div class="progress-bar bg-danger" role="progressbar" style={{ "width": ((currentUser.taken_restricted_leaves) * 100) / currentUser.total_restricted_leaves + "%" }}>
                             Taken - {currentUser.taken_restricted_leaves}
                           </div>
                         </div>
                       </div>
                     </div>
                     <hr />
-                    <div className="row">
-                      <div className="col-sm-6">
-                        <h6 className="mb-0">Earned Leaves</h6>
+                    <div class="row">
+                      <div class="col-sm-6">
+                        <h6 class="mb-0">Earned Leaves</h6>
                       </div>
-                      <div className="col-sm-6">
+                      <div class="col-sm-6">
 
-                        <div className="progress">
-                          <div className="progress-bar" role="progressbar" style={{ "width": 100 - ((currentUser.taken_earned_leaves * 100) / currentUser.total_earned_leaves) + "%" }}>
+                        <div class="progress">
+                          <div class="progress-bar" role="progressbar" style={{ "width": 100 - ((currentUser.taken_earned_leaves * 100) / currentUser.total_earned_leaves) + "%" }}>
                             Remaining - {currentUser.total_earned_leaves - currentUser.taken_earned_leaves}
                           </div>
-                          <div className="progress-bar bg-danger" role="progressbar" style={{ "width": ((currentUser.taken_earned_leaves) * 100) / currentUser.total_earned_leaves + "%" }}>
+                          <div class="progress-bar bg-danger" role="progressbar" style={{ "width": ((currentUser.taken_earned_leaves) * 100) / currentUser.total_earned_leaves + "%" }}>
                             Taken - {currentUser.taken_earned_leaves}
                           </div>
                         </div>
                       </div>
                     </div>
                     <hr />
-                    <div className="row">
-                      <div className="col-sm-6">
-                        <h6 className="mb-0">Vacation Leaves</h6>
+                    <div class="row">
+                      <div class="col-sm-6">
+                        <h6 class="mb-0">Vacation Leaves</h6>
                       </div>
-                      <div className="col-sm-6">
+                      <div class="col-sm-6">
 
-                        <div className="progress">
-                          <div className="progress-bar" role="progressbar" style={{ "width": 100 - ((currentUser.taken_vacation_leaves * 100) / currentUser.total_vacation_leaves) + "%" }}>
+                        <div class="progress">
+                          <div class="progress-bar" role="progressbar" style={{ "width": 100 - ((currentUser.taken_vacation_leaves * 100) / currentUser.total_vacation_leaves) + "%" }}>
                             Remaining - {currentUser.total_vacation_leaves - currentUser.taken_vacation_leaves}
                           </div>
-                          <div className="progress-bar bg-danger" role="progressbar" style={{ "width": ((currentUser.taken_vacation_leaves) * 100) / currentUser.total_vacation_leaves + "%" }}>
+                          <div class="progress-bar bg-danger" role="progressbar" style={{ "width": ((currentUser.taken_vacation_leaves) * 100) / currentUser.total_vacation_leaves + "%" }}>
                             Taken - {currentUser.taken_vacation_leaves}
                           </div>
                         </div>
                       </div>
                     </div>
                     <hr />
-                    <div className="row">
-                      <div className="col-sm-6">
-                        <h6 className="mb-0">Study Leaves</h6>
+                    <div class="row">
+                      <div class="col-sm-6">
+                        <h6 class="mb-0">Study Leaves</h6>
                       </div>
-                      <div className="col-sm-6">
+                      <div class="col-sm-6">
 
-                        <div className="progress">
-                          <div className="progress-bar" role="progressbar" style={{ "width": 100 - ((currentUser.taken_study_leaves * 100) / currentUser.total_study_leaves) + "%" }}>
+                        <div class="progress">
+                          <div class="progress-bar" role="progressbar" style={{ "width": 100 - ((currentUser.taken_study_leaves * 100) / currentUser.total_study_leaves) + "%" }}>
                             Remaining - {currentUser.total_study_leaves - currentUser.taken_study_leaves}
                           </div>
-                          <div className="progress-bar bg-danger" role="progressbar" style={{ "width": ((currentUser.taken_study_leaves) * 100) / currentUser.total_study_leaves + "%" }}>
+                          <div class="progress-bar bg-danger" role="progressbar" style={{ "width": ((currentUser.taken_study_leaves) * 100) / currentUser.total_study_leaves + "%" }}>
                             Taken - {currentUser.taken_study_leaves}
                           </div>
                         </div>
                       </div>
                     </div>
                     <hr />
-                    <div className="row">
-                      <div className="col-sm-12" >
+                    <div class="row">
+                      <div class="col-sm-12" >
                       </div>
                     </div>
                   </div>
@@ -539,12 +353,12 @@ export default function Dashboard({toast}) {
 
               {currentUser.position == "admin" ||
               currentUser.position == "admin" ? (
-                <div className="card mb-3" style={{ border: "2px solid grey" }}>
-                  <div className="card-body">
+                <div class="card mb-3" style={{ border: "2px solid grey" }}>
+                  <div class="card-body">
                     <h2>Add Users</h2>
-                    <div className="row">
+                    <div class="row">
                       <div
-                        className="col-sm-12"
+                        class="col-sm-12"
                         style={{ padding: "0px", margin: "0px" }}
                       >
                         <form>
@@ -565,4 +379,3 @@ export default function Dashboard({toast}) {
     </div>
   );
 }
-
