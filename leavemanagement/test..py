@@ -117,14 +117,13 @@ def get_columns_for_user_table(name, email_id, position, department, mobile):
 	return columns, values
 	
 def get_columns_for_leaves_table(email_id,nature,duration,is_station,start_date,end_date,status,type_of_leave):
-	print(parser.parse(start_date))
 	user_data = get_user_dic(email_id)
 	department = user_data['department']
 	user_id = user_data['user_id']
 	request_date = str(dt.datetime.now())
 	level = user_data['position']
 	columns = ['user_id','nature','duration','is_station','start_date','end_date','status','type_of_leave', 'department', 'request_date','level']
-	values = [user_id, nature,int(duration), is_station, start_date, end_date, status, type_of_leave, department, request_date,level]
+	values = [user_id, nature,int(duration), is_station, parser.parse(start_date), parser.parse(end_date), status, type_of_leave, department, request_date,level]
 	return columns, values
 
 
@@ -468,8 +467,6 @@ def check_applications():
 				payload.append(content)
 			elif position == 'hod' and applicant_position == 'faculty':
 				payload.append(content)
-# 			elif position == 'hod':
-# 				payload.append(content)
 		return get_success_response(payload)
 	except Exception as E:
 		exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -635,7 +632,8 @@ def delete_application():
 			return get_error_response("This leave has already been approved, can't be deleted")
 		if ("Disapproved" in status):
 			return get_error_response("This leave has already been disapproved, can't be deleted")
-		cursor.execute("DELETE FROM leaves where leave_id = %s", (leave_id,))
+		
+		cursor.execute("UPDATE leaves set status='Pending Withdrawn' where leave_id = %s", (leave_id,))
 		connect.commit()
 		connect.close()
 		return get_success_response(f"Leave with id : {leave_id} has been deleted, refresh the page to see changes")
@@ -706,6 +704,41 @@ def get_emails():
 		return get_success_response(payload)
 	except Exception as E:
 		return get_error_response(E)
+		
+@app.route('/collective_data', methods=['GET', 'POST'])
+@cross_origin(supports_credentials=True)
+def collective_data():
+	try:
+		email = session['user_info']['email']
+		data = get_user_dic(email)
+		department = data['department']
+		db.reconnect()
+		connect = db
+		cursor = connect.cursor()
+		cursor.execute('SHOW columns from users')
+		users_cols = cursor.fetchall()   # list of tuples whose first value of tuple is the column name
+		users_cols = [e[0] for e in users_cols]
+		cursor.execute('SELECT * FROM users WHERE department = %s', (department,))
+		users = cursor.fetchall()
+		users_data = []
+		for data in users:
+			dic = {key: value for key, value in zip(users_cols,data)}
+			uid = dic['user_id']
+			cursor.execute('SELECT * FROM leaves_data WHERE user_id = %s', (uid,))
+			leaves_data = cursor.fetchall()
+			if len(leaves_data):
+				leaves_data = leaves_data[0]
+				cursor.execute('SHOW columns from leaves_data')
+				leaves_data_cols = cursor.fetchall()   # list of tuples whose first value of tuple is the column name
+				leaves_data_cols = [e[0] for e in leaves_data_cols]
+				leaves_dic = {key: value for key, value in zip(leaves_data_cols,leaves_data)}
+				dic.update(leaves_dic)
+			users_data.append(dic)
+		return get_success_response(users_data)
+	except Exception as E:
+		exc_type, exc_obj, exc_tb = sys.exc_info()
+		fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+		return get_error_response(f"{E} {exc_tb.tb_lineno}")
 
 
 
