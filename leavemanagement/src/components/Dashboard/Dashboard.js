@@ -13,21 +13,68 @@ import { FaEdit, FaMobileAlt } from 'react-icons/fa';
 import PieChart from './PieChart';
 import Calendar from './Calendar';
 
-export default function Dashboard({toast}) {
+export default function Dashboard({ toast }) {
 
   const { currentUser, refresh_user, editProfile } = useAuth();
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [leavesData, setLeavesData] = useState();
   const [name, setName] = useState(currentUser.name)
   const [mobile, setMobile] = useState(currentUser.mobile)
   const handleEdit = () => setShowEditProfileModal(!showEditProfileModal);
   const navigate = useNavigate();
 
+  async function fetchRemainingNumberOfLeaves() {
+    const resp = await httpClient.get(`${process.env.REACT_APP_API_HOST}/fetch_remaining_leaves`);
+    // console.log(resp.data)
+    if (resp.data.status == "success") {      
+      setLeavesData(resp.data.data);
+    } else {
+      return;
+    }
+  }
+
+  useEffect(() => {
+    async function test() {
+      await fetchRemainingNumberOfLeaves();
+    }
+    test();
+  }, [])
+
+
+
+  const [month, setMonth] = useState(new Date());
+  const numDays = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+  const firstDay = new Date(month.getFullYear(), month.getMonth(), 1).getDay();
+  let data = [];
+  for (let i = 0; i < numDays; i++) {
+    if (i % 2) data.push({ day: i + 1, isLeaveTaken: false });
+    else data.push({ day: i + 1, isLeaveTaken: true });
+  }
+
+  const weeks = [];
+  let week = [];
+  for (let j = 0; j < firstDay; j++) {
+    week.push(0);
+  }
+
+  data.forEach((day, index) => {
+    week.push(day);
+    if (index === data.length - 1) {
+      while (week.length != 7) {
+        week.push(0);
+      }
+    }
+    if (index === data.length - 1 || (week.length) % 7 === 0) {
+      weeks.push(week);
+      week = [];
+    }
+  });
   return (
     // <div class="dashboard" style={{ height: "100vh", backgroundImage: `url(${background})`, backgroundPosition: "fixed", backgroundRepeat: "None", backgroundSize: "cover" }}>
     <div
       class="dashboard"
-      style={{ margin: "0px", height: "100vh", backgroundColor: "aliceblue" }}
+      style={{ margin: "0px", height: "100%", backgroundColor: "aliceblue" }}
     >
       {/* <div class="Dashboard"> */}
       {/* <header class="jumbotron text-center"> */}
@@ -181,18 +228,25 @@ export default function Dashboard({toast}) {
             </div>
             <div class="col-md-8">
               <div class="Leaves-remaining container">
-                <PieChart
-                  leavesTaken={28}
-                  leaveType="casual-leave"
-                  endValue={50}
-                  speed={20}
-                />
-                <PieChart
-                  leavesTaken={28}
-                  leaveType="non-casual-leave"
-                  endValue={28}
-                  speed={20}
-                />
+                {
+                  leavesData ? <PieChart
+                    total={leavesData?.total_casual_leaves}
+                    taken={leavesData?.taken_casual_leaves}
+                    leaveType="casual-leave"
+                    endValue={50}
+                    speed={20}
+                  /> : ('')
+                }
+                {
+                  leavesData ? <PieChart
+                    total={leavesData?.total_non_casual_leave}
+                    taken={leavesData?.taken_non_casual_leave}
+                    leavesTaken={28}
+                    leaveType="non-casual-leave"
+                    endValue={28}
+                    speed={20}
+                  /> : ('')
+                }
               </div>
               <br />
               <Calendar />
@@ -228,133 +282,10 @@ export default function Dashboard({toast}) {
                   </div>
                 </div>
               </div>
-              {/* <div class="card" style="width: 18rem;">
-                  <div class="card-body">
-                    <h5 class="card-title">Card title</h5>
-                    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                    <a href="#" class="btn btn-primary">Go somewhere</a>
-                  </div>
-              </div> */}
-              {/* {weeks.length > 0 && weeks[weeks.length - 1].length < 7 && (
-                <div class="week">
-                  {Array.from({ length: 7 }, (_, index) => (
-                    <span key={index} class="day"></span>
-                  ))}
-                </div>
-              )} */}
-              {/* {(currentUser.position == "admin") ? ('') : (
-                <div class="card mb-3" style={{ "border": "2px solid grey" }}>
-                  <div class="card-body" >
-                    <div class="row">
-                      <div class="col-sm-6">
-                        <h6 class="mb-0"><b>Leave Type</b></h6>
-                      </div>
-                      <div class="col-sm-3">
-                        <h6 class="mb-0"><b>Remaining</b></h6>
-                      </div>
-                      <div class="col-sm-3">
-                        <h6 class="mb-0"><b>Taken</b></h6>
-                      </div>
-                    </div>
-                    <hr />
-                    <div class='row'>
-                      <div class="col-sm-6">
-                        <h6 class="mb-0">Casual Leaves</h6>
-                      </div>
-                      <div class="col-sm-6">
-
-                        <div class="progress">
-                          <div class="progress-bar" role="progressbar" style={{ "width": 100 - ((currentUser.taken_casual_leaves * 100) / currentUser.total_casual_leaves) + "%" }}>
-                            Remaining - {currentUser.total_casual_leaves - currentUser.taken_casual_leaves}
-                          </div>
-                          <div class="progress-bar bg-danger" role="progressbar" style={{ "width": ((currentUser.taken_casual_leaves) * 100) / currentUser.total_casual_leaves + "%" }}>
-                            Taken - {currentUser.taken_casual_leaves}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <hr />
-
-                    <div class="row">
-                      <div class="col-sm-6">
-                        <h6 class="mb-0">Restricted Leaves</h6>
-                      </div>
-                      <div class="col-sm-6">
-
-                        <div class="progress">
-                          <div class="progress-bar" role="progressbar" style={{ "width": 100 - ((currentUser.taken_restricted_leaves * 100) / currentUser.total_restricted_leaves) + "%" }}>
-                            Remaining - {currentUser.total_restricted_leaves - currentUser.taken_restricted_leaves}
-                          </div>
-                          <div class="progress-bar bg-danger" role="progressbar" style={{ "width": ((currentUser.taken_restricted_leaves) * 100) / currentUser.total_restricted_leaves + "%" }}>
-                            Taken - {currentUser.taken_restricted_leaves}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <hr />
-                    <div class="row">
-                      <div class="col-sm-6">
-                        <h6 class="mb-0">Earned Leaves</h6>
-                      </div>
-                      <div class="col-sm-6">
-
-                        <div class="progress">
-                          <div class="progress-bar" role="progressbar" style={{ "width": 100 - ((currentUser.taken_earned_leaves * 100) / currentUser.total_earned_leaves) + "%" }}>
-                            Remaining - {currentUser.total_earned_leaves - currentUser.taken_earned_leaves}
-                          </div>
-                          <div class="progress-bar bg-danger" role="progressbar" style={{ "width": ((currentUser.taken_earned_leaves) * 100) / currentUser.total_earned_leaves + "%" }}>
-                            Taken - {currentUser.taken_earned_leaves}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <hr />
-                    <div class="row">
-                      <div class="col-sm-6">
-                        <h6 class="mb-0">Vacation Leaves</h6>
-                      </div>
-                      <div class="col-sm-6">
-
-                        <div class="progress">
-                          <div class="progress-bar" role="progressbar" style={{ "width": 100 - ((currentUser.taken_vacation_leaves * 100) / currentUser.total_vacation_leaves) + "%" }}>
-                            Remaining - {currentUser.total_vacation_leaves - currentUser.taken_vacation_leaves}
-                          </div>
-                          <div class="progress-bar bg-danger" role="progressbar" style={{ "width": ((currentUser.taken_vacation_leaves) * 100) / currentUser.total_vacation_leaves + "%" }}>
-                            Taken - {currentUser.taken_vacation_leaves}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <hr />
-                    <div class="row">
-                      <div class="col-sm-6">
-                        <h6 class="mb-0">Study Leaves</h6>
-                      </div>
-                      <div class="col-sm-6">
-
-                        <div class="progress">
-                          <div class="progress-bar" role="progressbar" style={{ "width": 100 - ((currentUser.taken_study_leaves * 100) / currentUser.total_study_leaves) + "%" }}>
-                            Remaining - {currentUser.total_study_leaves - currentUser.taken_study_leaves}
-                          </div>
-                          <div class="progress-bar bg-danger" role="progressbar" style={{ "width": ((currentUser.taken_study_leaves) * 100) / currentUser.total_study_leaves + "%" }}>
-                            Taken - {currentUser.taken_study_leaves}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <hr />
-                    <div class="row">
-                      <div class="col-sm-12" >
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )} */}
-
               {currentUser.position == "admin" ||
-              currentUser.position == "admin" ? (
-                <div class="card mb-3" style={{ border: "2px solid grey" }}>
-                  <div class="card-body">
+                currentUser.position == "admin" ? (
+                <div className="card mb-3" style={{ border: "2px solid grey" }}>
+                  <div className="card-body">
                     <h2>Add Users</h2>
                     <div class="row">
                       <div

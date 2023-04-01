@@ -1,19 +1,19 @@
-import React, { useEffect,useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 
 const PieChart = (props) => {
- 
+
 
   const [progress, setProgress] = useState();
-    useEffect(() => {
-       let casual = document.querySelector(`.${props.leaveType}`);
-       let casual_value = document.querySelector(`.value-${props.leaveType}`);
-       let progressValue = 0;
+  useEffect(() => {
+    let casual = document.querySelector(`.${props.leaveType}`);
+    let casual_value = document.querySelector(`.value-${props.leaveType}`);
+    let progressValue = 0;
     setProgress(
       setInterval(() => {
         progressValue++;
         if (progressValue <= props.endValue) {
-          casual_value.textContent = `${progressValue}%`;
+          casual_value.textContent = `Taken = ${props.taken}; Total = ${props.total}`;
           casual.style.background = `conic-gradient(
         #4d5bf9 ${progressValue * 3.6}deg,
         #cadcff ${progressValue * 3.6}deg)`;
@@ -27,7 +27,7 @@ const PieChart = (props) => {
 
   return (
     <OuterContainer class="container">
-          <div class={`circular-progress ${props.leaveType}`}>
+      <div class={`circular-progress ${props.leaveType}`}>
         <div class={`value-container value-${props.leaveType}`}>
           0%
         </div>

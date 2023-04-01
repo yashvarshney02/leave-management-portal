@@ -4,19 +4,36 @@ import { toast } from "react-toastify";
 import * as FaIcons from "react-icons/fa";
 import { Badge } from "react-bootstrap";
 import httpClient from "../../httpClient";
-import { filterColoumns, globalFiltering, makeAbb } from "./helperFunctions";
+import {
+	filterColoumns,
+	globalFiltering,
+	makeAbb,
+	prepData,
+} from "./helperFunctions";
 import "./Table.css";
+import { useNavigate } from "react-router-dom";
 
-export default function Table({ title, headers, initialData }) {
+export default function Table({ title, headers, initialData, from }) {
+	const navigate = useNavigate();
 	//to set initial search values = ""
 	let initColSearchKey = {};
 	for (let head in headers) {
 		initColSearchKey[headers[head]] = "";
 	}
 	let pendingTopData = [
-		...filterColoumns(headers, initialData, "Status", "pending"),
-		...filterColoumns(headers, initialData, "Status", "approved"),
-		...filterColoumns(headers, initialData, "Status", "withdrawn"),
+		//prepData(headers,initialData,status,pending)
+		//this returns an array of leaves for which status === pending
+		// note that where status stricly equals to pending
+		//similarly for all others
+		...prepData(headers, initialData, "Status", "pending"),
+		...prepData(headers, initialData, "Status", "pending withdrawn"),
+		...prepData(headers, initialData, "Status", "approved withdrawn"),
+		...prepData(headers, initialData, "Status", "approved by hod"),
+		...prepData(headers, initialData, "Status", "approved by dean"),
+		...prepData(headers, initialData, "Status", "approved by faculty"),
+		...prepData(headers, initialData, "Status", "disapproved by dean"),
+		...prepData(headers, initialData, "Status", "disapproved by hod"),
+		...prepData(headers, initialData, "Status", "disapproved by faculty"),
 	];
 
 	initialData = pendingTopData;
@@ -34,7 +51,28 @@ export default function Table({ title, headers, initialData }) {
 		if (displayTab === 1) toShow = "pending";
 		if (displayTab === 2) toShow = "approved";
 		if (displayTab === 3) toShow = "withdrawn";
-		let finalData = filterColoumns(headers, initialData, colHeading, toShow);
+		let finalData = [];
+
+		if (toShow === "") {
+			finalData = initialData;
+		} else if (toShow === "pending") {
+			finalData = [...prepData(headers, initialData, "Status", "pending")];
+		} else if (toShow === "approved") {
+			finalData = [
+				...prepData(headers, initialData, "Status", "approved by hod"),
+				...prepData(headers, initialData, "Status", "approved by dean"),
+				...prepData(headers, initialData, "Status", "approved by faculty"),
+				...prepData(headers, initialData, "Status", "disapproved by dean"),
+				...prepData(headers, initialData, "Status", "disapproved by hod"),
+				...prepData(headers, initialData, "Status", "disapproved by faculty")
+			];
+		} else if (toShow === "withdrawn") {
+			finalData = [
+				...prepData(headers, initialData, "Status", "pending withdrawn"),
+				...prepData(headers, initialData, "Status", "approved withdrawn")
+			];
+		}
+
 		setColSearchKey(initColSearchKey);
 		setData(finalData);
 	};
@@ -103,8 +141,7 @@ export default function Table({ title, headers, initialData }) {
 						style={{ cursor: "pointer" }}
 						color="green"
 						onClick={(e) => {
-							e.currentTarget.dataset.toggle = "modal";
-							e.currentTarget.dataset.target = "#modal-" + row[0];
+							navigate(`/${from}/${row[0]}`);
 						}}
 					/>
 					&nbsp;
@@ -126,8 +163,7 @@ export default function Table({ title, headers, initialData }) {
 						style={{ cursor: "pointer" }}
 						color="green"
 						onClick={(e) => {
-							e.currentTarget.dataset.toggle = "modal";
-							e.currentTarget.dataset.target = "#modal-" + row[0];
+							navigate(`/${from}/${row[0]}`);
 						}}
 					/>
 					&nbsp;
@@ -295,7 +331,6 @@ export default function Table({ title, headers, initialData }) {
 															>
 																<FaIcons.FaQuestionCircle></FaIcons.FaQuestionCircle>
 															</button>
-															
 														</td>
 													);
 												}
