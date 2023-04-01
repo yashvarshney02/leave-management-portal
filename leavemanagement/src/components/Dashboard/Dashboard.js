@@ -26,8 +26,7 @@ export default function Dashboard({ toast }) {
 
   async function fetchRemainingNumberOfLeaves() {
     const resp = await httpClient.get(`${process.env.REACT_APP_API_HOST}/fetch_remaining_leaves`);
-    if (resp.data.status == "success") {
-      console.log(resp.data.data)
+    if (resp.data.status == "success") {      
       setLeavesData(resp.data.data);
     } else {
       return;

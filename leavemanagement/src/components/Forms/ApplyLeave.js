@@ -11,7 +11,7 @@ import "./Form.css";
 
 export default function ApplyLeave({ toast }) {
 	const { currentUser } = useAuth();
-	const [typesOfLeave, setTypesofLeave] = useState(["CASUAL LEAVE","RESTRICTED HOLIDAY","SPECIAL CASUAL LEAVE","ON DUTY"])
+	const [typesOfLeave, setTypesofLeave] = useState(["CASUAL LEAVE", "RESTRICTED HOLIDAY", "SPECIAL CASUAL LEAVE", "ON DUTY"])
 	const [duration, setDuration] = useState(0);
 	const [formData, setFormData] = useState({
 		"form_duration": 0,
@@ -23,10 +23,30 @@ export default function ApplyLeave({ toast }) {
 	});
 	const [formLoading, setFormLoading] = useState(false);
 
-	const handleInputChange = (e) => {
+	const handleInputChange = async (e) => {
 		const propName = e.target.id;
-		const propVal = e.target.value;
-		setFormData({ ...formData, [propName]: propVal });
+		const propVal = e.target.value;				
+		console.log(propName, propVal)
+		setFormData({ ...formData, [propName]: propVal });		
+	};
+
+	const handleFileInputChange = (e) => {
+		const file = e.target.files[0];
+		const reader = new FileReader();
+		const fileSize = file.size;
+		if (fileSize > 1 * 1024 * 1024) {
+			alert("File size must be less than 1MB");
+			return;
+		}
+		setFormLoading(true);
+		reader.onload = () => {
+			const base64Data = btoa(reader.result);				
+			setFormData({ ...formData, "form_filename": file.name });
+			setFormData({ ...formData, "form_filedata": base64Data });
+			setFormLoading(false);
+		};
+		reader.readAsBinaryString(file);
+
 	};
 
 	// const onFileChange = (event) => {
@@ -35,7 +55,9 @@ export default function ApplyLeave({ toast }) {
 	// };
 
 	const handleSubmit = async (e) => {
-		e.preventDefault();		
+		e.preventDefault();			
+		adjustDuration();
+		// return;
 		// changedtoc		
 		if (isNaN(formData.form_duration)) {
 			toast.error("Error, Check the duration again", toast.POSITION.BOTTOM_RIGHT);
@@ -62,30 +84,24 @@ export default function ApplyLeave({ toast }) {
 		setFormLoading(false);
 	}
 
-	const adjustDuration = async (e) => {
-		const propName = e.target.id;
-		const propVal = e.target.value;
+	const adjustDuration= (e) => {		
 		let startDate, endDate;
-		if (propName == "form_sdate" && formData.form_edate) {
-			startDate = new Date(propVal);
-			endDate = new Date(formData.form_edate)
-		} else if (propName == "form_edate" && formData.form_sdate) {
-			startDate = new Date(formData.form_sdate);
-			endDate = new Date(propVal)
-		}
+		endDate = new Date(formData.form_edate)
+		startDate = new Date(formData.form_sdate);
 		if (startDate && endDate && endDate >= startDate) {
 			const differenceInMs = endDate.getTime() - startDate.getTime();
 			const differenceInDays = differenceInMs / (1000 * 60 * 60 * 24);
 			setDuration(differenceInDays + 1)
+			setFormData({ ...formData, "form_duration": differenceInDays + 1 });
 		}
 	}
 
 	const handleTypeOfLeave = (e) => {
-		const propVal = e.target.value;		
+		const propVal = e.target.value;
 		if (propVal == "Casual Leave") {
-			setTypesofLeave(["CASUAL LEAVE","RESTRICTED HOLIDAY","SPECIAL CASUAL LEAVE","ON DUTY"])
+			setTypesofLeave(["CASUAL LEAVE", "RESTRICTED HOLIDAY", "SPECIAL CASUAL LEAVE", "ON DUTY"])
 		} else {
-			setTypesofLeave(["Earned Leave", "Half Pay Leave","Extra Ordinary Leave","Commuted Leave","Vacation","Maternity Leave","Paternity Leave","Child Care Leave"])
+			setTypesofLeave(["Earned Leave", "Half Pay Leave", "Extra Ordinary Leave", "Commuted Leave", "Vacation", "Maternity Leave", "Paternity Leave", "Child Care Leave"])
 		}
 	}
 
@@ -95,7 +111,7 @@ export default function ApplyLeave({ toast }) {
 				<Card.Body style={{ width: "100%" }}>
 					<Card.Title className="title-al" >Apply Leave</Card.Title>
 					<Card.Text>
-						<form onSubmit={(e) => { handleSubmit(e) }}>
+						<form onSubmit={async (e) => {await  handleSubmit(e) }}>
 							<Container className="content-al">
 								<div className="user-details-al">
 									<div className="input-box-al">
@@ -117,7 +133,7 @@ export default function ApplyLeave({ toast }) {
 												</Col >
 												<Col className="col-al">
 													<legend htmlFor="form_nature" style={{ fontSize: "18px" }}>Nature of leave</legend>
-													<select className="form-control" id="form_nature" onChange={(e) => { handleInputChange(e);handleTypeOfLeave(e) }} required>
+													<select className="form-control" id="form_nature" onChange={(e) => { handleInputChange(e); handleTypeOfLeave(e) }} required>
 														<option>Casual Leave</option>
 														<option>Non Casual Leave</option>
 													</select>
@@ -133,7 +149,7 @@ export default function ApplyLeave({ toast }) {
 																	<option key={key}>{item}</option>
 																)
 															})
-														}																											
+														}
 													</select>
 												</Col >
 												<Col className="col-al">
@@ -145,17 +161,17 @@ export default function ApplyLeave({ toast }) {
 												</Col >
 												<Col className="col-al">
 													<legend htmlFor="form_duration" style={{ fontSize: "18px" }}>Duration of leave</legend>
-													<input type="number" className="form-control" id="form_duration" placeholder="Duration" disabled value={duration} onChange={(e) => { handleInputChange(e) }} required />
+													<input type="number" className="form-control" id="form_duration" placeholder="Duration" disabled value={duration} required />
 												</Col >
 											</Row >
 											<Row className="row-al">
 												<Col className="col-al">
 													<legend htmlFor="form_sdate" style={{ fontSize: "18px" }}>Start Date</legend>
-													<input type="date" id="form_sdate" placeholder="Pick start date" className="form-control" onChange={(e) => { handleInputChange(e); adjustDuration(e) }} required></input>
+													<input type="date" id="form_sdate" placeholder="Pick start date" className="form-control" onChange={async (e) => { handleInputChange(e) }} required></input>
 												</Col >
 												<Col className="col-al">
 													<legend htmlFor="form_edate" style={{ fontSize: "18px" }}>End Date</legend>
-													<input type="date" id="form_edate" placeholder="Pick end date" className="form-control" onChange={(e) => { handleInputChange(e); adjustDuration(e) }} required></input>
+													<input type="date" id="form_edate" placeholder="Pick end date" className="form-control" onChange={async (e) => { handleInputChange(e) }} required></input>
 												</Col >
 											</Row >
 											<Row className="row-al">
@@ -171,6 +187,18 @@ export default function ApplyLeave({ toast }) {
 
 													</textarea>
 												</Col>
+											</Row>
+											<br />
+											<Row className="row-al">
+												<Col className="col-al">
+													<legend htmlFor="form_document" style={{ fontSize: "18px" }}>Document</legend>
+													<input
+														type="file"
+														id="pdfFileInput"
+														accept=".pdf"
+														onChange={handleFileInputChange}
+													/>
+												</Col >
 											</Row>
 											<br />
 											<Row className="row-al">

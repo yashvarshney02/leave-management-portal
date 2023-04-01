@@ -1,5 +1,5 @@
 from tkinter import E
-from flask import Flask, jsonify, render_template, url_for, request, session, redirect, Response
+from flask import Flask,send_file, jsonify, render_template, url_for, request, session, redirect, Response
 from flask_pymongo import PyMongo
 from py import code
 from pymongo import MongoClient
@@ -15,12 +15,14 @@ from pymysql import NULL
 import pprint
 import datetime as dt
 import sys
+import numpy as np
+from dateutil import parser
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
 
 app.secret_key='secret123'
-
+root_directory = 'mysite'
 app.config.update(SESSION_COOKIE_SAMESITE="None", SESSION_COOKIE_SECURE=True)
 
 # db = mysql.connector.connect(
@@ -78,6 +80,54 @@ def check_user(email):
 	except Exception as E:
 		return False
 
+def insert_user(columns,values):
+	db.reconnect()
+	cursor = db.cursor()
+	query = "INSERT INTO users ({}) VALUES ({})".format(
+			', '.join(columns), ', '.join(['%s'] * len(values)))
+	cursor.execute(query, tuple(values))
+	db.commit()
+	
+def insert_leave_application(columns,values):
+	db.reconnect()
+	cursor = db.cursor()
+	query = "INSERT INTO leaves ({}) VALUES ({})".format(
+			', '.join(columns), ', '.join(['%s'] * len(values)))
+	cursor.execute(query, tuple(values))
+	db.commit()
+
+def get_columns_for_user_table(name, email_id, position, department, mobile):
+	columns = ['email_id']
+	values = [email_id]
+	if not pd.isna(name):
+		columns.append('name')
+		values.append(name)
+	else:
+		columns.append('name')
+		values.append(f'User - {position}')
+	if not pd.isna(position):
+		columns.append('position')
+		values.append(position)
+	if not pd.isna(department):
+		columns.append('department')
+		values.append(department)
+	if not pd.isna(mobile):
+		columns.append('mobile')
+		values.append(mobile)
+	return columns, values
+	
+def get_columns_for_leaves_table(email_id,nature,duration,is_station,start_date,end_date,status,type_of_leave):
+	print(parser.parse(start_date))
+	user_data = get_user_dic(email_id)
+	department = user_data['department']
+	user_id = user_data['user_id']
+	request_date = str(dt.datetime.now())
+	level = user_data['position']
+	columns = ['user_id','nature','duration','is_station','start_date','end_date','status','type_of_leave', 'department', 'request_date','level']
+	values = [user_id, nature,int(duration), is_station, start_date, end_date, status, type_of_leave, department, request_date,level]
+	return columns, values
+
+
 def get_user_data(email):
 	try:
 		db.reconnect()
@@ -108,11 +158,18 @@ def insert_leave(leave):
 		user_id = data[0]
 		department = data[1]
 		position = data[3]
-		print(leave)
+		if leave.get('form_filename'):
+			file_name = leave['form_filename']
+		else:
+			file_name = ''
+		if leave.get('form_filedata'):
+			file_data = leave['form_filedata']
+		else:
+			file_data = ''
 		cursor.execute("INSERT INTO leaves\
-			(department, user_id, nature, purpose, is_station, request_date, start_date, end_date, duration, status, level,file_uploaded, type_of_leave) \
-			VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s,%s)",
-					(department, user_id, leave['form_nature'], leave['form_purpose'], leave['form_isStation'], str(dt.datetime.now()), leave['form_sdate'], leave['form_edate'], leave['form_duration'], 'Pending', position, '', leave['form_type_of_leave']))
+			(department, user_id, nature, purpose, is_station, request_date, start_date, end_date, duration, status, level,file_uploaded, type_of_leave, filename, file_data) \
+			VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s,%s,%s,%s)",
+					(department, user_id, leave['form_nature'], leave['form_purpose'], leave['form_isStation'], str(dt.datetime.now()), leave['form_sdate'], leave['form_edate'], leave['form_duration'], 'Pending', position, '', leave['form_type_of_leave'], file_name, file_data))
 		connect.commit()
 		return True
 	except Exception as E:
@@ -123,6 +180,55 @@ def insert_leave(leave):
 @cross_origin(supports_credentials=True)
 def home():
 	return get_success_response("Hello World")
+
+@app.route('/sample_csvs', methods = ['POST'])
+@cross_origin(supports_credentials=True)
+def sample_csvs():
+	try:
+		mode = request.json['name']
+		file_name = f'{mode}.csv'
+		if mode == "users_sample":
+			return send_file(file_name, as_attachment=True, attachment_filename=file_name)
+		elif mode == "leaves_sample":
+			return send_file(file_name, as_attachment=True, attachment_filename=file_name)
+	except Exception as E:
+		return get_error_reponse(E)
+
+@app.route('/process_query', methods = ['POST'])
+@cross_origin(supports_credentials=True)
+def process_query():
+	try:
+		file = request.files['file']
+		mode = request.form.get('name')
+		sample_data = pd.read_csv(f"{root_directory}//{mode}.csv")
+		data = pd.read_csv(file)
+		if list(data.columns) != list(sample_data):
+			return get_error_response("Wrong Data, Kindly Match the sample data provided in the link")
+		if mode == "users_sample":
+			for name, email_id, position, department, mobile in zip(data.name.values, data.email_id.values, data.position.values, data.department.values, data.mobile.values):
+				print("email:",pd.isna(email_id),pd.isna(position),pd.isna(department), department, position)
+				if pd.isna(email_id) or pd.isna(position) or pd.isna(department):
+					continue
+				if check_user(email_id):
+					continue
+				columns, values = get_columns_for_user_table(name, email_id, position, department, mobile)
+				insert_user(columns,values)
+		elif mode == "leaves_sample":
+			for email_id,nature,duration,is_station,start_date,end_date,status,type_of_leave in zip(data.email_id.values, data.nature.values,data.duration.values, data.is_station.values, data.start_date.values, data.end_date.values, data.status.values,data.type_of_leave.values):
+				if pd.isna(email_id)or pd.isna(duration) or pd.isna(nature) or pd.isna(is_station) or pd.isna(start_date) or pd.isna(end_date) or pd.isna(status) or pd.isna(type_of_leave):
+					continue
+				print('all_good')
+				if not check_user(email_id):
+					continue
+				columns,values = get_columns_for_leaves_table(email_id,nature,duration,is_station,start_date,end_date,status,type_of_leave)
+				print(columns,values)
+				insert_leave_application(columns,values)
+				
+
+
+		return get_success_response(True)
+	except Exception as E:
+		return get_error_response(E)
 
 @app.route('/check_auth', methods = ['POST'])
 @cross_origin(supports_credentials=True)
@@ -226,6 +332,7 @@ def edit_user_info():
 	except Exception as E:
 		return get_error_response(E)
 
+
 @app.route('/apply_leave', methods=['POST'])
 @cross_origin(supports_credentials=True)
 def apply_leave():
@@ -234,7 +341,9 @@ def apply_leave():
 		insert_leave(data)
 		return get_success_response("Leave Applied Successfully")
 	except Exception as E:
-		return get_error_response("Leave Application Unsuccessful")
+		return get_error_response(f"Leave Application Unsuccessful {E}")
+
+import base64
 
 @app.route('/past_applications', methods=['POST'])
 @cross_origin(supports_credentials=True)
@@ -250,8 +359,25 @@ def past_applications():
 		data = cursor.fetchall()
 		payload = []
 		for i in data:
-			content = {'id': i[0], 'department': i[1], 'user_id': i[2], 'nature': i[3],'type_of_leave':i[14], 'purpose': i[4], 'is_station': i[5], 'request_date': i[6],
-					'start_date': i[7], 'end_date': i[8], 'authority_comment': i[9], 'duration': i[10], 'status': i[11], 'level': i[12], 'attached_documents': i[13]}
+			content = {
+				'id': i[0],
+				'department': i[1],
+				'user_id': i[2],
+				'nature': i[3],
+				'type_of_leave': i[14],
+				'purpose': i[4],
+				'is_station': i[5],
+				'request_date': i[6],
+				'start_date': i[7],
+				'end_date': i[8],
+				'authority_comment': i[9],
+				'duration': i[10],
+				'status': i[11],
+				'level': i[12],
+				'attached_documents': i[13],
+				'file_name': i[15],
+				'file_data': base64.b64encode(i[16]).decode('utf-8') if i[16] else None
+			}
 			user_id = i[2]
 			cur_user = get_user_dic(email)
 			content['email'] = cur_user['email']
@@ -263,6 +389,7 @@ def past_applications():
 		return get_success_response(payload)
 	except Exception as E:
 		return get_error_response(E)
+
 
 @app.route('/get_leave_info_by_id', methods=['POST'])
 @cross_origin(supports_credentials=True)
@@ -276,8 +403,25 @@ def get_leave_info_by_id():
 		leaves = cursor.fetchall()
 		payload = []
 		for i in leaves:
-			content = {'id': i[0], 'department': i[1], 'user_id': i[2], 'nature': i[3], 'purpose': i[4], 'is_station': i[5], 'request_date': i[6],
-			'start_date': i[7], 'end_date': i[8], 'authority_comment': i[9], 'duration': i[10], 'status': i[11], 'level': i[12], 'attached_documents': i[13]}
+			content = {
+				'id': i[0],
+				'department': i[1],
+				'user_id': i[2],
+				'nature': i[3],
+				'type_of_leave': i[14],
+				'purpose': i[4],
+				'is_station': i[5],
+				'request_date': i[6],
+				'start_date': i[7],
+				'end_date': i[8],
+				'authority_comment': i[9],
+				'duration': i[10],
+				'status': i[11],
+				'level': i[12],
+				'attached_documents': i[13],
+				'file_name': i[15],
+				'file_data': base64.b64encode(i[16]).decode('utf-8') if i[16] else None
+			}
 			payload.append(content)
 		return get_success_response(payload)
 	except Exception as E:
@@ -543,6 +687,26 @@ def add_holiday():
 		return get_success_response("Holidays Added successfully")
 	except Exception as E:
 		return get_error_response(E)
+
+@app.route('/get_emails' , methods = ['GET'])
+@cross_origin(supports_credentials=True)
+def get_emails():
+	try:
+		db.reconnect()
+		connect = db
+		cursor = connect.cursor()
+		cursor.execute("SELECT * FROM users")
+		data = cursor.fetchall()
+		payload = []
+		if len(data) == 0:
+			return get_success_response(payload)
+		for i in data:
+			if i[3] in ['hod','dean','faculty']:
+				payload.append(i[2])
+		return get_success_response(payload)
+	except Exception as E:
+		return get_error_response(E)
+
 
 
 if __name__ == '__main__':

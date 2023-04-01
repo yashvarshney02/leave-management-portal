@@ -6,13 +6,15 @@ import { Badge } from "react-bootstrap";
 import httpClient from "../../httpClient";
 import { filterColoumns, globalFiltering, makeAbb } from "./helperFunctions";
 import "./Table.css";
+import { useNavigate } from "react-router-dom";
 
-export default function Table({ title, headers, initialData }) {
+export default function Table({ title, headers, initialData, from }) {
+	const navigate = useNavigate();
 	//to set initial search values = ""
 	let initColSearchKey = {};
 	for (let head in headers) {
 		initColSearchKey[headers[head]] = "";
-}	
+	}
 	let pendingTopData = [
 		...filterColoumns(headers, initialData, "Status", "pending"),
 		...filterColoumns(headers, initialData, "Status", "approved"),
@@ -103,8 +105,7 @@ export default function Table({ title, headers, initialData }) {
 						style={{ cursor: "pointer" }}
 						color="green"
 						onClick={(e) => {
-							e.currentTarget.dataset.toggle = "modal";
-							e.currentTarget.dataset.target = "#modal-" + row[0];
+							navigate(`/${from}/${row[0]}`);
 						}}
 					/>
 					&nbsp;
@@ -126,8 +127,7 @@ export default function Table({ title, headers, initialData }) {
 						style={{ cursor: "pointer" }}
 						color="green"
 						onClick={(e) => {
-							e.currentTarget.dataset.toggle = "modal";
-							e.currentTarget.dataset.target = "#modal-" + row[0];
+							navigate(`/${from}/${row[0]}`);
 						}}
 					/>
 					&nbsp;
@@ -239,7 +239,7 @@ export default function Table({ title, headers, initialData }) {
 										);
 									})}
 									{title == "Applied Leaves" ||
-									title == "Check Leave Applications" ? (
+										title == "Check Leave Applications" ? (
 										<th>Action</th>
 									) : (
 										""
@@ -247,7 +247,7 @@ export default function Table({ title, headers, initialData }) {
 								</tr>
 							</thead>
 							<tbody>
-								{data.map((row, idx) => {
+								{data.map((row, idx) => {									
 									return (
 										<tr key={idx} className="cell-1">
 											{row.map((item, i) => {
@@ -295,7 +295,6 @@ export default function Table({ title, headers, initialData }) {
 															>
 																<FaIcons.FaQuestionCircle></FaIcons.FaQuestionCircle>
 															</button>
-															
 														</td>
 													);
 												}

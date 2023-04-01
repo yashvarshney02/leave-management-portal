@@ -8,86 +8,54 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
 import "./Form.css";
+import { Button } from 'react-bootstrap';
 
 export default function UpdateLeave({ toast }) {
 	const { currentUser } = useAuth();
-	const [typesOfLeave, setTypesofLeave] = useState(["CASUAL LEAVE","RESTRICTED HOLIDAY","SPECIAL CASUAL LEAVE","ON DUTY"])
-	const [duration, setDuration] = useState(0);
-	const [formData, setFormData] = useState({
-		"form_duration": 0,
-		"form_name": currentUser.name,
-		"form_email": currentUser.email,
-		"form_nature": "Casual Leave",
-		"form_type_of_leave": "CASUAL LEAVE",
-		"form_isStation": "Yes"
-	});
+	const [currentQuery, setCurrentQuery] = useState("users_sample")
+	const listOfQueries = {
+		"Add Users": "users_sample",
+		"Add Leaves Info": "leaves_sample"
+	}
 	const [formLoading, setFormLoading] = useState(false);
+	const [fileName, setFileName] = useState('')
+	const [downloadLink, setDownloadLink] = useState('');
 
-	const handleInputChange = (e) => {
-		const propName = e.target.id;
-		const propVal = e.target.value;
-		setFormData({ ...formData, [propName]: propVal });
+	const handleDownloadClick = async (query) => {
+
+		const response = await httpClient.post(`${process.env.REACT_APP_API_HOST}/sample_csvs`, {
+			name: query
+		})
+		const blob = new Blob([response.data], { type: 'text/csv' });
+		const url = window.URL.createObjectURL(blob);
+		setFileName(`${query}.csv`)
+		setCurrentQuery(query)
+		setDownloadLink(url);
 	};
 
-	// const onFileChange = (event) => {
-	// 	console.log("onfilechange")
-	// 	setFileState(event.target.files[0]);
-	// };
+	const handleFileChange = async (event) => {
+		const file = event.target.files[0];
+		const formData = new FormData();
+		formData.append('file', file);
+		formData.append('name', currentQuery);
 
-	const handleSubmit = async (e) => {
-		e.preventDefault();		
-		// changedtoc		
-		if (isNaN(formData.form_duration)) {
-			toast.error("Error, Check the duration again", toast.POSITION.BOTTOM_RIGHT);
-			return;
-		}
-		else if (parseInt(formData.form_duration * 10) % (5) != 0) {
-			toast.error("Error, Check the duration again", toast.POSITION.BOTTOM_RIGHT);
-			return;
-		}
-		setFormLoading(true);
 		try {
-			const resp = await httpClient.post(`${process.env.REACT_APP_API_HOST}/apply_leave`, {
-				data: formData
-			})
-			console.log(resp)
-			if (resp.data.status == 'success') {
-				toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT)
+			const resp = await httpClient.post(`${process.env.REACT_APP_API_HOST}/process_query`, formData, {
+				headers: {
+					'Content-Type': 'multipart/form-data'
+				}
+			});
+			if (resp.data.status == "success") {
+				toast.success("Query Executed Successfully", toast.POSITION.BOTTOM_RIGHT);
 			} else {
-				toast.error(resp.data.data, toast.POSITION.BOTTOM_RIGHT)
+				toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
+				return;
 			}
 		} catch (error) {
-			toast.error("Leave Application Unssucessful", toast.POSITION.BOTTOM_RIGHT)
+			console.log(error); // Check if there are any error messages
 		}
-		setFormLoading(false);
-	}
+	};
 
-	const adjustDuration = async (e) => {
-		const propName = e.target.id;
-		const propVal = e.target.value;
-		let startDate, endDate;
-		if (propName == "form_sdate" && formData.form_edate) {
-			startDate = new Date(propVal);
-			endDate = new Date(formData.form_edate)
-		} else if (propName == "form_edate" && formData.form_sdate) {
-			startDate = new Date(formData.form_sdate);
-			endDate = new Date(propVal)
-		}
-		if (startDate && endDate && endDate >= startDate) {
-			const differenceInMs = endDate.getTime() - startDate.getTime();
-			const differenceInDays = differenceInMs / (1000 * 60 * 60 * 24);
-			setDuration(differenceInDays + 1)
-		}
-	}
-
-	const handleTypeOfLeave = (e) => {
-		const propVal = e.target.value;		
-		if (propVal == "Casual Leave") {
-			setTypesofLeave(["CASUAL LEAVE","RESTRICTED HOLIDAY","SPECIAL CASUAL LEAVE","ON DUTY"])
-		} else {
-			setTypesofLeave(["Earned Leave", "Half Pay Leave","Extra Ordinary Leave","Commuted Leave","Vacation","Maternity Leave","Paternity Leave","Child Care Leave"])
-		}
-	}
 
 	const getEmails = async (e) => {
 		try {
@@ -98,7 +66,7 @@ export default function UpdateLeave({ toast }) {
 			} else {
 				// toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
 				return;
-			}			
+			}
 		} catch (error) {
 			// toast.error("something went wrong", toast.POSITION.BOTTOM_RIGHT);
 		}
@@ -106,100 +74,50 @@ export default function UpdateLeave({ toast }) {
 
 	useEffect(() => {
 		async function test() {
-			await getEmails()
+			await getEmails();
+			await handleDownloadClick(currentQuery);
 		}
-		test()
-	})
+		test();
+	}, [])
 
 	return (
 		<div className="container-al">
 			<Card style={{ width: "100%" }}>
 				<Card.Body style={{ width: "100%" }}>
-					<Card.Title className="title-al" >Apply Leave</Card.Title>
+					<Card.Title className="title-al" >Establishment Portal</Card.Title>
 					<Card.Text>
-						<form onSubmit={(e) => { handleSubmit(e) }}>
+						<form>
 							<Container className="content-al">
 								<div className="user-details-al">
 									<div className="input-box-al">
 										<div className="details-al">
 											<Row className="row-al">
 												<Col className="col-al">
-													<legend htmlFor="form_name" style={{ fontSize: "18px" }}>Name</legend>
-													<input type="text" className="form-control" style={{ cursor: "not-allowed" }} id="form_name" value={currentUser.name} onChange={(e) => { handleInputChange(e) }} placeholder="Name" readonly disabled />
-												</Col >
-												<Col className="col-al">
-													<legend htmlFor="form_email" style={{ fontSize: "18px" }}>Email</legend>
-													<input type="email" className="form-control" id="form_email" defaultValue={currentUser.email} onChange={(e) => { handleInputChange(e) }} placeholder="Email" readonly required />
-												</Col >
-											</Row >
-											<Row className="row-al">
-												<Col className="col-al">
-													<legend htmlFor="form_phone" style={{ fontSize: "18px" }}>Phone Number</legend>
-													<input type="tel" className="form-control" id="form_phone" defaultValue={currentUser.mobile} onChange={(e) => { handleInputChange(e) }} placeholder="Phone Number" required />
-												</Col >
-												<Col className="col-al">
-													<legend htmlFor="form_nature" style={{ fontSize: "18px" }}>Nature of leave</legend>
-													<select className="form-control" id="form_nature" onChange={(e) => { handleInputChange(e);handleTypeOfLeave(e) }} required>
-														<option>Casual Leave</option>
-														<option>Non Casual Leave</option>
-													</select>
-												</Col >
-											</Row >
-											<Row className="row-al">
-												<Col className="col-al">
-													<legend htmlFor="form_type_of_leave" style={{ fontSize: "18px" }}>Type of leave</legend>
-													<select className="form-control" id="form_type_of_leave" onChange={(e) => { handleInputChange(e) }} required>
+													<legend htmlFor="form_query" style={{ fontSize: "18px" }}>Choose Query</legend>
+													<select className="form-control" id="form_query" onChange={async (e) => { await handleDownloadClick(listOfQueries[e.target.value]) }} required>
 														{
-															typesOfLeave.map((item, key) => {
-																return (
-																	<option key={key}>{item}</option>
-																)
+															Object.keys(listOfQueries).map((item, key) => {
+																return <option key={key}>{item}</option>
 															})
-														}																											
+														}
 													</select>
 												</Col >
-												<Col className="col-al">
-													<legend htmlFor="form_isStation" style={{ fontSize: "18px" }}>Is it a station leave?</legend>
-													<select className="form-control" id="form_isStation" defaultValue={"Yes"} onChange={(e) => { handleInputChange(e) }}>
-														<option>Yes</option>
-														<option>No</option>
-													</select>
-												</Col >
-												<Col className="col-al">
-													<legend htmlFor="form_duration" style={{ fontSize: "18px" }}>Duration of leave</legend>
-													<input type="number" className="form-control" id="form_duration" placeholder="Duration" disabled value={duration} onChange={(e) => { handleInputChange(e) }} required />
-												</Col >
-											</Row >
-											<Row className="row-al">
-												<Col className="col-al">
-													<legend htmlFor="form_sdate" style={{ fontSize: "18px" }}>Start Date</legend>
-													<input type="date" id="form_sdate" placeholder="Pick start date" className="form-control" onChange={(e) => { handleInputChange(e); adjustDuration(e) }} required></input>
-												</Col >
-												<Col className="col-al">
-													<legend htmlFor="form_edate" style={{ fontSize: "18px" }}>End Date</legend>
-													<input type="date" id="form_edate" placeholder="Pick end date" className="form-control" onChange={(e) => { handleInputChange(e); adjustDuration(e) }} required></input>
-												</Col >
-											</Row >
-											<Row className="row-al">
-												<Col className="col-al">
-													<legend htmlFor="form_purpose" style={{ fontSize: "18px" }}>Purpose of leave </legend>
-													<textarea id="form_purpose" className="form-control" onChange={(e) => { handleInputChange(e) }}>
 
-													</textarea>
-												</Col>
-												<Col className="col-al">
-													<legend htmlFor="form_altArrangements" style={{ fontSize: "18px" }}>Alternative Arrangements</legend>
-													<textarea id="form_altArrangements" className="form-control" onChange={(e) => { handleInputChange(e) }}>
-
-													</textarea>
-												</Col>
-											</Row>
+											</Row >
+											<div style={{ textAlign: "left" }}>
+												<Button >
+													{downloadLink && <a href={downloadLink} style={{ color: "white" }} download={fileName}>Download Sample Data</a>}
+												</Button>
+											</div>
 											<br />
-											<Row className="row-al">
+											<div style={{ textAlign: "left" }}>
+												<input type="file" accept=".csv" onChange={handleFileChange} />
+											</div>
+											{/* <Row className="row-al">
 												<Col>
 													<button type="submit" className="btn btn-primary btn-block">{formLoading ? <LoadingIndicator color={"white"}></LoadingIndicator> : "Apply Leave"}</button>
 												</Col>
-											</Row>
+											</Row> */}
 										</div>
 									</div>
 								</div>

@@ -1,5 +1,5 @@
 .heading{
-    font-family:sans-serif;
+    /* font-family:sans-serif; */
     padding: 5px;
 }
 
@@ -20,7 +20,7 @@
 
 .remaining-leaves i,
 .taken-leaves i {
-  font-size: 2em;
+  /* font-size: 2em; */
   color: red;
 }
 
@@ -92,7 +92,7 @@ body {
   justify-content: center;
   align-items: center;
   height: 35px;
-  font-size: 20px;
+  /* font-size: 20px; */
   font-weight: bold;
   color: #333;
   background-color: #fff;
@@ -120,13 +120,13 @@ body {
 }
 
 span{
-  font-size: 25px;
-  font-family:'Times New Roman', Times, serif;
+  /* font-size: 25px; */
+  /* font-family:'Times New Roman', Times, serif; */
 }
 
 .mt-4 > button {
-  font-size: 20px;
-  font-family: 'Times New Roman', Times, serif;
+  /* font-size: 20px; */
+  /* font-family: 'Times New Roman', Times, serif; */
   margin-top: 10px;
 }
 
@@ -150,11 +150,11 @@ span{
 }
 
 .recent-application>div{
-  font-family:'Times New Roman', Times, serif;
+  /* font-family:'Times New Roman', Times, serif; */
 }
 
 .card-header{
-  font-size: 25px;
+  /* font-size: 25px; */
   font-weight: bolder;
 }
 
