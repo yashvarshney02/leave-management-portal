@@ -29,6 +29,21 @@ export const filterColoumns = (headers,data,colHeading,val) => {
     return newData;
 }
 
+export const prepData = (headers,data,colHeading,val) => {
+    let newData = [];
+    let arrpos = headers.findIndex((x) => x === colHeading);
+    for (let idx in data) {
+        if (
+            String(data[idx][arrpos])
+                .toLowerCase()
+                 === (String(val).toLowerCase().trim())
+        ) {
+            newData.push(data[idx]);
+        }
+    }
+    return newData;
+}
+
 export const globalFiltering = (data,val) => {
     let newData = [];
     for (let idx in data) {
