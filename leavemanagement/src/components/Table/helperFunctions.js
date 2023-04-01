@@ -14,6 +14,7 @@ export const makeAbb = (x) => {
     return output;
 };
 
+
 export const filterColoumns = (headers,data,colHeading,val) => {
     let newData = [];
     let arrpos = headers.findIndex((x) => x === colHeading);
@@ -26,6 +27,7 @@ export const filterColoumns = (headers,data,colHeading,val) => {
             newData.push(data[idx]);
         }
     }
+    
     return newData;
 }
 

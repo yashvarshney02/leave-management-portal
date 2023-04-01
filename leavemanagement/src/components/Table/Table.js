@@ -25,8 +25,10 @@ export default function Table({ title, headers, initialData, from }) {
 		...prepData(headers, initialData, "Status", "approved withdrawn"),
 		...prepData(headers, initialData, "Status", "approved by hod"),
 		...prepData(headers, initialData, "Status", "approved by dean"),
+		...prepData(headers, initialData, "Status", "approved by faculty"),
 		...prepData(headers, initialData, "Status", "disapproved by dean"),
 		...prepData(headers, initialData, "Status", "disapproved by hod"),
+		...prepData(headers, initialData, "Status", "disapproved by faculty"),
 	];
 
 	initialData = pendingTopData;
