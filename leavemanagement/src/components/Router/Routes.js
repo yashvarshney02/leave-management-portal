@@ -7,6 +7,7 @@ import PrivateRoute from "../PrivateRoute/PrivateRoute";
 import PastApplications from "../Forms/PastApplications";
 import CheckLeaves from "../Forms/CheckLeaves";
 import Dates from "../Forms/Dates";
+import UpdateLeave from "../Forms/UpdateLeave";
 
 const Paths = (props) => {
   return (
@@ -17,6 +18,9 @@ const Paths = (props) => {
         </Route>
         <Route path='/forms/applyleave' element={<PrivateRoute user={["all"]} toast={props.toast}/>}>
           <Route path="/forms/applyleave" element={<ApplyLeave toast={props.toast}/>} />
+        </Route>
+        <Route path='/forms/updateleave' element={<PrivateRoute user={["all"]} toast={props.toast}/>}>
+          <Route path="/forms/updateleave" element={<UpdateLeave toast={props.toast}/>} />
         </Route>
         <Route path='/forms/pastapplications' element={<PrivateRoute user={["all"]} toast={props.toast}/>}>
           <Route path="/forms/pastapplications" element={<PastApplications toast={props.toast}/>} />

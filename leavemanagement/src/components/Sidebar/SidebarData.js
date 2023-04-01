@@ -24,6 +24,12 @@ export const SidebarData = [
         cName: 'sub-nav'
       },
       {
+        title: 'Update Leave Form',
+        path: '/forms/updateleave',
+        icon: <IoIcons.IoIosPaper />,
+        cName: 'sub-nav'
+      },
+      {
         title: 'Past Appilcations',
         path: '/forms/pastapplications',
         icon: <IoIcons.IoIosPaper />,
