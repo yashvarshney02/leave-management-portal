@@ -8,13 +8,18 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
 import "./Form.css";
-import { Button } from 'react-bootstrap';
-import Accordion from 'react-bootstrap/Accordion';
+import { Button, Modal, Accordion } from 'react-bootstrap';
 
 export default function UpdateLeave({ toast }) {
-	const { currentUser } = useAuth();
+	const [specificData, setSpecificData] = useState()
 	const [currentQuery, setCurrentQuery] = useState("users_sample");
+	const [initialcollectiveData, setinitialCollectiveData] = useState();
 	const [collectiveData, setCollectiveData] = useState();
+	const [show, setShow] = useState(false);
+
+	const handleClose = () => setShow(false);
+	const handleShow = () => setShow(true);
+
 	const listOfQueries = {
 		"Add Users": "users_sample",
 		"Add Leaves Info": "leaves_sample"
@@ -59,11 +64,11 @@ export default function UpdateLeave({ toast }) {
 	};
 
 
-	const getEmails = async (e) => {
+	const getCollectiveData = async (e) => {
 		try {
 			const resp = await httpClient.get(`${process.env.REACT_APP_API_HOST}/collective_data`);
 			if (resp.data.status == "success") {
-				console.log(resp.data.data)
+				setinitialCollectiveData(resp.data.data);
 				setCollectiveData(resp.data.data);
 				// toast.success("Leaves fetched Successfully", toast.POSITION.BOTTOM_RIGHT);
 			} else {
@@ -75,9 +80,23 @@ export default function UpdateLeave({ toast }) {
 		}
 	}
 
+	function handleFilter(text) {
+		if (text.length == 0) {
+			setCollectiveData(initialcollectiveData);
+			return;
+		}
+		let temp = []
+		for (let idx in initialcollectiveData) {
+			if (initialcollectiveData[idx].email_id.toLowerCase().includes(text.toLowerCase()) || initialcollectiveData[idx].name.toLowerCase().includes(text.toLowerCase())) {
+				temp.push(initialcollectiveData[idx]);
+			}
+		}
+		setCollectiveData(temp);
+	}
+
 	useEffect(() => {
 		async function test() {
-			await getEmails();
+			await getCollectiveData();
 			await handleDownloadClick(currentQuery);
 		}
 		test();
@@ -98,7 +117,7 @@ export default function UpdateLeave({ toast }) {
 												<Row className="row-al">
 													<Col className="col-al">
 														<legend htmlFor="form_query" style={{ fontSize: "18px" }}>Choose Query</legend>
-														<select className="form-control" id="form_query" onChange={async (e) => { await handleDownloadClick(listOfQueries[e.target.value]) }} required>
+														<select className="form-control" id="form_query" onChange={async (e) => { handleDownloadClick(listOfQueries[e.target.value]) }} required>
 															{
 																Object.keys(listOfQueries).map((item, key) => {
 																	return <option key={key}>{item}</option>
@@ -133,29 +152,60 @@ export default function UpdateLeave({ toast }) {
 			</div >
 			<div className="container-al">
 				<Card style={{ width: "100%" }}>
+					<Modal show={show} onHide={handleClose}>
+						<Modal.Header closeButton>
+							<Modal.Title>{specificData?.name} ({specificData?.email_id})</Modal.Title>
+						</Modal.Header>
+						<Modal.Body>
+						<ul>
+						{
+							specificData?.leave_ids.map((item, idx) => {
+								console.log(item);
+								return (
+									<li style={{textAlign: "left"}}>
+										<a href={`/past_applications/${item[0]}`} target="blank" style={{fontWeight: "bold"}}>
+											Leave ID {item[0]} 
+										</a>: {item[1]}
+									</li>
+								)
+							})
+						}
+						</ul>
+						</Modal.Body>
+						<Modal.Footer>
+							<Button variant="secondary" onClick={handleClose}>
+								Close
+							</Button>
+						</Modal.Footer>
+					</Modal>
 					<Card.Body style={{ width: "100%" }}>
 						<Card.Title className="title-al" >Collective Leave Data</Card.Title>
 						<Card.Text>
+							<input type="text" className="form-control" id="form_name" onChange={(e) => { handleFilter(e.target.value) }} placeholder="Search by email or name" />
+							<br />
 							{
 								collectiveData?.map((item, key) => {
 									return (
-										<Accordion defaultActiveKey="0">
-											<Accordion.Item eventKey="0">
+										<Accordion defaultActiveKey={"0"}>
+											<Accordion.Item eventKey={key}>
 												<Accordion.Header>{item.name} ({item.email_id})</Accordion.Header>
 												<Accordion.Body>
 													<ul>
-													<li style={{textAlign: "left"}}>
-														<span style={{fontWeight: "bold"}}>Total Casual Leaves:</span> {item.total_casual_leaves?item.total_casual_leaves:"NA"}
-													</li>
-													<li style={{textAlign: "left"}}>
-														<span style={{fontWeight: "bold"}}>Taken Casual Leaves:</span> {item.total_casual_leaves?item.taken_casual_leaves:"NA"}
-													</li>
-													<li style={{textAlign: "left"}}>
-														<span style={{fontWeight: "bold"}}>Total Non Casual Leaves:</span> {item.total_casual_leaves?item.total_non_casual_leave:"NA"}
-													</li>
-													<li style={{textAlign: "left"}}>
-														<span style={{fontWeight: "bold"}}>Taken Non Casual Leaves:</span> {item.total_casual_leaves?item.taken_non_casual_leave:"NA"}
-													</li>
+														<li style={{ textAlign: "left" }}>
+															<span style={{ fontWeight: "bold" }}>Total Casual Leaves:</span> {item.total_casual_leaves ? item.total_casual_leaves : "NA"}
+														</li>
+														<li style={{ textAlign: "left" }}>
+															<span style={{ fontWeight: "bold" }}>Taken Casual Leaves:</span> {item.total_casual_leaves ? item.taken_casual_leaves : "NA"}
+														</li>
+														<li style={{ textAlign: "left" }}>
+															<span style={{ fontWeight: "bold" }}>Total Non Casual Leaves:</span> {item.total_casual_leaves ? item.total_non_casual_leave : "NA"}
+														</li>
+														<li style={{ textAlign: "left" }}>
+															<span style={{ fontWeight: "bold" }}>Taken Non Casual Leaves:</span> {item.total_casual_leaves ? item.taken_non_casual_leave : "NA"}
+														</li>
+														<Button variant="primary" onClick={() => {setSpecificData(item); handleShow();}}>
+															View All applications
+														</Button>
 													</ul>
 												</Accordion.Body>
 											</Accordion.Item>
