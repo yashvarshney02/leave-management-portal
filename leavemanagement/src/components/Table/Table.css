@@ -44,7 +44,6 @@ table {
 	margin-top: 10px;
 }
 
-
 tr {
 	background-color: white;
 	margin: 1px;
@@ -59,9 +58,6 @@ tr {
 	position: absolute;
 	margin-left: 11%;
 }
-
-
-
 
 .tab-button {
 	background-color: #474edd;
@@ -81,7 +77,7 @@ tr {
 	text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 	text-decoration: none !important;
 	transition: all 0.2s linear;
-    width: 225px;
+	width: 225px;
 }
 
 .tab-button:active {
@@ -103,11 +99,10 @@ tr {
 
 .isActive {
 	background-color: rgba(0, 0, 0, 0.5);
-    
 }
 
 .isActive:hover {
-    background-color: rgba(0, 0, 0, 0.5);
+	background-color: rgba(0, 0, 0, 0.5);
 }
 
 .pending-count {

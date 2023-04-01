@@ -6,8 +6,11 @@ import { Badge } from "react-bootstrap";
 import httpClient from "../../httpClient";
 import { filterColoumns, globalFiltering, makeAbb } from "./helperFunctions";
 import "./Table.css";
+import { useNavigate } from "react-router-dom";
 
-export default function Table({ title, headers, initialData }) {
+export default function Table({ title, headers, initialData, from }) {
+	console.log(from);
+	const navigate = useNavigate();
 	//to set initial search values = ""
 	let initColSearchKey = {};
 	for (let head in headers) {
@@ -99,14 +102,15 @@ export default function Table({ title, headers, initialData }) {
 		if (title == "Applied Leaves") {
 			return (
 				<td>
-					<FaIcons.FaEye
-						style={{ cursor: "pointer" }}
-						color="green"
-						onClick={(e) => {
-							e.currentTarget.dataset.toggle = "modal";
-							e.currentTarget.dataset.target = "#modal-" + row[0];
-						}}
-					/>
+					<a href={`/${from}/${row[0]}`}>
+						<FaIcons.FaEye
+							style={{ cursor: "pointer" }}
+							color="green"
+							onClick={(e) => {
+								navigate(`/${from}/${row[0]}`);
+							}}
+						/>
+					</a>
 					&nbsp;
 					<FaIcons.FaTrash
 						style={{ cursor: "pointer" }}
@@ -126,8 +130,7 @@ export default function Table({ title, headers, initialData }) {
 						style={{ cursor: "pointer" }}
 						color="green"
 						onClick={(e) => {
-							e.currentTarget.dataset.toggle = "modal";
-							e.currentTarget.dataset.target = "#modal-" + row[0];
+							navigate(`/${from}/${row[0]}`);
 						}}
 					/>
 					&nbsp;
@@ -295,7 +298,6 @@ export default function Table({ title, headers, initialData }) {
 															>
 																<FaIcons.FaQuestionCircle></FaIcons.FaQuestionCircle>
 															</button>
-															
 														</td>
 													);
 												}
