@@ -248,7 +248,7 @@ const LeavePDFModals = ({ toast, from }) => {
 								<div className="col-6"></div>
 								<div className="col-6" id="signature-container">									
 									{signatureDataURL && (
-										<img src={signatureDataURL} alt="Signature" />
+										<img src={signatureDataURL} alt="Signature" style={{width:"40%"}} />
 									)}
 									<br />
 									आवेदक के हस्ताक्षर तारीख साहित/Signature with date of the
