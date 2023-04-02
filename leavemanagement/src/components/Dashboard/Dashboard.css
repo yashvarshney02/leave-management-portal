@@ -92,6 +92,7 @@ body {
   justify-content: center;
   align-items: center;
   height: 35px;
+  font-size: 1rem;
   /* font-size: 20px; */
   font-weight: bold;
   color: #333;
@@ -120,6 +121,13 @@ body {
 }
 
 span{
+  font-size: 1.5em;
+  font-family:'Times New Roman', Times, serif;
+}
+
+.mt-4 > button {
+  font-size: 1.3rem;
+  font-family: 'Times New Roman', Times, serif;
   /* font-size: 25px; */
   /* font-family:'Times New Roman', Times, serif; */
 }
@@ -149,11 +157,12 @@ span{
   font-weight: bold;
 }
 
-.recent-application>div{
-  /* font-family:'Times New Roman', Times, serif; */
-}
+/* .recent-application>div{
+  font-family:'Times New Roman', Times, serif; 
+}*/
 
 .card-header{
+  font-size: 1.5em;
   /* font-size: 25px; */
   font-weight: bolder;
 }
@@ -175,5 +184,20 @@ span{
 }
 
 .btn-sm{
+  font-size: 1em;
   margin-top: 5px;
+}
+
+.date, .card-title{
+  font-size: 1.2em;
+}
+
+.calendar-panel{
+  display: flex;
+  align-items: center;
+}
+
+.arrow{
+  height: 1.5em;
+  width: 1.5em;
 }
