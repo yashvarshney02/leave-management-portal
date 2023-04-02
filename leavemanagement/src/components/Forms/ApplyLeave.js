@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import httpClient from '../../httpClient';
 import "./ApplyForm.css"
 import LoadingIndicator from '../LoadingIndicator';
@@ -7,12 +7,14 @@ import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
+import SignaturePad from 'react-signature-canvas'
 import "./Form.css";
 
 export default function ApplyLeave({ toast }) {
 	const { currentUser } = useAuth();
 	const [typesOfLeave, setTypesofLeave] = useState(["CASUAL LEAVE", "RESTRICTED HOLIDAY", "SPECIAL CASUAL LEAVE", "ON DUTY"])
 	const [duration, setDuration] = useState(0);
+	const [document, setDocument] = useState()
 	const [formData, setFormData] = useState({
 		"form_duration": 0,
 		"form_name": currentUser.name,
@@ -23,68 +25,82 @@ export default function ApplyLeave({ toast }) {
 	});
 	const [formLoading, setFormLoading] = useState(false);
 
+	const sigPadRef = useRef();
+
+	function dataURItoBlob(dataURI) {
+		const byteString = atob(dataURI.split(',')[1]);
+		const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+		const ab = new ArrayBuffer(byteString.length);
+		const ia = new Uint8Array(ab);
+		for (let i = 0; i < byteString.length; i++) {
+			ia[i] = byteString.charCodeAt(i);
+		}
+		return new Blob([ab], { type: mimeString });
+	}
+
 	const handleInputChange = async (e) => {
 		const propName = e.target.id;
-		const propVal = e.target.value;				
-		console.log(propName, propVal)
-		setFormData({ ...formData, [propName]: propVal });		
+		const propVal = e.target.value;
+		setFormData({ ...formData, [propName]: propVal });
 	};
 
 	const handleFileInputChange = (e) => {
-		const file = e.target.files[0];
-		const reader = new FileReader();
+		const file = e.target.files[0];		
 		const fileSize = file.size;
+		setDocument(file)
 		if (fileSize > 1 * 1024 * 1024) {
 			alert("File size must be less than 1MB");
 			return;
 		}
 		setFormLoading(true);
-		reader.onload = () => {
-			const base64Data = btoa(reader.result);				
-			setFormData({ ...formData, "form_filename": file.name });
-			setFormData({ ...formData, "form_filedata": base64Data });
-			setFormLoading(false);
-		};
-		reader.readAsBinaryString(file);
-
+		setFormData({ ...formData, "form_filename": `${currentUser.user_id}_${Date.now()}_${file.name}` });
 	};
 
-	// const onFileChange = (event) => {
-	// 	console.log("onfilechange")
-	// 	setFileState(event.target.files[0]);
-	// };
+	const clear = () => {
+		sigPadRef.current.clear();
+	};
+
+
 
 	const handleSubmit = async (e) => {
-		e.preventDefault();			
-		adjustDuration();
-		// return;
-		// changedtoc		
-		if (isNaN(formData.form_duration)) {
-			toast.error("Error, Check the duration again", toast.POSITION.BOTTOM_RIGHT);
-			return;
-		}
-		else if (parseInt(formData.form_duration * 10) % (5) != 0) {
-			toast.error("Error, Check the duration again", toast.POSITION.BOTTOM_RIGHT);
-			return;
-		}
-		setFormLoading(true);
 		try {
-			const resp = await httpClient.post(`${process.env.REACT_APP_API_HOST}/apply_leave`, {
-				data: formData
-			})
-			console.log(resp)
-			if (resp.data.status == 'success') {
-				toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT)
-			} else {
-				toast.error(resp.data.data, toast.POSITION.BOTTOM_RIGHT)
+			e.preventDefault();
+			// console.log(formData)		
+			let dur = adjustDuration();
+			if (isNaN(formData.form_duration)) {
+				toast.error("Error, Check the duration again", toast.POSITION.BOTTOM_RIGHT);
+				return;
 			}
-		} catch (error) {
-			toast.error("Leave Application Unssucessful", toast.POSITION.BOTTOM_RIGHT)
+			else if (parseInt(formData.form_duration * 10) % (5) != 0) {
+				toast.error("Error, Check the duration again", toast.POSITION.BOTTOM_RIGHT);
+				return;
+			}
+			setFormLoading(true);
+			const trimmedDataURL = sigPadRef.current.getTrimmedCanvas().toDataURL('image/png');
+			const arrayBuffer = await dataURItoBlob(trimmedDataURL).arrayBuffer();
+			const binaryData = new Uint8Array(arrayBuffer);		
+			let form_data = formData
+			form_data['form_duration'] = dur;
+			form_data['signature'] = binaryData;
+			const form = new FormData();
+			form.append('data', JSON.stringify(form_data));
+			form.append('file', document);			
+			try {
+				const resp = await httpClient.post(`${process.env.REACT_APP_API_HOST}/apply_leave`,form);	
+				if (resp.data.status == 'success') {
+					toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT)
+				} else {
+					toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT)
+				}
+			} catch (error) {
+				toast.error("Leave Application Unssucessful", toast.POSITION.BOTTOM_RIGHT)
+			}
+			setFormLoading(false);
+		} catch(error) {
 		}
-		setFormLoading(false);
 	}
 
-	const adjustDuration= (e) => {		
+	const adjustDuration = (e) => {
 		let startDate, endDate;
 		endDate = new Date(formData.form_edate)
 		startDate = new Date(formData.form_sdate);
@@ -93,7 +109,9 @@ export default function ApplyLeave({ toast }) {
 			const differenceInDays = differenceInMs / (1000 * 60 * 60 * 24);
 			setDuration(differenceInDays + 1)
 			setFormData({ ...formData, "form_duration": differenceInDays + 1 });
+			return differenceInDays + 1
 		}
+		return 0;
 	}
 
 	const handleTypeOfLeave = (e) => {
@@ -111,7 +129,7 @@ export default function ApplyLeave({ toast }) {
 				<Card.Body style={{ width: "100%" }}>
 					<Card.Title className="title-al" >Apply Leave</Card.Title>
 					<Card.Text>
-						<form onSubmit={async (e) => {await  handleSubmit(e) }}>
+						<form onSubmit={async (e) => { await handleSubmit(e) }}>
 							<Container className="content-al">
 								<div className="user-details-al">
 									<div className="input-box-al">
@@ -201,6 +219,16 @@ export default function ApplyLeave({ toast }) {
 												</Col >
 											</Row>
 											<br />
+											<Row className='row-al'>
+												<div className={"sigContainer"}>
+													<SignaturePad canvasProps={{ className: 'sigPad' }} ref={sigPadRef} onChange={(e) => {  }} />
+												</div>
+												<div>
+													<button onClick={clear}>
+														Clear
+													</button>
+												</div>
+											</Row>
 											<Row className="row-al">
 												<Col>
 													<button type="submit" className="btn btn-primary btn-block">{formLoading ? <LoadingIndicator color={"white"}></LoadingIndicator> : "Apply Leave"}</button>
@@ -214,54 +242,6 @@ export default function ApplyLeave({ toast }) {
 					</Card.Text>
 				</Card.Body>
 			</Card>
-			{/* <div className="leaveform cardbody-color">
-	<h1>Leave Form</h1>
-	<form onSubmit={(e) => { handleSubmit(e) }}>
-		<div className="form-row">
-			<div className="form-group col-md-6">
-			</div>
-			<div className="form-group col-md-6">
-			</div>
-		</div>
-
-		<div className="form-row">
-			<div className="form-group col-md-6">
-
-			</div>
-			<div className="form-group col-md-6">
-			</div>
-		</div>
-
-		<div className="form-row">
-			<div className="form-group col-md-6">
-
-
-			</div>
-
-		</div>
-
-		<div className="form-row">
-			<div className="form-group col-md-6">
-			</div>
-			<div className="form-group col-md-6">
-			</div>
-		</div>
-
-		<div className="form-group">
-
-		</div>
-
-		<div className="form-group">
-
-		</div>
-
-		<div style={{ padding: 20 }}>
-			<legend>Attach pdf document</legend>
-			<input type="file" name="file" onChange={onFileChange} />
-		</div>
-		<br />
-	</form>
-</div> */}
 		</div >
 
 

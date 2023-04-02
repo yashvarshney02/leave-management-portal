@@ -28,7 +28,7 @@ export default function UpdateLeave({ toast }) {
 	const [fileName, setFileName] = useState('')
 	const [downloadLink, setDownloadLink] = useState('');
 
-	const handleDownloadClick = async (query) => {
+	const handleDownloadClick = async (query) => {		
 
 		const response = await httpClient.post(`${process.env.REACT_APP_API_HOST}/sample_csvs`, {
 			name: query

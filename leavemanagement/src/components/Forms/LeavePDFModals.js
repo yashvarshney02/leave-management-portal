@@ -9,13 +9,13 @@ import { useNavigate } from "react-router-dom";
 import { Document, Page } from 'react-pdf';
 
 const LeavePDFModals = ({ toast, from }) => {
-	const [leave, setLeave] = useState(null);	
+	const [leave, setLeave] = useState(null);
 	const { currentUser } = useAuth();
 	let currentUrl =
 		window.location.href.split("/")[window.location.href.split("/").length - 1];
 	const leave_id = parseInt(currentUrl);
-
-
+	const [signatureDataURL, setSignatureDataUrl] = useState(null)
+	const [downloadLink, setDownloadLink] = useState(null);
 
 	const approveLeave = async (leave_id) => {
 		try {
@@ -55,12 +55,20 @@ const LeavePDFModals = ({ toast, from }) => {
 			const resp = await httpClient.post(
 				`${process.env.REACT_APP_API_HOST}/get_leave_info_by_id`,
 				{ leave_id }
-			);			
+			);
 			if (resp.data.status == "success") {
-				setLeave(resp.data.data[0]);
+				let data = resp.data.data[0]				
+				setLeave(data);
+				const imageUrl = "data:image/png;base64,"+ String(data.signature);				
+				setSignatureDataUrl(imageUrl);
+				if (data.file_name) {
+					await handleDownloadClick('leave_document', data.file_name)
+				}
+
 			} else {
 			}
 		} catch (error) {
+			console.log(error);
 			toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
 		}
 	};
@@ -79,21 +87,19 @@ const LeavePDFModals = ({ toast, from }) => {
 		} catch (error) {
 			toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
 		}
+	};	
+
+	const handleDownloadClick = async (query, file_name=null) => {		
+		const response = await httpClient.post(`${process.env.REACT_APP_API_HOST}/sample_csvs`, {
+			name: query,
+			file_name: file_name
+		})		
+		const encodedData = response.data.data;
+		const decodedData = atob(encodedData);
+		const blob = new Blob([response.data], { type: 'application/pdf' });
+		const url = window.URL.createObjectURL(blob);
+		setDownloadLink(url);
 	};
-
-
-	function MyComponent(pdfData) {
-		// const pdfUrl = `data:application/pdf;base64,${pdfData}`;
-		// console.log(pdfUrl)
-
-		return (
-			<div>
-				{/* <Document file={pdfUrl}>
-					<Page pageNumber={1} />
-				</Document> */}
-			</div>
-		);
-	}
 
 	const saveLeave = (leave_id) => {
 		const pdf = new jsPDF("portrait", "pt", "a2");
@@ -118,8 +124,8 @@ const LeavePDFModals = ({ toast, from }) => {
 	};
 
 	useEffect(() => {
-		async function test() {			
-			await fetchLeaveInfo();			
+		async function test() {
+			await fetchLeaveInfo();
 		}
 		test();
 	}, []);
@@ -127,7 +133,7 @@ const LeavePDFModals = ({ toast, from }) => {
 		<>
 			{true ? (
 				<div>
-					Download pdf <FaDownload style={{ cursor: "pointer" }} onClick={() => saveLeave(leave.id)} />
+					Download pdf <FaDownload style={{ cursor: "pointer" }} onClick={() => saveLeave(leave?.id)} />
 					<div className="container" style={{ width: "1000px" }} id={"first-page-" + leave?.id}>
 						<br />
 						<div style={{ display: "flex", alignItems: "center" }}>
@@ -169,7 +175,7 @@ const LeavePDFModals = ({ toast, from }) => {
 							<div className="row" style={{ border: "1px solid" }}>
 								<div className="col-6" style={{ textAlign: "left" }} >नाम / Name</div>
 								<div className="col-1" style={{ textAlign: "left" }}>:</div>
-								<div className="col-5" style={{ textAlign: "left" }}>{currentUser.name}</div>
+								<div className="col-5" style={{ textAlign: "left" }}>{leave?.name}</div>
 							</div>
 							<div className="row" style={{ border: "1px solid" }}>
 								<div className="col-6" style={{ textAlign: "left" }}>
@@ -193,8 +199,8 @@ const LeavePDFModals = ({ toast, from }) => {
 								</div>
 								<div className="col-1" style={{ textAlign: "left" }}>:</div>
 								<div className="col-5" style={{ textAlign: "left" }}>
-								<p>दिनों की संख्या / No of days&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{leave?.duration}</p>
-								{/* <p>From: {leave?.start_date.split("00:00:0}से/To ___________ तक</p> */}
+									<p>दिनों की संख्या / No of days&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{leave?.duration}</p>
+									{/* <p>From: {leave?.start_date.split("00:00:0}से/To ___________ तक</p> */}
 								</div>
 							</div>
 							<div className="row" style={{ border: "1px solid" }}>
@@ -240,12 +246,10 @@ const LeavePDFModals = ({ toast, from }) => {
 
 							<div className="row leave-details-signature">
 								<div className="col-6"></div>
-								<div className="col-6">
-									<img
-										src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Signature_of_Ann_Miller.svg/1280px-Signature_of_Ann_Miller.svg.png"
-										witdh="80px"
-										height="80px"
-									/>
+								<div className="col-6" id="signature-container">									
+									{signatureDataURL && (
+										<img src={signatureDataURL} alt="Signature" />
+									)}
 									<br />
 									आवेदक के हस्ताक्षर तारीख साहित/Signature with date of the
 									applicant
@@ -333,15 +337,13 @@ const LeavePDFModals = ({ toast, from }) => {
 							</div>
 						</div>
 						<hr />
-						{leave?.file_data == "" ||
-							leave?.file_data == undefined ? (
+						{leave?.file_name == "" ||
+							leave?.file_name == undefined ? (
 							<p>Attached Documents: No document attached</p>
 						) : (
 							<p>
 								Attached Documents:{" "}
-								{
-									MyComponent(leave?.file_data)
-								}
+								{downloadLink && <a href={downloadLink} download={leave?.file_name}>{leave?.file_name}</a>}
 							</p>
 						)}
 						<hr />

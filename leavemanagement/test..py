@@ -1,5 +1,5 @@
 from tkinter import E
-from flask import Flask,send_file, jsonify, render_template, url_for, request, session, redirect, Response
+from flask import Flask,send_file, jsonify, render_template, url_for, request, session, redirect, Response, send_from_directory
 from flask_pymongo import PyMongo
 from py import code
 from pymongo import MongoClient
@@ -17,6 +17,7 @@ import datetime as dt
 import sys
 import numpy as np
 from dateutil import parser
+import json
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -148,17 +149,33 @@ def get_user_dic(email):
 	dic['mobile'] = data[5]
 	return dic
 
-def insert_leave(leave):
+def get_user_dic_by_user_id(user_id):
+	db.reconnect()
+	cursor = db.cursor()
+	cursor.execute("SELECT * FROM users where user_id=%s", (user_id, ))
+	data = cursor.fetchall()[0]
+	dic = {}
+	dic['user_id'] = data[0]
+	dic['name'] = data[1]
+	dic['email'] = data[2]
+	dic['position'] = data[3]
+	dic['department'] = data[4]
+	dic['mobile'] = data[5]
+	return dic
+
+def insert_leave(leave, signature, document):
 	try:
 		db.reconnect()
 		connect = db
 		cursor = connect.cursor()
-		data = get_user_data(leave['form_email'])[0]
-		user_id = data[0]
-		department = data[1]
-		position = data[3]
+		data = get_user_dic(leave['form_email'])
+		user_id = data['user_id']
+		department = data['department']
+		position = data['position']
+		signature_binary = bytes(signature.values())
 		if leave.get('form_filename'):
 			file_name = leave['form_filename']
+			document.save(os.path.join(root_directory, file_name))
 		else:
 			file_name = ''
 		if leave.get('form_filedata'):
@@ -166,14 +183,15 @@ def insert_leave(leave):
 		else:
 			file_data = ''
 		cursor.execute("INSERT INTO leaves\
-			(department, user_id, nature, purpose, is_station, request_date, start_date, end_date, duration, status, level,file_uploaded, type_of_leave, filename, file_data) \
-			VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s,%s,%s,%s)",
-					(department, user_id, leave['form_nature'], leave['form_purpose'], leave['form_isStation'], str(dt.datetime.now()), leave['form_sdate'], leave['form_edate'], leave['form_duration'], 'Pending', position, '', leave['form_type_of_leave'], file_name, file_data))
+			(department, user_id, nature, purpose, is_station, request_date, start_date, end_date, duration, status, level,file_uploaded, type_of_leave, filename, file_data, signature) \
+			VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s,%s,%s,%s,%s)",
+					(department, user_id, leave['form_nature'], leave['form_purpose'], leave['form_isStation'], str(dt.datetime.now()), leave['form_sdate'], leave['form_edate'], leave['form_duration'], 'Pending', position, '', leave['form_type_of_leave'], file_name, file_data,signature_binary))
 		connect.commit()
 		return True
 	except Exception as E:
-		print(E)
-		return False
+		exc_type, exc_obj, exc_tb = sys.exc_info()
+		fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+		return str(E) + str(exc_tb.tb_lineno)
 
 def leaves_data_util(user_id):
 	connect = db
@@ -211,13 +229,19 @@ def home():
 def sample_csvs():
 	try:
 		mode = request.json['name']
-		file_name = f'{mode}.csv'
+		file_name = f'{mode}.csv' if not request.json.get('file_name') else request.json.get('file_name')
+		print(os.path.join(root_directory,file_name))
 		if mode == "users_sample":
 			return send_file(file_name, as_attachment=True, attachment_filename=file_name)
 		elif mode == "leaves_sample":
 			return send_file(file_name, as_attachment=True, attachment_filename=file_name)
+		elif mode == "leave_document":
+			with open(open(os.path.join(root_directory,file_name), 'rb') as f:
+				pdf_data = f.read()
+				encoded_data = base64.b64encode(pdf_data).decode('utf-8')
+			return send_file(encoded_data, as_attachment=True, attachment_filename=file_name, mimetype='application/pdf',)
 	except Exception as E:
-		return get_error_reponse(E)
+		return get_error_response(E)
 
 @app.route('/process_query', methods = ['POST'])
 @cross_origin(supports_credentials=True)
@@ -364,9 +388,14 @@ def edit_user_info():
 @cross_origin(supports_credentials=True)
 def apply_leave():
 	try:
-		data = request.json['data']
-		insert_leave(data)
-		return get_success_response("Leave Applied Successfully")
+		data = json.loads(request.form.get('data'))
+		signature = data['signature']
+		document = request.files['file']
+		ret = insert_leave(data, signature,document)
+		if ret == True:
+			return get_success_response("Leave Applied Successfully")
+		else:
+			return get_error_response(f"Leave Application Unsuccessful {ret}")
 	except Exception as E:
 		return get_error_response(f"Leave Application Unsuccessful {E}")
 
@@ -447,8 +476,15 @@ def get_leave_info_by_id():
 				'level': i[12],
 				'attached_documents': i[13],
 				'file_name': i[15],
-				'file_data': base64.b64encode(i[16]).decode('utf-8') if i[16] else None
+				'file_data': base64.b64encode(i[16]).decode('utf-8') if i[16] else None,
+				'signature': base64.b64encode(i[17]).decode('utf-8') if i[17] else None,
 			}
+			applicant = get_user_dic_by_user_id(content['user_id'])
+			print("test:", applicant)
+			content['name'] = applicant['name']
+			content['email'] = applicant['email']
+			leaves_data = leaves_data_util(i[2])
+			content.update(leaves_data)
 			payload.append(content)
 		return get_success_response(payload)
 	except Exception as E:
@@ -478,7 +514,7 @@ def check_applications():
 		payload = []
 		for i in leaves:
 			content = {'id': i[0], 'department': i[1], 'user_id': i[2], 'nature': i[3], 'purpose': i[4], 'is_station': i[5], 'request_date': i[6],
-					'start_date': i[7], 'end_date': i[8], 'authority_comment': i[9], 'duration': i[10], 'status': i[11], 'level': i[12], 'attached_documents': i[13]}
+					'start_date': i[7], 'end_date': i[8], 'authority_comment': i[9], 'duration': i[10], 'status': i[11], 'level': i[12], 'attached_documents': i[13], 'signature': i[17]}
 			if content['department'] != department:
 				continue
 			cursor.execute('SELECT email_id FROM users WHERE user_id = %s', (i[2], ))
@@ -508,7 +544,7 @@ def fetch_remaining_leaves():
 		data = get_user_data(email)[0]
 		user_id = data[0]
 		leaves_data = leaves_data_util(user_id)
-		return get_success_response(leaves)
+		return get_success_response(leaves_data)
 	except Exception as E:
 		return get_error_response(E)
 
@@ -545,7 +581,6 @@ def approve_leave():
 			return get_success_response(f"Leave with ID: {leave_id} is approved")
 		session['approved'][leave_id] = 1
 		user = get_user_dic(session['user_info']['email'])
-
 		db.reconnect()
 		connect = db
 		cursor = connect.cursor()
@@ -556,7 +591,6 @@ def approve_leave():
 			cursor.execute(
 				"UPDATE leaves SET status = 'Approved By Dean' WHERE leave_id = %s", (leave_id, ))
 		connect.commit()
-
 		cursor.execute(
 			"Select user_id, nature, duration from leaves where leave_id = %s", (leave_id, ))
 		data = cursor.fetchall()[0]
@@ -566,22 +600,20 @@ def approve_leave():
 
 		nature = nature.lower().split()
 		nature = '_'.join(nature)
-		u_st1 = 'total_' + nature + 's'
-		u_st2 = 'taken_' + nature + 's'
-		query = "Select %s from user where user_id = %s" % (u_st2, user_id)
+		if nature == "casual_leave":
+			u_st2 = 'taken_' + nature + 's'
+		else:
+			u_st2 = 'taken_' + nature
+		query = "Select %s from leaves_data where user_id = %s" % (u_st2, user_id)
 		cursor.execute(query)
 		data = cursor.fetchall()[0]
+		print("duration:",duration)
 		taken_cnt = float(data[0]) + duration
-		if (nature == "casual_leave" or nature == "restricted_leave") and (user['position'] == 'hod' or user['position'] == 'dean'):
-			query = "Update user set %s = %s where user_id = %s" % (
+		print("taken: ",taken_cnt)
+		query = "Update leaves_data set %s = %s where user_id = %s" % (
 				u_st2, taken_cnt, user_id)
-			cursor.execute(query)
-		elif nature != "casual_leave" and nature != "restricted_leave" and user['position'] == 'dean':
-			query = "Update user set %s = %s where user_id = %s" % (
-				u_st2, taken_cnt, user_id)
-			cursor.execute(query)
+		cursor.execute(query)
 		connect.commit()
-		connect.close()
 		# send_update_mail(leave_id)
 		return get_success_response(f"Leave with ID: {leave_id} is approved")
 	except Exception as E:
