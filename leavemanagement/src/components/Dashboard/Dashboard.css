@@ -119,10 +119,10 @@ body {
   border: 2px solid #7E57C2;
 }
 
-span{
-  /* font-size: 25px; */
-  /* font-family:'Times New Roman', Times, serif; */
-}
+/* span{
+  font-size: 25px;
+  font-family:'Times New Roman', Times, serif;
+} */
 
 .mt-4 > button {
   /* font-size: 20px; */
@@ -149,9 +149,9 @@ span{
   font-weight: bold;
 }
 
-.recent-application>div{
-  /* font-family:'Times New Roman', Times, serif; */
-}
+/* .recent-application>div{
+  font-family:'Times New Roman', Times, serif;
+} */
 
 .card-header{
   /* font-size: 25px; */
