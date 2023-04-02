@@ -1,16 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./Dashboard.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import httpClient from "../../httpClient";
 import { faArrowLeft, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 
-function Calendar() {
+function Calendar({ data }) {
   const [month, setMonth] = useState(new Date().getMonth());
   const [year, setYear] = useState(new Date().getFullYear());
 
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstDayOfMonth = new Date(year, month, 1).getDay();
   //   const lastDayOfMonth = new Date(year, month, daysInMonth).getDay();
-
+  console.log(data);
   const days = [];
   for (let i = 1; i <= daysInMonth; i++) {
     days.push(i);
@@ -38,10 +39,7 @@ function Calendar() {
     <div>
       <div class="calendar-panel">
         <button class="arrow">
-          <FontAwesomeIcon
-            icon={faArrowLeft}
-            onClick={prevMonth}
-          />
+          <FontAwesomeIcon icon={faArrowLeft} onClick={prevMonth} />
         </button>
         <div class="calendar">
           <span>{`${new Date(year, month).toLocaleString("default", {
@@ -61,7 +59,7 @@ function Calendar() {
               {[...Array(7)].map((_, dayIndex) => {
                 const day = weekIndex * 7 + dayIndex + 1 - firstDayOfMonth;
                 let isLeaveTaken = false;
-                if (day % 2 == 0 && day > 0 && day <= daysInMonth)
+                if (data && data[month] && data[month].includes(day) && day > 0 && day <= daysInMonth)
                   isLeaveTaken = true;
                 else isLeaveTaken = false;
                 return (
