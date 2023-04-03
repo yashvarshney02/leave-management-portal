@@ -127,7 +127,7 @@ export default function ApplyLeave({ toast }) {
 		<div className="container-al">
 			<Card style={{ width: "100%" }}>
 				<Card.Body style={{ width: "100%" }}>
-					<Card.Title className="title-al" >Apply Leave</Card.Title>
+					<Card.Title className="title-al" >Non Casual Leave</Card.Title>
 					<Card.Text>
 						<form onSubmit={async (e) => { await handleSubmit(e) }}>
 							<Container className="content-al">
@@ -149,14 +149,31 @@ export default function ApplyLeave({ toast }) {
 													<legend htmlFor="form_phone" style={{ fontSize: "18px" }}>Phone Number</legend>
 													<input type="tel" className="form-control" id="form_phone" defaultValue={currentUser.mobile} onChange={(e) => { handleInputChange(e) }} placeholder="Phone Number" required />
 												</Col >
-												<Col className="col-al">
+												{/* <Col className="col-al">
 													<legend htmlFor="form_nature" style={{ fontSize: "18px" }}>Nature of leave</legend>
 													<select className="form-control" id="form_nature" onChange={(e) => { handleInputChange(e); handleTypeOfLeave(e) }} required>
 														<option>Casual Leave</option>
 														<option>Non Casual Leave</option>
 													</select>
+												</Col > */}
+                                                <Col className="col-al">
+													<legend htmlFor="form_post" style={{ fontSize: "18px" }}>Post held</legend>
+													<input type="text" className="form-control" id="form_post" onChange={(e) => { handleInputChange(e) }} placeholder="Post" required/>
 												</Col >
 											</Row >
+
+                                            <Row className="row-al">
+												<Col className="col-al">
+													<legend htmlFor="form_dept" style={{ fontSize: "18px" }}>Department</legend>
+													<input type="text" className="form-control" id="form_dept" defaultValue={currentUser.department} onChange={(e) => { handleInputChange(e) }} placeholder="Department" required />
+												</Col >
+											
+                                                <Col className="col-al">
+													<legend htmlFor="form_pin" style={{ fontSize: "18px" }}>PINCODE</legend>
+													<input type="text" className="form-control" id="form_pin" onChange={(e) => { handleInputChange(e) }} placeholder="PINCODE" required/>
+												</Col >
+											</Row >
+
 											<Row className="row-al">
 												<Col className="col-al">
 													<legend htmlFor="form_type_of_leave" style={{ fontSize: "18px" }}>Type of leave</legend>
@@ -192,6 +209,45 @@ export default function ApplyLeave({ toast }) {
 													<input type="date" id="form_edate" placeholder="Pick end date" className="form-control" onChange={async (e) => { handleInputChange(e) }} required></input>
 												</Col >
 											</Row >
+
+                                            
+                                            <Row className="row-al">
+												<Col className="col-12">
+													<p style={{textAlign:"left", marginBottom:"2px", textDecoration:"underline"}}>Sunday and Holiday, if any, proposed to be prefixed/suffixed to leave: </p>
+												</Col >
+												
+											</Row >
+
+                                            <Row className="row-al" >
+                                            <Col className="col-4">
+													<legend htmlFor="form_suffs" style={{ fontSize: "16px" }}>Suffix Start Date</legend>
+													<input type="date" id="form_suffs" placeholder="Pick suffix start date" className="form-control" onChange={async (e) => { handleInputChange(e) }} required></input>
+												</Col >
+												<Col className="col-4">
+													<legend htmlFor="form_suffe" style={{ fontSize: "16px" }}>Suffix End Date</legend>
+													<input type="date" id="form_suffe" placeholder="Pick suffix end date" className="form-control" onChange={async (e) => { handleInputChange(e) }} required></input>
+												</Col >
+                                                <Col className="col-4">
+													<legend htmlFor="form_suffduration" style={{ fontSize: "16px" }}>Duration of suffix</legend>
+													<input type="number" className="form-control" id="form_suffduration" placeholder="Suffix Duration" required />
+												</Col >
+											</Row >
+
+                                            <Row className="row-al" >
+                                            <Col className="col-4">
+													<legend htmlFor="form_pres" style={{ fontSize: "16px" }}>Prefix Start Date</legend>
+													<input type="date" id="form_pres" placeholder="Pick prefix start date" className="form-control" onChange={async (e) => { handleInputChange(e) }} required></input>
+												</Col >
+												<Col className="col-4">
+													<legend htmlFor="form_pree" style={{ fontSize: "16px" }}>Prefix End Date</legend>
+													<input type="date" id="form_pree" placeholder="Pick prefix end date" className="form-control" onChange={async (e) => { handleInputChange(e) }} required></input>
+												</Col >
+                                                <Col className="col-4">
+													<legend htmlFor="form_preduration" style={{ fontSize: "16px" }}>Duration of Prefix</legend>
+													<input type="number" className="form-control" id="form_preduration" placeholder="Prefix Duration" required />
+												</Col >
+											</Row >
+
 											<Row className="row-al">
 												<Col className="col-al">
 													<legend htmlFor="form_purpose" style={{ fontSize: "18px" }}>Purpose of leave </legend>
@@ -206,6 +262,16 @@ export default function ApplyLeave({ toast }) {
 													</textarea>
 												</Col>
 											</Row>
+
+                                            <Row className="row-al">
+												<Col className="col-al">
+													<legend htmlFor="form_address" style={{ fontSize: "18px" }}>Address </legend>
+													<textarea id="form_address" className="form-control" onChange={(e) => { handleInputChange(e) }}>
+
+													</textarea>
+												</Col>
+											</Row>
+
 											<br />
 											<Row className="row-al">
 												<Col className="col-al">
