@@ -141,7 +141,7 @@ export default function Table({ title, headers, initialData, from }) {
 						style={{ cursor: "pointer" }}
 						color="green"
 						onClick={(e) => {
-							navigate(`/${from}/${row[0]}`);
+							navigate(`/${from}/${row[1].toLowerCase().startsWith("casual")?"casual": "non_casual"}/${row[0]}`);
 						}}
 					/>
 					&nbsp;
@@ -163,7 +163,7 @@ export default function Table({ title, headers, initialData, from }) {
 						style={{ cursor: "pointer" }}
 						color="green"
 						onClick={(e) => {
-							navigate(`/${from}/${row[0]}`);
+							navigate(`/${from}/${row[1].toLowerCase().startsWith("casual")?"casual": "non_casual"}/${row[0]}`);
 						}}
 					/>
 					&nbsp;

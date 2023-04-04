@@ -134,7 +134,7 @@ export default function UpdateLeave({ toast }) {
       <div className="container-al">
         <Card style={{ width: "100%" }}>
           <Card.Body style={{ width: "100%" }}>
-            <Card.Title className="title-al">Establishment Portal</Card.Title>
+            <Card.Title className="title-al">Update Portal</Card.Title>
             <Card.Text>
               <form>
                 <Container className="content-al">
@@ -226,8 +226,7 @@ export default function UpdateLeave({ toast }) {
             </Modal.Header>
             <Modal.Body>
               <ul>
-                {specificData?.leave_ids.map((item, idx) => {
-                  console.log(item);
+                {specificData?.leave_ids.map((item, idx) => {                  
                   return (
                     <li style={{ textAlign: "left" }}>
                       <a

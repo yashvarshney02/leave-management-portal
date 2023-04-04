@@ -8,7 +8,7 @@ import { FaDownload } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { Document, Page } from 'react-pdf';
 
-const LeavePDFModals = ({ toast, from }) => {
+const LeavePDFModalsNonCasual = ({ toast, from }) => {
 	const [leave, setLeave] = useState(null);
 	const { currentUser } = useAuth();
 	let currentUrl =
@@ -57,7 +57,7 @@ const LeavePDFModals = ({ toast, from }) => {
 				{ leave_id }
 			);
 			if (resp.data.status == "success") {
-				let data = resp.data.data[0]
+				let data = resp.data.data[0]					
 				setLeave(data);
 				const imageUrl = "data:image/png;base64," + String(data.signature);
 				setSignatureDataUrl(imageUrl);
@@ -100,6 +100,16 @@ const LeavePDFModals = ({ toast, from }) => {
 		const url = window.URL.createObjectURL(blob);
 		setDownloadLink(url);
 	};
+
+	function get_date(date) {	
+		if (!date)	return null;
+		date = new Date(date)
+		const yyyy = date.getFullYear();
+		const mm = String(date.getMonth() + 1).padStart(2, '0');
+		const dd = String(date.getDate()).padStart(2, '0');
+		const formattedDate = `${yyyy}-${mm}-${dd}`;
+		return formattedDate
+	}
 
 	const saveLeave = (leave_id) => {
 		const pdf = new jsPDF("portrait", "pt", "a2");
@@ -185,7 +195,7 @@ const LeavePDFModals = ({ toast, from }) => {
 							</div>
 							<div className="row" style={{fontSize:"14px", minHeight:"38.6px"}}>
 								<div className="col-6" style={{ textAlign: "left", border: "1px solid" }} >2. पद धारित / Post held</div>
-								<div className="col-6" style={{ textAlign: "left", border: "1px solid" }}>{leave?.name}</div>
+								<div className="col-6" style={{ textAlign: "left", border: "1px solid" }}>{leave?.position.toUpperCase()}</div>
 							</div>
 							<div className="row" style={{fontSize:"14px", minHeight:"38.6px"}}>
 								<div className="col-6" style={{ textAlign: "left", border: "1px solid" }}>
@@ -200,23 +210,24 @@ const LeavePDFModals = ({ toast, from }) => {
 									4. आवेवदत छुट्टी का प्रकाि/ Nature of Leave applied for
 								</div>
 								<div className="col-6" style={{ textAlign: "left", border: "1px solid" }}>
-									<p>{leave?.type_of_leave[0]}{leave?.type_of_leave.split(" ")[1][0]}</p>
+									<p>{leave?.type_of_leave}</p>
 									{/* <p>From: {leave?.start_date.split("00:00:0}से/To ___________ तक</p> */}
 								</div>
 							</div>
 
 							<div className="row" style={{fontSize:"14px", minHeight:"38.6px"}}>
 								<div className="col-6" style={{ textAlign: "left", border: "1px solid" }}>
-									5. छुट्टी की अववध/ Period of Leave
+									5. छुट्टी की अववध/ Period of Leave <br />									
 								</div>
 								<div className="col-6" style={{ textAlign: "left" }}>
 
 									<div className="row" style={{fontSize:"14px", minHeight:"38.6px"}}>
 										<div className="col-4" style={{ textAlign: "left", border: "1px solid", fontSize: "14px" }}>
-											से/ From:
+											से/ From:											
 										</div>
 										<div className="col-4" style={{ textAlign: "left", border: "1px solid", fontSize: "14px" }}>
 											तक/To:
+											
 										</div>
 										<div className="col-4" style={{ textAlign: "left", border: "1px solid", fontSize: "12px" }}>
 											वदनों की संख्र्ा/No. of days
@@ -225,10 +236,10 @@ const LeavePDFModals = ({ toast, from }) => {
 
 									<div className="row" style={{fontSize:"14px", minHeight:"38.6px"}}>
 										<div className="col-4" style={{ textAlign: "left", border: "1px solid", fontSize: "14px" }}>
-
+											{get_date(leave?.start_date)}
 										</div>
 										<div className="col-4" style={{ textAlign: "left", border: "1px solid", fontSize: "14px" }}>
-
+											{get_date(leave?.end_date)}
 										</div>
 										<div className="col-4" style={{ textAlign: "left", border: "1px solid", fontSize: "14px" }}>
 											<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{leave?.duration}</p>
@@ -264,10 +275,10 @@ const LeavePDFModals = ({ toast, from }) => {
 									</div>
 									<div className="row" style={{fontSize:"14px", minHeight:"38.6px"}}>
 										<div className="col-4" style={{ textAlign: "left", border: "1px solid", fontSize: "14px" }}>
-
+											{get_date(leave?.suffix_start_date)}			
 										</div>
 										<div className="col-4" style={{ textAlign: "left", border: "1px solid", fontSize: "14px" }}>
-
+											{get_date(leave?.suffix_end_date)}	
 										</div>
 										<div className="col-4" style={{ textAlign: "left", border: "1px solid", fontSize: "14px" }}>
 											<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{leave?.duration}</p>
@@ -293,10 +304,10 @@ const LeavePDFModals = ({ toast, from }) => {
 
 									<div className="row" style={{fontSize:"14px", minHeight:"38.6px"}}>
 										<div className="col-4" style={{ textAlign: "left", border: "1px solid", fontSize: "14px" }}>
-
+											{get_date(leave?.prefix_start_date)}
 										</div>
 										<div className="col-4" style={{ textAlign: "left", border: "1px solid", fontSize: "14px" }}>
-
+											{get_date(leave?.prefix_end_date)}
 										</div>
 										<div className="col-4" style={{ textAlign: "left", border: "1px solid", fontSize: "14px" }}>
 											<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{leave?.duration}</p>
@@ -320,7 +331,8 @@ const LeavePDFModals = ({ toast, from }) => {
 									responsibilities, etc. (if any)
 								</div>
 								<div className="col-6" style={{ textAlign: "left", border: "1px solid" }}>
-									These are alternative arrangements
+									These are alternative arrangements<br />
+									{leave?.alt_arrangements}
 								</div>
 							</div>
 
@@ -353,7 +365,7 @@ const LeavePDFModals = ({ toast, from }) => {
 
 									<div className="row" style={{ height: "38px", fontSize:"14px", minHeight:"38.6px" }}>
 										<div className="col-12" style={{ textAlign: "left", border: "1px solid", fontSize: "14px" }}>
-											<p></p>
+											<p>सपं कानं./ Contact No. {leave?.mobile}</p>
 										</div>
 									</div>
 								</div>
@@ -367,8 +379,8 @@ const LeavePDFModals = ({ toast, from }) => {
 									<div className="row" style={{ border: "1px solid", minHeight:"38.6px" }}>
 										हाूँ/ना /Yes /No : र्वद हाूँ तो /If yes : {leave?.is_station}
 									</div>
-									<div className="row" style={{ border: "1px solid", fontSize:"14px", minHeight:"38.6px" }}>
-										से/From____________________ तक /To____________________
+									<div className="row" style={{ border: "1px solid", fontSize: "14px", minHeight: "38.6px" }}>
+										से/From {get_date(leave?.station_start_date)} तक /To {get_date(leave?.station_end_date)}
 									</div>
 								</div>
 							</div>
@@ -569,4 +581,4 @@ const LeavePDFModals = ({ toast, from }) => {
 	);
 };
 
-export default LeavePDFModals;
+export default LeavePDFModalsNonCasual;

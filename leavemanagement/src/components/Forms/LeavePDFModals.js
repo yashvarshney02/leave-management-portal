@@ -57,7 +57,7 @@ const LeavePDFModals = ({ toast, from }) => {
 				{ leave_id }
 			);
 			if (resp.data.status == "success") {
-				let data = resp.data.data[0]
+				let data = resp.data.data[0]				
 				setLeave(data);
 				const imageUrl = "data:image/png;base64," + String(data.signature);
 				setSignatureDataUrl(imageUrl);
@@ -123,6 +123,18 @@ const LeavePDFModals = ({ toast, from }) => {
 			});
 	};
 
+	function get_date(date) {
+		if (!date) {
+			return null;
+		}
+		date = new Date(date);
+		const yyyy = date.getFullYear();
+		const mm = String(date.getMonth() + 1).padStart(2, '0');
+		const dd = String(date.getDate()).padStart(2, '0');
+		const formattedDate = `${yyyy}-${mm}-${dd}`;
+		return formattedDate
+	}
+
 	useEffect(() => {
 		async function test() {
 			await fetchLeaveInfo();
@@ -185,7 +197,7 @@ const LeavePDFModals = ({ toast, from }) => {
 								</div>
 								<div className="col-1" style={{ textAlign: "left" }}>:</div>
 								<div className="col-5" style={{ textAlign: "left" }}>
-									{leave?.department?.toUpperCase()}
+									{leave?.position?.toUpperCase()}/{leave?.department?.toUpperCase()}
 								</div>
 							</div>
 							<div className="row" style={{ border: "1px solid" }}>
@@ -193,14 +205,15 @@ const LeavePDFModals = ({ toast, from }) => {
 									आवश्यक छुट्टी का मवरूऩ : आकस्ममक छुट्टी /
 									राज.अव./त्रव.आ.छुट्टी <br />
 									Nature of Leave Required : CL / RH / SCL/ OD
-									<p>
-										{leave?.type_of_leave[0]}{leave?.type_of_leave.split(" ")[1][0]}
-									</p>
+
 								</div>
 								<div className="col-1" style={{ textAlign: "left" }}>:</div>
 								<div className="col-5" style={{ textAlign: "left" }}>
 									<p>दिनों की संख्या / No of days&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{leave?.duration}</p>
-									{/* <p>From: {leave?.start_date.split("00:00:0}से/To ___________ तक</p> */}
+									<p>
+										{leave?.type_of_leave[0]}{leave?.type_of_leave.split(" ")[1][0]}
+									</p>
+									<p>From: {get_date(leave?.start_date)} से/To {get_date(leave?.end_date)} तक</p>
 								</div>
 							</div>
 							<div className="row" style={{ border: "1px solid" }}>
@@ -219,20 +232,26 @@ const LeavePDFModals = ({ toast, from }) => {
 									वैकस्पऩक व्यवमथा /<br />
 									Alternative arrangements for classes, administrative
 									responsibilities, etc. (if any)
+									<br />
+									{leave?.alt_arrangements}
 								</div>
 								<div className="col-1" style={{ textAlign: "left" }}>:</div>
 								<div className="col-5" style={{ textAlign: "left" }}>
 									These are alternative arrangements
 								</div>
 							</div>
-							<div className="row" style={{ border: "1px solid" }}>
-								<div className="col-6" style={{ textAlign: "left" }}>
-									क्या मटेशन छोडना अऩेस्ऺत है?
-									<br />
-									Whether Station leave is required?
+							<div className="row" style={{ fontSize: "14px", minHeight: "38.6px" }}>
+								<div className="col-6" style={{ textAlign: "left", border: "1px solid" }}>
+									11. क्या स्टेशन छुट्टी की आवश्यकता है/Whether Station leave is required
 								</div>
-								<div className="col-1" style={{ textAlign: "left" }}>:</div>
-								<div className="col-5" style={{ textAlign: "left" }}>{leave?.is_station}</div>
+								<div className="col-6" style={{ textAlign: "left" }}>
+									<div className="row" style={{ border: "1px solid", minHeight: "38.6px" }}>
+										हाँ या नहीं /Yes /No : यदि हाँ तो /If yes : {leave?.is_station}
+									</div>
+									<div className="row" style={{ border: "1px solid", fontSize: "14px", minHeight: "38.6px" }}>
+										से/From {get_date(leave?.station_start_date)} तक /To {get_date(leave?.station_end_date)}
+									</div>
+								</div>
 							</div>
 							<div className="row" style={{ border: "1px solid" }}>
 								<div className="col-6" style={{ textAlign: "left" }}>
@@ -241,15 +260,19 @@ const LeavePDFModals = ({ toast, from }) => {
 									Address during the leave/on duty
 								</div>
 								<div className="col-1" style={{ textAlign: "left" }}>:</div>
-								<div className="col-5" style={{ textAlign: "left" }}></div>
+								<div className="col-5" style={{ textAlign: "left" }}>
+									{leave?.address}
+									<br />
+									दरूभाष / Phone No. {leave?.mobile}
+								</div>
 							</div>
 
 							<div className="row leave-details-signature">
 								<div className="col-6"></div>
-								<div className="col-6" id="signature-container" style={{alignItems:"center", padding:"10px"}}>
+								<div className="col-6" id="signature-container" style={{ alignItems: "center", padding: "10px" }}>
 									<div className="img-cont">
 										{signatureDataURL && (
-											<img style={{maxHeight:"60px", maxWidth:"450px", width: "40%" }} src={signatureDataURL} alt="Signature" />
+											<img style={{ maxHeight: "60px", maxWidth: "450px", width: "40%" }} src={signatureDataURL} alt="Signature" />
 										)}
 									</div>
 

@@ -3,12 +3,14 @@ import { Routes, Route } from "react-router-dom";
 import Dashboard from "../Dashboard/Dashboard";
 import Login from "../Login/Login";
 import ApplyLeave from "../Forms/Casual";
+import NonCasuaLeave from "../Forms/ApplyLeave";
 import PrivateRoute from "../PrivateRoute/PrivateRoute";
 import PastApplications from "../Forms/PastApplications";
 import CheckLeaves from "../Forms/CheckLeaves";
 import Dates from "../Forms/Dates";
 import UpdateLeave from "../Forms/UpdateLeave";
 import LeavePDFModals from "../Forms/LeavePDFModals";
+import LeavePDFModalsNonCasual from "../Forms/LeavePDFModals2"
 
 const Paths = (props) => {
 	return (
@@ -26,7 +28,7 @@ const Paths = (props) => {
 				>
 					<Route
 						path="/forms/applyleave"
-						element={<ApplyLeave toast={props.toast} />}
+						element={<NonCasuaLeave toast={props.toast} />}
 					/>
 				</Route>
 				<Route path='/forms/updateleave' element={<PrivateRoute user={["all"]} toast={props.toast} />}>
@@ -42,11 +44,11 @@ const Paths = (props) => {
 					/>
 				</Route>
 				<Route
-					path="/check_applications/:id"
+					path="/check_applications/casual/:id"
 					element={<PrivateRoute user={["all"]} toast={props.toast} />}
 				>
 					<Route
-						path="/check_applications/:id"
+						path="/check_applications/casual/:id"
 						element={
 							<LeavePDFModals toast={props.toast} from="check_applications" />
 						}
@@ -54,13 +56,36 @@ const Paths = (props) => {
 				</Route>
 
 				<Route
-					path="/past_applications/:id"
+					path="/past_applications/casual/:id"
 					element={<PrivateRoute user={["all"]} toast={props.toast} />}
 				>
 					<Route
-						path="/past_applications/:id"
+						path="/past_applications/casual/:id"
 						element={
 							<LeavePDFModals toast={props.toast} from="past_applications" />
+						}
+					></Route>
+				</Route>
+				<Route
+					path="/check_applications/non_casual/:id"
+					element={<PrivateRoute user={["all"]} toast={props.toast} />}
+				>
+					<Route
+						path="/check_applications/non_casual/:id"
+						element={
+							<LeavePDFModalsNonCasual toast={props.toast} from="check_applications" />
+						}
+					></Route>
+				</Route>
+
+				<Route
+					path="/past_applications/non_casual/:id"
+					element={<PrivateRoute user={["all"]} toast={props.toast} />}
+				>
+					<Route
+						path="/past_applications/non_casual/:id"
+						element={
+							<LeavePDFModalsNonCasual toast={props.toast} from="past_applications" />
 						}
 					></Route>
 				</Route>

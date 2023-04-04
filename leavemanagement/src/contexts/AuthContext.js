@@ -80,6 +80,7 @@ export function AuthProvider({ children }) {
 	async function refresh_user() {
 		let res = await httpClient.get(`${process.env.REACT_APP_API_HOST}/get_user_info`);		
 		setCurrentUser(res.data.data);
+		return res;
 	}
 
 	useEffect(() => {
