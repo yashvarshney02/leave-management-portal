@@ -1,17 +1,17 @@
-
-import React, { useEffect, useState } from 'react';
-import httpClient from '../../httpClient';
+import React, { useEffect, useState } from "react";
+import httpClient from "../../httpClient";
 import "./Dashboard.css";
-import LoadingIndicator from '../LoadingIndicator';
-import { useAuth } from '../../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import Button from 'react-bootstrap/Button';
-import Form from 'react-bootstrap/Form';
-import Modal from 'react-bootstrap/Modal';
-import { Badge } from 'react-bootstrap';
-import { FaEdit, FaMobileAlt } from 'react-icons/fa';
-import PieChart from './PieChart';
-import Calendar from './Calendar';
+import LoadingIndicator from "../LoadingIndicator";
+import { useAuth } from "../../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import Button from "react-bootstrap/Button";
+import Form from "react-bootstrap/Form";
+import Modal from "react-bootstrap/Modal";
+import { Badge } from "react-bootstrap";
+import { FaEdit, FaMobileAlt } from "react-icons/fa";
+import PieChart from "./PieChart";
+import Calendar from "./Calendar";
+import { Row, Col } from "react-bootstrap";
 
 export default function Dashboard({ toast }) {
   const { currentUser, refresh_user, editProfile } = useAuth();
@@ -26,60 +26,61 @@ export default function Dashboard({ toast }) {
   const navigate = useNavigate();
 
   async function fetchRemainingNumberOfLeaves() {
-    const resp = await httpClient.get(`${process.env.REACT_APP_API_HOST}/fetch_remaining_leaves`);
+    const resp = await httpClient.get(
+      `${process.env.REACT_APP_API_HOST}/fetch_remaining_leaves`
+    );
     // console.log(resp.data)
-    if (resp.data.status == "success") {      
+    if (resp.data.status == "success") {
       setLeavesData(resp.data.data);
     } else {
       return;
     }
   }
 
-    const fetchLeaves = async (e) => {
-      try {
-        const resp = await httpClient.post(
-          `${process.env.REACT_APP_API_HOST}/past_applications`
-        );
-        console.log(resp);
-        if (resp.data.status == "success") {
-        } else {
-          return;
-        }
-        const temp_data = resp.data.data;
-        let temp = [],
-          dic = {};
-        for (let i = 0; i < temp_data.length; i++) {
-          let start_date = new Date(temp_data[i].start_date);
-          let end_date = new Date(temp_data[i].end_date);
-          while (start_date <= end_date) {
-            let curr_month = start_date.getMonth();
-            if (!Object.keys(dic).includes(curr_month)) {
-              dic[curr_month] = [];
-            }
-            dic[curr_month].push(start_date.getDate());
-            start_date.setDate(start_date.getDate() + 1);
-          }
-          console.log(dic);
-          setDayofLeave((dayOfLeave) => ({ ...dayOfLeave, ...dic }));
-          temp.push([
-            temp_data[i].id,
-            temp_data[i].nature,
-            temp_data[i].type_of_leave,
-            temp_data[i].start_date?.slice(0, -12),
-            temp_data[i].duration,
-            temp_data[i].status,
-          ]);
-        }
-        if (temp_data.length) {
-          setRecentApplication(temp_data[temp_data.length - 1]);
-        }
-        // setData(temp);
-      } catch (error) {
-        console.log(error);
-        toast.error("something went wrong", toast.POSITION.BOTTOM_RIGHT);
+  const fetchLeaves = async (e) => {
+    try {
+      const resp = await httpClient.post(
+        `${process.env.REACT_APP_API_HOST}/past_applications`
+      );
+      console.log(resp);
+      if (resp.data.status == "success") {
+      } else {
+        return;
       }
-    };
-
+      const temp_data = resp.data.data;
+      let temp = [],
+        dic = {};
+      for (let i = 0; i < temp_data.length; i++) {
+        let start_date = new Date(temp_data[i].start_date);
+        let end_date = new Date(temp_data[i].end_date);
+        while (start_date <= end_date) {
+          let curr_month = start_date.getMonth();
+          if (!Object.keys(dic).includes(curr_month)) {
+            dic[curr_month] = [];
+          }
+          dic[curr_month].push(start_date.getDate());
+          start_date.setDate(start_date.getDate() + 1);
+        }
+        console.log(dic);
+        setDayofLeave((dayOfLeave) => ({ ...dayOfLeave, ...dic }));
+        temp.push([
+          temp_data[i].id,
+          temp_data[i].nature,
+          temp_data[i].type_of_leave,
+          temp_data[i].start_date?.slice(0, -12),
+          temp_data[i].duration,
+          temp_data[i].status,
+        ]);
+      }
+      if (temp_data.length) {
+        setRecentApplication(temp_data[temp_data.length - 1]);
+      }
+      // setData(temp);
+    } catch (error) {
+      console.log(error);
+      toast.error("something went wrong", toast.POSITION.BOTTOM_RIGHT);
+    }
+  };
 
   useEffect(() => {
     async function test() {
@@ -87,14 +88,14 @@ export default function Dashboard({ toast }) {
       await fetchLeaves();
     }
     test();
-    console.log("recent");
-    console.log(recentApplication);
   }, []);
 
-
-
   const [month, setMonth] = useState(new Date());
-  const numDays = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+  const numDays = new Date(
+    month.getFullYear(),
+    month.getMonth() + 1,
+    0
+  ).getDate();
   const firstDay = new Date(month.getFullYear(), month.getMonth(), 1).getDay();
   let data = [];
   for (let i = 0; i < numDays; i++) {
@@ -115,83 +116,82 @@ export default function Dashboard({ toast }) {
         week.push(0);
       }
     }
-    if (index === data.length - 1 || (week.length) % 7 === 0) {
+    if (index === data.length - 1 || week.length % 7 === 0) {
       weeks.push(week);
       week = [];
     }
   });
   return (
     // <div class="dashboard" style={{ height: "100vh", backgroundImage: `url(${background})`, backgroundPosition: "fixed", backgroundRepeat: "None", backgroundSize: "cover" }}>
-    <div
-      class="dashboard"
+    <Row
+      className="dashboard"
       style={{ margin: "0px", height: "100%", backgroundColor: "aliceblue" }}
     >
-      {/* <div class="Dashboard"> */}
-      {/* <header class="jumbotron text-center"> */}
-      {/* <h2 class="heading">Dashboard</h2> */}
-      {/* <div class="heading-line"></div> */}
-
-      <div class="container">
-        <div class="main-body">
-          {/* edit profile modal */}
-          <Modal show={showEditProfileModal} onHide={handleEdit}>
-            <Modal.Header closeButton>
-              <Modal.Title>Edit Profile</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <Form>
-                <Form.Group class="mb-3" controlId="exampleForm.ControlInput1">
-                  <Form.Label>Name</Form.Label>
-                  <Form.Control
-                    value={name}
-                    onChange={(e) => {
-                      setName(e.target.value);
-                    }}
-                    autoFocus
-                  />
-                  <Form.Label>Mobile Number</Form.Label>
-                  <Form.Control
-                    value={mobile}
-                    onChange={(e) => {
-                      setMobile(e.target.value);
-                    }}
-                    autoFocus
-                  />
-                </Form.Group>
-              </Form>
-            </Modal.Body>
-            <Modal.Footer>
-              <Button variant="secondary" onClick={handleEdit}>
-                Close
-              </Button>
-              <Button
-                variant="primary"
-                onClick={async () => {
-                  let res = await editProfile(name, mobile);
-                  setLoading(true);
-                  await refresh_user();
-                  if (res.data.status == "success") {
-                    toast.success(res.data.data, toast.POSITION.BOTTOM_RIGHT);
-                  } else {
-                    toast.success(
-                      "Edit Profile Failed",
-                      toast.POSITION.BOTTOM_RIGHT
-                    );
-                  }
-                  setLoading(false);
-                  handleEdit();
-                }}
-              >
-                {loading ? (
-                  <LoadingIndicator color={"white"} />
-                ) : (
-                  "Save Changes"
-                )}
-              </Button>
-            </Modal.Footer>
-          </Modal>
-          <div class="row gutters-sm">
-            <div class="col-md-4 mb-3" id="profile_parent">
+      <div>
+        <br />
+        <div class="container">
+          <div class="main-body">
+            {/* edit profile modal */}
+            <Modal show={showEditProfileModal} onHide={handleEdit}>
+              <Modal.Header closeButton>
+                <Modal.Title>Edit Profile</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <Form>
+                  <Form.Group
+                    class="mb-3"
+                    controlId="exampleForm.ControlInput1"
+                  >
+                    <Form.Label>Name</Form.Label>
+                    <Form.Control
+                      value={name}
+                      onChange={(e) => {
+                        setName(e.target.value);
+                      }}
+                      autoFocus
+                    />
+                    <Form.Label>Mobile Number</Form.Label>
+                    <Form.Control
+                      value={mobile}
+                      onChange={(e) => {
+                        setMobile(e.target.value);
+                      }}
+                      autoFocus
+                    />
+                  </Form.Group>
+                </Form>
+              </Modal.Body>
+              <Modal.Footer>
+                <Button variant="secondary" onClick={handleEdit}>
+                  Close
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={async () => {
+                    let res = await editProfile(name, mobile);
+                    setLoading(true);
+                    await refresh_user();
+                    if (res.data.status == "success") {
+                      toast.success(res.data.data, toast.POSITION.BOTTOM_RIGHT);
+                    } else {
+                      toast.success(
+                        "Edit Profile Failed",
+                        toast.POSITION.BOTTOM_RIGHT
+                      );
+                    }
+                    setLoading(false);
+                    handleEdit();
+                  }}
+                >
+                  {loading ? (
+                    <LoadingIndicator color={"white"} />
+                  ) : (
+                    "Save Changes"
+                  )}
+                </Button>
+              </Modal.Footer>
+            </Modal>
+            <Col>
               <div
                 class="card"
                 id="profile"
@@ -272,45 +272,45 @@ export default function Dashboard({ toast }) {
                   </div>
                 </div>
               </div>
-            </div>
-            <div class="col-md-8">
-              <div class="Leaves-remaining container">
-                {leavesData ? (
-                  <PieChart
-                    total={leavesData?.total_casual_leaves}
-                    taken={leavesData?.taken_casual_leaves}
-                    leaveType="Casual-Leave"
-                    endValue={
-                      leavesData?.taken_casual_leaves === 0
-                        ? 1
-                        : (leavesData?.taken_casual_leaves * 100) /
-                          leavesData?.total_casual_leaves
-                    }
-                    speed={20}
-                  />
-                ) : (
-                  ""
-                )}
-                {leavesData ? (
-                  <PieChart
-                    total={leavesData?.total_non_casual_leave}
-                    taken={leavesData?.taken_non_casual_leave}
-                    leaveType="Non-casual-Leave"
-                    endValue={
-                      leavesData?.taken_non_casual_leave === 0
-                        ? 1
-                        : (leavesData?.taken_non_casual_leave * 100) /
-                          leavesData?.total_non_casual_leave
-                    }
-                    speed={20}
-                  />
-                ) : (
-                  ""
-                )}
-              </div>
+            </Col>
+            <br />
+            <br />
+            <Col>
+              <Row>
+                <div class="Leaves-remaining container">
+                  {leavesData ? (
+                    <PieChart
+                      total={leavesData?.total_casual_leaves}
+                      taken={leavesData?.taken_casual_leaves}
+                      leaveType="casual-leave"
+                      endValue={
+                        (taken_casual_leaves * 100) / total_casual_leaves
+                      }
+                      speed={20}
+                    />
+                  ) : (
+                    ""
+                  )}
+                  {leavesData ? (
+                    <PieChart
+                      total={leavesData?.total_non_casual_leave}
+                      taken={leavesData?.taken_non_casual_leave}
+                      leaveType="non-casual-leave"
+                      endValue={
+                        (taken_non_casual_leaves * 100) / total_non_casual_leaves
+                      }
+                      speed={20}
+                    />
+                  ) : (
+                    ""
+                  )}
+                </div>
+              </Row>
               <br />
-              <Calendar data={dayOfLeave} />
               <br />
+              <Row>
+                <Calendar data={dayOfLeave} />
+              </Row>
               {recentApplication ? (
                 <div class="recent-box">
                   <span>Recent Application </span>
@@ -346,19 +346,14 @@ export default function Dashboard({ toast }) {
                             </div>
                           </div>
                         </div>
-                        <div class="buttons_dashboard">
+                        <div class="buttons">
                           <button
                             type="button"
                             class="btn btn-primary btn-sm"
                             onClick={() => {
-                              let url = "/past_applications/";
-                              url += recentApplication.nature
-                                .toLowerCase()
-                                .startsWith("casual")
-                                ? "casual/"
-                                : "non_casual/";
-                              url += recentApplication.leave_id;
-                              navigate(url);
+                              navigate(
+                                "/past_applications/" + recentApplication.id
+                              );
                             }}
                           >
                             View
@@ -371,38 +366,19 @@ export default function Dashboard({ toast }) {
                           </button>
                         </div>
                       </div>
-                      <span className="status">Status: {recentApplication.status} </span>
+                      <div>Status: {recentApplication.status} </div>
                     </div>
                   </div>
                 </div>
               ) : (
                 ""
               )}
-              {currentUser.position == "admin" ||
-              currentUser.position == "admin" ? (
-                <div className="card mb-3" style={{ border: "2px solid grey" }}>
-                  <div className="card-body">
-                    <h2>Add Users</h2>
-                    <div class="row">
-                      <div
-                        class="col-sm-12"
-                        style={{ padding: "0px", margin: "0px" }}
-                      >
-                        <form>
-                          <input type="file" />
-                          <input type="submit" value="Upload" />
-                        </form>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                ""
-              )}
-            </div>
+            </Col>
+            <br />
+            <br />
           </div>
         </div>
       </div>
-    </div>
+    </Row>
   );
 }
