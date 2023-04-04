@@ -128,6 +128,13 @@ export default function UpdateLeave({ toast }) {
     }
     test();
   }, []);
+  useEffect(() => {
+    async function test() {
+      await getCollectiveData();
+      await handleDownloadClick(currentQuery);
+    }
+    test();
+  }, []);
 
   return (
     <>
@@ -154,12 +161,14 @@ export default function UpdateLeave({ toast }) {
                               id="form_query"
                               onChange={async (e) => {
                                 handleDownloadClick(
+                                  // listOfQueries[e.target.value]
                                   e.target.value
                                 );
                               }}
                               required
                             >
                               {Object.keys(listOfQueries).map((item, key) => {
+                                // return <option key={key}>{item}</option>;
                                 return <option key={key} value={listOfQueries[item]}>{item}</option>;
                               })}
                             </select>

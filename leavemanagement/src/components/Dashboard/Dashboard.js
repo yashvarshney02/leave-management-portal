@@ -11,21 +11,23 @@ import Modal from 'react-bootstrap/Modal';
 import { Badge } from 'react-bootstrap';
 import { FaEdit, FaMobileAlt } from 'react-icons/fa';
 import PieChart from './PieChart';
-
+import Calendar from './Calendar';
 
 export default function Dashboard({ toast }) {
-
   const { currentUser, refresh_user, editProfile } = useAuth();
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [leavesData, setLeavesData] = useState();
-  const [name, setName] = useState(currentUser.name)
-  const [mobile, setMobile] = useState(currentUser.mobile)
+  const [name, setName] = useState(currentUser.name);
+  const [mobile, setMobile] = useState(currentUser.mobile);
+  const [dayOfLeave, setDayofLeave] = useState({});
+  const [recentApplication, setRecentApplication] = useState(null);
   const handleEdit = () => setShowEditProfileModal(!showEditProfileModal);
   const navigate = useNavigate();
 
   async function fetchRemainingNumberOfLeaves() {
     const resp = await httpClient.get(`${process.env.REACT_APP_API_HOST}/fetch_remaining_leaves`);
+    // console.log(resp.data)
     if (resp.data.status == "success") {      
       setLeavesData(resp.data.data);
     } else {
@@ -33,12 +35,61 @@ export default function Dashboard({ toast }) {
     }
   }
 
+    const fetchLeaves = async (e) => {
+      try {
+        const resp = await httpClient.post(
+          `${process.env.REACT_APP_API_HOST}/past_applications`
+        );
+        console.log(resp);
+        if (resp.data.status == "success") {
+        } else {
+          return;
+        }
+        const temp_data = resp.data.data;
+        let temp = [],
+          dic = {};
+        for (let i = 0; i < temp_data.length; i++) {
+          let start_date = new Date(temp_data[i].start_date);
+          let end_date = new Date(temp_data[i].end_date);
+          while (start_date <= end_date) {
+            let curr_month = start_date.getMonth();
+            if (!Object.keys(dic).includes(curr_month)) {
+              dic[curr_month] = [];
+            }
+            dic[curr_month].push(start_date.getDate());
+            start_date.setDate(start_date.getDate() + 1);
+          }
+          console.log(dic);
+          setDayofLeave((dayOfLeave) => ({ ...dayOfLeave, ...dic }));
+          temp.push([
+            temp_data[i].id,
+            temp_data[i].nature,
+            temp_data[i].type_of_leave,
+            temp_data[i].start_date?.slice(0, -12),
+            temp_data[i].duration,
+            temp_data[i].status,
+          ]);
+        }
+        if (temp_data.length) {
+          setRecentApplication(temp_data[temp_data.length - 1]);
+        }
+        // setData(temp);
+      } catch (error) {
+        console.log(error);
+        toast.error("something went wrong", toast.POSITION.BOTTOM_RIGHT);
+      }
+    };
+
+
   useEffect(() => {
     async function test() {
       await fetchRemainingNumberOfLeaves();
+      await fetchLeaves();
     }
     test();
-  }, [])
+    console.log("recent");
+    console.log(recentApplication);
+  }, []);
 
 
 
@@ -70,18 +121,18 @@ export default function Dashboard({ toast }) {
     }
   });
   return (
-    // <div className="dashboard" style={{ height: "100vh", backgroundImage: `url(${background})`, backgroundPosition: "fixed", backgroundRepeat: "None", backgroundSize: "cover" }}>
+    // <div class="dashboard" style={{ height: "100vh", backgroundImage: `url(${background})`, backgroundPosition: "fixed", backgroundRepeat: "None", backgroundSize: "cover" }}>
     <div
-      className="dashboard"
-      style={{ margin: "0px", height: "100vh", backgroundColor: "aliceblue" }}
+      class="dashboard"
+      style={{ margin: "0px", height: "100%", backgroundColor: "aliceblue" }}
     >
-      {/* <div className="Dashboard"> */}
-      {/* <header className="jumbotron text-center"> */}
-      {/* <h2 className="heading">Dashboard</h2> */}
-      {/* <div className="heading-line"></div> */}
+      {/* <div class="Dashboard"> */}
+      {/* <header class="jumbotron text-center"> */}
+      {/* <h2 class="heading">Dashboard</h2> */}
+      {/* <div class="heading-line"></div> */}
 
-      <div className="container">
-        <div className="main-body">
+      <div class="container">
+        <div class="main-body">
           {/* edit profile modal */}
           <Modal show={showEditProfileModal} onHide={handleEdit}>
             <Modal.Header closeButton>
@@ -89,10 +140,7 @@ export default function Dashboard({ toast }) {
             </Modal.Header>
             <Modal.Body>
               <Form>
-                <Form.Group
-                  className="mb-3"
-                  controlId="exampleForm.ControlInput1"
-                >
+                <Form.Group class="mb-3" controlId="exampleForm.ControlInput1">
                   <Form.Label>Name</Form.Label>
                   <Form.Control
                     value={name}
@@ -142,31 +190,31 @@ export default function Dashboard({ toast }) {
               </Button>
             </Modal.Footer>
           </Modal>
-          <div className="row gutters-sm">
-            <div className="col-md-4 mb-3" id="profile_parent">
+          <div class="row gutters-sm">
+            <div class="col-md-4 mb-3" id="profile_parent">
               <div
-                className="card"
+                class="card"
                 id="profile"
                 style={{ border: "2px solid grey" }}
               >
-                <div className="card-body">
-                  <div className="d-flex flex-column align-items-center text-center">
+                <div class="card-body">
+                  <div class="d-flex flex-column align-items-center text-center">
                     {currentUser.picture == "" ? (
                       <img
                         src={require("../../img/loginIcon.png")}
                         alt="Admin"
-                        className="rounded-circle"
+                        class="rounded-circle"
                         width="150"
                       />
                     ) : (
                       <img
                         src={currentUser.picture}
                         alt="Admin"
-                        className="rounded-circle"
+                        class="rounded-circle"
                         width="150"
                       />
                     )}
-                    <div className="mt-4">
+                    <div class="mt-4">
                       {/* <Badge pill bg="light" text="dark">{currentUser.name.toUpperCase()} <FaEdit style={{ cursor: 'pointer' }} onClick={handleEdit}></FaEdit></Badge>< br/> */}
                       {/* <Badge pill bg="light" text="dark">{currentUser.position.toUpperCase()}</Badge><br /> */}
                       {/* <Badge pill bg="light" text="dark">{currentUser.department.toUpperCase()}</Badge><br /> */}
@@ -225,94 +273,119 @@ export default function Dashboard({ toast }) {
                 </div>
               </div>
             </div>
-            <div className="col-md-8">
+            <div class="col-md-8">
               <div class="Leaves-remaining container">
-                {
-                  leavesData ? <PieChart
+                {leavesData ? (
+                  <PieChart
                     total={leavesData?.total_casual_leaves}
                     taken={leavesData?.taken_casual_leaves}
-                    leaveType="casual-leave"
-                    endValue={50}
+                    leaveType="Casual-Leave"
+                    endValue={
+                      leavesData?.taken_casual_leaves === 0
+                        ? 1
+                        : (leavesData?.taken_casual_leaves * 100) /
+                          leavesData?.total_casual_leaves
+                    }
                     speed={20}
-                  /> : ('')
-                }
-                {
-                  leavesData ? <PieChart
+                  />
+                ) : (
+                  ""
+                )}
+                {leavesData ? (
+                  <PieChart
                     total={leavesData?.total_non_casual_leave}
                     taken={leavesData?.taken_non_casual_leave}
-                    leavesTaken={28}
-                    leaveType="non-casual-leave"
-                    endValue={28}
+                    leaveType="Non-casual-Leave"
+                    endValue={
+                      leavesData?.taken_non_casual_leave === 0
+                        ? 1
+                        : (leavesData?.taken_non_casual_leave * 100) /
+                          leavesData?.total_non_casual_leave
+                    }
                     speed={20}
-                  /> : ('')
-                }
+                  />
+                ) : (
+                  ""
+                )}
               </div>
               <br />
-              <div className="calendar">
-                <div className="week">
-                  <span className="day header">Sun</span>
-                  <span className="day header">Mon</span>
-                  <span className="day header">Tue</span>
-                  <span className="day header">Wed</span>
-                  <span className="day header">Thu</span>
-                  <span className="day header">Fri</span>
-                  <span className="day header">Sat</span>
-                </div>
-                {weeks.map((week, index) => (
-                  <div className="week" key={index}>
-                    {week.map((day) => (
-                      <span
-                        key={day.day}
-                        className={`day ${day.isLeaveTaken ? "taken" : "not-taken"
-                          }`}
-                      >
-                        {day.day}
-                      </span>
-                    ))}
-                  </div>
-                ))}
-              </div>
+              <Calendar data={dayOfLeave} />
               <br />
-              <div class="recent-box">
-                <span>Recent Application </span>
-                <div class="recent-application card">
-                  <div class="card-header">Casual Leave</div>
-                  <div class="card-body">
-                    <div class="content">
-                      <div class="dates">
-                        <div>
-                          <h5 class="card-title text-primary">Start Date</h5>
-                          <h5>2023-03-31</h5>
-                        </div>
-                        <div>
-                          <h5 class="card-title text-primary">End Date</h5>
-                          <h5>2023-04-02</h5>
-                        </div>
-                      </div>
-                      <div class="buttons">
-                        <button type="button" class="btn btn-primary btn-sm">
-                          View
-                        </button>
-                        <button type="button" class="btn btn-secondary btn-sm">
-                          Withdraw
-                        </button>
-                      </div>
+              {recentApplication ? (
+                <div class="recent-box">
+                  <span>Recent Application </span>
+                  <div class="recent-application card">
+                    <div class="card-header">
+                      {recentApplication.nature
+                        ? recentApplication.nature[0]
+                        : ""}
+                      {recentApplication.nature
+                        ? recentApplication.nature.split(" ")[1][0]
+                        : ""}
+                      -{recentApplication.type_of_leave}
                     </div>
-                    {/* <h6 class="card-title">Duration</h6>
-                    <h5>3</h5> */}
-                    <div>Status: Pending </div>
+                    <div class="card-body">
+                      <div class="content">
+                        <div class="dates">
+                          <div>
+                            <div class="card-title text-primary">
+                              Start Date
+                            </div>
+                            <div class="date">
+                              {new Date(
+                                recentApplication.start_date
+                              ).toLocaleDateString()}
+                            </div>
+                          </div>
+                          <div>
+                            <div class="card-title text-primary">End Date</div>
+                            <div class="date">
+                              {new Date(
+                                recentApplication.start_date
+                              ).toLocaleDateString()}
+                            </div>
+                          </div>
+                        </div>
+                        <div class="buttons_dashboard">
+                          <button
+                            type="button"
+                            class="btn btn-primary btn-sm"
+                            onClick={() => {
+                              let url = "/past_applications/";
+                              url += recentApplication.nature
+                                .toLowerCase()
+                                .startsWith("casual")
+                                ? "casual/"
+                                : "non_casual/";
+                              url += recentApplication.leave_id;
+                              navigate(url);
+                            }}
+                          >
+                            View
+                          </button>
+                          <button
+                            type="button"
+                            class="btn btn-secondary btn-sm"
+                          >
+                            Withdraw
+                          </button>
+                        </div>
+                      </div>
+                      <span className="status">Status: {recentApplication.status} </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-
+              ) : (
+                ""
+              )}
               {currentUser.position == "admin" ||
-                currentUser.position == "admin" ? (
+              currentUser.position == "admin" ? (
                 <div className="card mb-3" style={{ border: "2px solid grey" }}>
                   <div className="card-body">
                     <h2>Add Users</h2>
-                    <div className="row">
+                    <div class="row">
                       <div
-                        className="col-sm-12"
+                        class="col-sm-12"
                         style={{ padding: "0px", margin: "0px" }}
                       >
                         <form>
@@ -333,4 +406,3 @@ export default function Dashboard({ toast }) {
     </div>
   );
 }
-

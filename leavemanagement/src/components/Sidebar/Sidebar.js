@@ -29,7 +29,7 @@ const NavIcon = styled(Link)`
 
 const SidebarNav = styled.nav`
   background: linear-gradient(135deg, #08328B, #08328B);
-  width: 250px;
+  width: 270px;
   height: 100vh;
   display: flex;
   justify-content: center;
