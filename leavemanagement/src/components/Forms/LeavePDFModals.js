@@ -57,9 +57,9 @@ const LeavePDFModals = ({ toast, from }) => {
 				{ leave_id }
 			);
 			if (resp.data.status == "success") {
-				let data = resp.data.data[0]				
+				let data = resp.data.data[0]
 				setLeave(data);
-				const imageUrl = "data:image/png;base64,"+ String(data.signature);				
+				const imageUrl = "data:image/png;base64," + String(data.signature);
 				setSignatureDataUrl(imageUrl);
 				if (data.file_name) {
 					await handleDownloadClick('leave_document', data.file_name)
@@ -87,13 +87,13 @@ const LeavePDFModals = ({ toast, from }) => {
 		} catch (error) {
 			toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
 		}
-	};	
+	};
 
-	const handleDownloadClick = async (query, file_name=null) => {		
+	const handleDownloadClick = async (query, file_name = null) => {
 		const response = await httpClient.post(`${process.env.REACT_APP_API_HOST}/sample_csvs`, {
 			name: query,
 			file_name: file_name
-		})		
+		})
 		const encodedData = response.data.data;
 		const decodedData = atob(encodedData);
 		const blob = new Blob([response.data], { type: 'application/pdf' });
@@ -246,10 +246,13 @@ const LeavePDFModals = ({ toast, from }) => {
 
 							<div className="row leave-details-signature">
 								<div className="col-6"></div>
-								<div className="col-6" id="signature-container">									
-									{signatureDataURL && (
-										<img src={signatureDataURL} alt="Signature" />
-									)}
+								<div className="col-6" id="signature-container" style={{alignItems:"center", padding:"10px"}}>
+									<div className="img-cont">
+										{signatureDataURL && (
+											<img style={{maxHeight:"60px", maxWidth:"450px", width: "40%" }} src={signatureDataURL} alt="Signature" />
+										)}
+									</div>
+
 									<br />
 									आवेदक के हस्ताक्षर तारीख साहित/Signature with date of the
 									applicant

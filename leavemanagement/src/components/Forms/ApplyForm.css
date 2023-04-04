@@ -42,6 +42,10 @@ legend {
 }
 
 .sigPad {
+  border-width: 2px;
+  border: inset;
+  /* border-color: black; */
+  border-radius: 5px;
   width: 100%;
   height: 100%;
 }
