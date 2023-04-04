@@ -3,6 +3,11 @@
     padding: 5px;
 }
 
+.dashboard{
+  min-height: 100vh;
+  height: 100%;
+}
+
 .heading-line{
     width: 100px;
     height: 2px;
@@ -92,6 +97,7 @@ body {
   justify-content: center;
   align-items: center;
   height: 35px;
+  font-size: 1rem;
   /* font-size: 20px; */
   font-weight: bold;
   color: #333;
@@ -119,10 +125,17 @@ body {
   border: 2px solid #7E57C2;
 }
 
-/* span{
-  font-size: 25px;
+span{
+  font-size: 1.2rem;
   font-family:'Times New Roman', Times, serif;
-} */
+}
+
+.mt-4 > button {
+  font-size: 1.3rem;
+  font-family: 'Times New Roman', Times, serif;
+  /* font-size: 25px; */
+  /* font-family:'Times New Roman', Times, serif; */
+}
 
 .mt-4 > button {
   /* font-size: 20px; */
@@ -149,11 +162,12 @@ body {
   font-weight: bold;
 }
 
-/* .recent-application>div{
-  font-family:'Times New Roman', Times, serif;
-} */
+.recent-application>div{
+  font-family:'Times New Roman', Times, serif; 
+}
 
 .card-header{
+  font-size: 1.5em;
   /* font-size: 25px; */
   font-weight: bolder;
 }
@@ -161,7 +175,7 @@ body {
 .dates{
   display: flex;
   justify-content: space-between;
-  width: 30rem;
+  width: 60%;
 }
 
 .content{
@@ -169,11 +183,28 @@ body {
   justify-content: space-between;
 }
 
-.buttons{
+.buttons_dashboard{
   display: flex;
   flex-direction:column;
+  text-align: right;
+  width: 25%;
 }
 
 .btn-sm{
+  font-size: 1rem;
   margin-top: 5px;
+}
+
+.date, .card-title{
+  font-size: 1.2em;
+}
+
+.calendar-panel{
+  display: flex;
+  align-items: center;
+}
+
+.arrow{
+  height: 1.5em;
+  width: 1.5em;
 }

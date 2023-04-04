@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import './Dashboard.css'
 import styled from "styled-components";
 
 const PieChart = (props) => {
@@ -28,9 +29,9 @@ const PieChart = (props) => {
   return (
     <OuterContainer class="container">
       <div class={`circular-progress ${props.leaveType}`}>
-        <div class={`value-container value-${props.leaveType}`}>
+        <span class={`value-container value-${props.leaveType}`}>
           0%
-        </div>
+        </span>
       </div>
       <div>{props.leaveType}</div>
     </OuterContainer>
@@ -40,8 +41,8 @@ const PieChart = (props) => {
 const OuterContainer = styled.div`
   .circular-progress {
     position: relative;
-    height: 180px;
-    width: 180px;
+    height: 200px;
+    width: 200px;
     border-radius: 50%;
     display: grid;
     place-items: center;
@@ -58,8 +59,9 @@ const OuterContainer = styled.div`
 
   .value-container {
     position: relative;
-    font-family: "Poppins", sans-serif;
-    font-size: 30px;
+    width: 5em;
+    font-size: 1.5em;
+    font-family: "Times New Roman", Times, serif;
     color: #231c3d;
   }
 `;
