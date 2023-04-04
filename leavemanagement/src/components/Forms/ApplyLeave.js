@@ -68,14 +68,18 @@ export default function NonCasuaLeave({ toast }) {
 			e.preventDefault();
 			let form_data = {}
 			formRef.current.querySelectorAll('input').forEach((input) => {
-				form_data[input.id] = input.value;
+				form_data[input.id] = input.value == '' ? null: input.value;
 			});
 			formRef.current.querySelectorAll('select').forEach((input) => {
-				form_data[input.id] = input.value;
+				form_data[input.id] = input.value == '' ? null: input.value;
 			});
 			formRef.current.querySelectorAll('textarea').forEach((input) => {
-				form_data[input.id] = input.value;
-			});			
+				form_data[input.id] = input.value == '' ? null: input.value;
+			});		
+			if (form_data['form_isStation'] == 'No') {
+				form_data['form_station_sdate'] = null;
+				form_data['form_station_edate'] = null;
+			}
 			// return;
 			let dur = adjustDuration();
 			if (isNaN(formData.form_duration)) {
