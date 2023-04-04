@@ -19,6 +19,8 @@ import numpy as np
 from dateutil import parser
 import json
 
+import util
+
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
 
@@ -236,10 +238,10 @@ def sample_csvs():
 		elif mode == "leaves_sample":
 			return send_file(file_name, as_attachment=True, attachment_filename=file_name)
 		elif mode == "leave_document":
-			with open(open(os.path.join(root_directory,file_name), 'rb') as f:
+			with open(os.path.join(root_directory,file_name), 'rb') as f:
 				pdf_data = f.read()
 				encoded_data = base64.b64encode(pdf_data).decode('utf-8')
-			return send_file(encoded_data, as_attachment=True, attachment_filename=file_name, mimetype='application/pdf',)
+			return get_success_response(encoded_data)
 	except Exception as E:
 		return get_error_response(E)
 
@@ -254,6 +256,7 @@ def process_query():
 		if list(data.columns) != list(sample_data):
 			return get_error_response("Wrong Data, Kindly Match the sample data provided in the link")
 		if mode == "users_sample":
+			inserted_users = []
 			for name, email_id, position, department, mobile in zip(data.name.values, data.email_id.values, data.position.values, data.department.values, data.mobile.values):
 				print("email:",pd.isna(email_id),pd.isna(position),pd.isna(department), department, position)
 				if pd.isna(email_id) or pd.isna(position) or pd.isna(department):
@@ -264,6 +267,7 @@ def process_query():
 				insert_user(columns,values)
 				user_id = get_user_dic(email_id)['user_id']
 				leaves_data_util(user_id)
+				inserted_users.append([columns, values])
 		elif mode == "leaves_sample":
 			for email_id,nature,duration,is_station,start_date,end_date,status,type_of_leave in zip(data.email_id.values, data.nature.values,data.duration.values, data.is_station.values, data.start_date.values, data.end_date.values, data.status.values,data.type_of_leave.values):
 				if pd.isna(email_id)or pd.isna(duration) or pd.isna(nature) or pd.isna(is_station) or pd.isna(start_date) or pd.isna(end_date) or pd.isna(status) or pd.isna(type_of_leave):
@@ -272,10 +276,7 @@ def process_query():
 				if not check_user(email_id):
 					continue
 				columns,values = get_columns_for_leaves_table(email_id,nature,duration,is_station,start_date,end_date,status,type_of_leave)
-				print(columns,values)
 				insert_leave_application(columns,values)
-
-
 
 		return get_success_response(True)
 	except Exception as E:
@@ -302,11 +303,8 @@ def send_otp():
 			return get_error_response("User not Allowed")
 		OTP = random.randint(10**5,10**6-1)
 		session['otp'] = OTP
-		msg = "Your OTP for IIT Rpr Leave Management Portal is " + str(OTP)
-		s = smtplib.SMTP('smtp.gmail.com', 587)
-		s.starttls()
-		s.login("head.dep2023@gmail.com", "osgkkqldbkkinnqj")
-		s.sendmail('IIT Rpr Leave OTP',email,msg)
+		message = util.otp_message(OTP)
+		util.send_email(email, message)
 		return get_success_response(f"OTP has been sent to {email}")
 	except Exception as E:
 		return get_success_response(E)
@@ -376,7 +374,7 @@ def edit_user_info():
 		connect = db
 		cursor = connect.cursor()
 		email = session['user_info']['email']
-		query = 'UPDATE user set name = %s, mobile = %s WHERE email_id = %s'
+		query = 'UPDATE users set name = %s, mobile = %s WHERE email_id = %s'
 		cursor.execute(query,(name, mobile, email,))
 		connect.commit()
 		return get_success_response("Profile Edit successful")
@@ -390,7 +388,10 @@ def apply_leave():
 	try:
 		data = json.loads(request.form.get('data'))
 		signature = data['signature']
-		document = request.files['file']
+		try:
+			document = request.files['file']
+		except:
+			document = None
 		ret = insert_leave(data, signature,document)
 		if ret == True:
 			return get_success_response("Leave Applied Successfully")
@@ -514,7 +515,7 @@ def check_applications():
 		payload = []
 		for i in leaves:
 			content = {'id': i[0], 'department': i[1], 'user_id': i[2], 'nature': i[3], 'purpose': i[4], 'is_station': i[5], 'request_date': i[6],
-					'start_date': i[7], 'end_date': i[8], 'authority_comment': i[9], 'duration': i[10], 'status': i[11], 'level': i[12], 'attached_documents': i[13], 'signature': i[17]}
+					'start_date': i[7], 'end_date': i[8], 'authority_comment': i[9], 'duration': i[10], 'status': i[11], 'level': i[12], 'attached_documents': i[13], 'signature': base64.b64encode(i[17]).decode('utf-8') if i[17] else None,}
 			if content['department'] != department:
 				continue
 			cursor.execute('SELECT email_id FROM users WHERE user_id = %s', (i[2], ))
@@ -633,7 +634,7 @@ def disapprove_leave():
 				"UPDATE leaves SET status = 'Disapproved By Hod' WHERE leave_id = %s", (leave_id,))
 		elif user["position"] == "dean":
 			cursor.execute(
-				"UPDATE leaves SET status = 'Disapproved By Hod' WHERE leave_id = %s", (leave_id,))
+				"UPDATE leaves SET status = 'Disapproved By Dean' WHERE leave_id = %s", (leave_id,))
 		connect.commit()
 		connect.close()
 		return get_success_response(f"Leave with ID: {leave_id} is disapproved")
