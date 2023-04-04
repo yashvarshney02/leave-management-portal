@@ -43,6 +43,7 @@ export default function UpdateLeave({ toast }) {
     setCurrentQuery(query);
     setDownloadLink(url);
   };
+	// const handleDownloadClick = async (query) => {		
 
   const handleFileSubmit = async () => {
     const formData = new FormData();

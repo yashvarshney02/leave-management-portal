@@ -44,9 +44,9 @@ const SidebarWrap = styled.div`
 
 const Sidebar = () => {
   const [sidebar, setSidebar] = useState(false);
-  const { currentUser } = useAuth();  
+  const { currentUser } = useAuth();
   const showSidebar = () => setSidebar(!sidebar);
-  
+
 
   return (
     <>
@@ -54,11 +54,11 @@ const Sidebar = () => {
         <Nav>
           <NavIcon to='#'>
             <FaIcons.FaBars onClick={showSidebar} />
-          </NavIcon>  
-          <div style={{marginLeft:"auto",width:"200px",color:"white"}}>
+          </NavIcon>
+          <div style={{ marginLeft: "auto", width: "200px", color: "white" }}>
             Hi, {currentUser ? currentUser.name : 'User'}
-          </div>                  
-        </Nav>        
+          </div>
+        </Nav>
         <SidebarNav sidebar={sidebar}>
           <SidebarWrap>
             <NavIcon to='#'>
@@ -68,9 +68,9 @@ const Sidebar = () => {
               if (!currentUser && item.title == 'Logout') {
                 return <></>
               } else if (item.title == 'Logout') {
-                return <SubMenu className = "yash" item={item} key={index} showSidebar={showSidebar}/>;
+                return <SubMenu item={item} key={index} showSidebar={showSidebar} />;
               } else {
-                return <SubMenu item={item} key={index} showSidebar={showSidebar}/>;
+                return <SubMenu item={item} key={index} showSidebar={showSidebar} />;
               }
             })}
           </SidebarWrap>

@@ -309,7 +309,6 @@ export default function Dashboard({ toast }) {
                 <Calendar data={dayOfLeave} />
               </Row>
               {recentApplication ? (
-                <Row>
                   <div class="recent-box">
                     <span>Recent Application </span>
                     <div class="recent-application card">
@@ -366,13 +365,10 @@ export default function Dashboard({ toast }) {
                             </button>
                           </div>
                         </div>
-                        {/* <h6 class="card-title">Duration</h6>
-                    <h5>3</h5> */}
                         <div>Status: {recentApplication.status} </div>
                       </div>
                     </div>
                   </div>
-                </Row>
               ) : (
                 ""
               )}
