@@ -45,7 +45,7 @@ export default function ApplyLeave({ toast }) {
 	};
 
 	const handleFileInputChange = (e) => {
-		const file = e.target.files[0];		
+		const file = e.target.files[0];
 		const fileSize = file.size;
 		setDocument(file)
 		if (fileSize > 1 * 1024 * 1024) {
@@ -78,15 +78,15 @@ export default function ApplyLeave({ toast }) {
 			setFormLoading(true);
 			const trimmedDataURL = sigPadRef.current.getTrimmedCanvas().toDataURL('image/png');
 			const arrayBuffer = await dataURItoBlob(trimmedDataURL).arrayBuffer();
-			const binaryData = new Uint8Array(arrayBuffer);		
+			const binaryData = new Uint8Array(arrayBuffer);
 			let form_data = formData
 			form_data['form_duration'] = dur;
 			form_data['signature'] = binaryData;
 			const form = new FormData();
 			form.append('data', JSON.stringify(form_data));
-			form.append('file', document);			
+			form.append('file', document);
 			try {
-				const resp = await httpClient.post(`${process.env.REACT_APP_API_HOST}/apply_leave`,form);	
+				const resp = await httpClient.post(`${process.env.REACT_APP_API_HOST}/apply_leave`, form);
 				if (resp.data.status == 'success') {
 					toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT)
 				} else {
@@ -96,7 +96,7 @@ export default function ApplyLeave({ toast }) {
 				toast.error("Leave Application Unssucessful", toast.POSITION.BOTTOM_RIGHT)
 			}
 			setFormLoading(false);
-		} catch(error) {
+		} catch (error) {
 		}
 	}
 
@@ -219,15 +219,18 @@ export default function ApplyLeave({ toast }) {
 												</Col >
 											</Row>
 											<br />
+
+											<Row className="row-al">
+												<span style={{ textAlign: "left" }}>Use your mouse to place your signature here</span>
+											</Row>
+
 											<Row className='row-al'>
 												<div className={"sigContainer"}>
-													<SignaturePad canvasProps={{ className: 'sigPad' }} ref={sigPadRef} onChange={(e) => {  }} />
+													<SignaturePad canvasProps={{ className: 'sigPad' }} ref={sigPadRef} onChange={(e) => { }} />
 												</div>
-												<div>
-													<button onClick={clear}>
-														Clear
-													</button>
-												</div>
+											</Row>
+											<Row className="row-al">
+												<span onClick={clear} style={{ textAlign: "left", cursor: "pointer" }}>Clear</span>
 											</Row>
 											<Row className="row-al">
 												<Col>
