@@ -148,12 +148,12 @@ const LeavePDFModals = ({ toast, from }) => {
           Download pdf{" "}
           <FaDownload
             style={{ cursor: "pointer" }}
-            onClick={() => saveLeave(leave?.id)}
+            onClick={() => saveLeave(leave?.leave_id)}
           />
           <div
             className="container"
             style={{ width: "1000px" }}
-            id={"first-page-" + leave?.id}
+            id={"first-page-" + leave?.leave_id}
           >
             <br />
             <div style={{ display: "flex", alignItems: "center" }}>
@@ -345,7 +345,7 @@ const LeavePDFModals = ({ toast, from }) => {
             <hr />
             <div
               className="establishment-office text-center"
-              id={"leave-footer-" + leave?.id}
+              id={"leave-footer-" + leave?.leave_id}
             >
               <p>
                 <b>
@@ -440,7 +440,7 @@ const LeavePDFModals = ({ toast, from }) => {
           {from === "check_application" ? (
             <div className="text-center">
               <textarea
-                id={"comment-" + leave?.id}
+                id={"comment-" + leave?.leave_id}
                 placeholder="Add Comment"
                 style={{ width: "250px" }}
               ></textarea>
@@ -453,7 +453,7 @@ const LeavePDFModals = ({ toast, from }) => {
               <>
                 <div className="text-center">
                   <textarea
-                    id={"comment-" + leave?.id}
+                    id={"comment-" + leave?.leave_id}
                     placeholder="Add Comment"
                     style={{ width: "250px" }}
                   ></textarea>
@@ -462,7 +462,7 @@ const LeavePDFModals = ({ toast, from }) => {
                   type="button"
                   className="btn btn-outline-success"
                   onClick={async () => {
-                    await approveLeave(leave?.id);
+                    await approveLeave(leave?.leave_id);
                   }}
                 >
                   Approve
@@ -472,7 +472,7 @@ const LeavePDFModals = ({ toast, from }) => {
                   type="button"
                   className="btn btn-outline-danger"
                   onClick={async () => {
-                    await disapproveLeave(leave?.id);
+                    await disapproveLeave(leave?.leave_id);
                   }}
                 >
                   Disapprove
@@ -482,7 +482,7 @@ const LeavePDFModals = ({ toast, from }) => {
                   type="button"
                   className="btn btn-outline-primary"
                   onClick={() => {
-                    addComment(leave?.id);
+                    addComment(leave?.leave_id);
                   }}
                 >
                   Add Comment

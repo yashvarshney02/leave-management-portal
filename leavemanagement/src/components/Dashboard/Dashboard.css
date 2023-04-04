@@ -162,9 +162,9 @@ span{
   font-weight: bold;
 }
 
-/* .recent-application>div{
+.recent-application>div{
   font-family:'Times New Roman', Times, serif; 
-}*/
+}
 
 .card-header{
   font-size: 1.5em;

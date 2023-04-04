@@ -29,21 +29,23 @@ export default function UpdateLeave({ toast }) {
   const [downloadLink, setDownloadLink] = useState("");
   const [selectedFile, setSelectedFile] = useState();
   const [isFilePicked, setIsFilePicked] = useState(false);
+  const [isLoadingSample,setIsLoadingSample] = useState(false);
 
   const handleDownloadClick = async (query) => {
+	setIsLoadingSample(true);
     const response = await httpClient.post(
       `${process.env.REACT_APP_API_HOST}/sample_csvs`,
       {
         name: query,
       }
-    );
-    const blob = new Blob([response.data], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
+    );	
+	setIsLoadingSample(false);
+    const blob = new Blob([response.data], { type: "text/csv" });	
+    const url = window.URL.createObjectURL(blob);	
     setFileName(`${query}.csv`);
     setCurrentQuery(query);
-    setDownloadLink(url);
+    setDownloadLink(url);	
   };
-	// const handleDownloadClick = async (query) => {		
 
   const handleFileSubmit = async () => {
     const formData = new FormData();
@@ -126,13 +128,20 @@ export default function UpdateLeave({ toast }) {
     }
     test();
   }, []);
+  useEffect(() => {
+    async function test() {
+      await getCollectiveData();
+      await handleDownloadClick(currentQuery);
+    }
+    test();
+  }, []);
 
   return (
     <>
       <div className="container-al">
         <Card style={{ width: "100%" }}>
           <Card.Body style={{ width: "100%" }}>
-            <Card.Title className="title-al">Establishment Portal</Card.Title>
+            <Card.Title className="title-al">Update Portal</Card.Title>
             <Card.Text>
               <form>
                 <Container className="content-al">
@@ -152,20 +161,22 @@ export default function UpdateLeave({ toast }) {
                               id="form_query"
                               onChange={async (e) => {
                                 handleDownloadClick(
-                                  listOfQueries[e.target.value]
+                                  // listOfQueries[e.target.value]
+                                  e.target.value
                                 );
                               }}
                               required
                             >
                               {Object.keys(listOfQueries).map((item, key) => {
-                                return <option key={key}>{item}</option>;
+                                // return <option key={key}>{item}</option>;
+                                return <option key={key} value={listOfQueries[item]}>{item}</option>;
                               })}
                             </select>
                           </Col>
                         </Row>
                         <div style={{ textAlign: "left" }}>
                           <Button>
-                            {downloadLink && (
+                            {!isLoadingSample && (
                               <a
                                 href={downloadLink}
                                 style={{
@@ -173,6 +184,7 @@ export default function UpdateLeave({ toast }) {
                                   textDecoration: "none",
                                 }}
                                 download={fileName}
+								// onClick={console.log(fileName)}
                               >
                                 Download Sample Data
                               </a>
@@ -223,8 +235,7 @@ export default function UpdateLeave({ toast }) {
             </Modal.Header>
             <Modal.Body>
               <ul>
-                {specificData?.leave_ids.map((item, idx) => {
-                  console.log(item);
+                {specificData?.leave_ids.map((item, idx) => {                  
                   return (
                     <li style={{ textAlign: "left" }}>
                       <a

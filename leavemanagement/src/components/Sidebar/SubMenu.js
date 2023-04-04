@@ -52,21 +52,23 @@ const SubMenu = ({ item, showSidebar }) => {
 
   return (
     <>
-      <SidebarLink to={item.path} onClick={async () => {        
+      <SidebarLink to={item.path} onClick={async () => {
         showSubnav();
         if (!item.subNav) {
           showSidebar();
-        }        
+        }
         if (item.title == 'Logout') {
           let res = await logout();
-          if (res['status'] == 'success') {
-            toast.success(res['data'], toast.POSITION.BOTTOM_RIGHT);
-            await refresh_user();
-            navigate("/login");
+          console.log(res);
+          if (res.data['status'] == 'success') {
+            toast.success(res.data['data'], toast.POSITION.BOTTOM_RIGHT);
+            let res1 = await refresh_user();
+            if (res1.data['status'] == 'success') {
+              navigate("/login");
+            }
           } else {
             toast.success(res['emsg'], toast.POSITION.BOTTOM_RIGHT);
           }
-
         }
       }}>
         <div>

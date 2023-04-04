@@ -36,7 +36,7 @@ export const SidebarData = [
         cName: 'sub-nav'
       },
       {
-        title: 'Check Applications',
+        title: 'Process Applications',
         path: '/forms/checkapplications',
         icon: <IoIcons.IoIosPaper />,
         cName: 'sub-nav'
