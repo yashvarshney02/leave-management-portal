@@ -86,6 +86,8 @@ const Sidebar = () => {
             {SidebarData.map((item, index) => {
               if (!currentUser && item.title == 'Logout') {
                 return <></>
+              } if (currentUser && item.title == 'Login') {
+                return <></>
               } else if (item.title == 'Logout') {
                 return <SubMenu item={item} key={index} showSidebar={showSidebar} />;
               } else {

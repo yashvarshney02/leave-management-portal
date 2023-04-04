@@ -6,140 +6,144 @@ import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import { FaDownload } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { Document, Page } from 'react-pdf';
 
 const LeavePDFModalsNonCasual = ({ toast, from }) => {
-	const [leave, setLeave] = useState(null);
-	const { currentUser } = useAuth();
-	let currentUrl =
-		window.location.href.split("/")[window.location.href.split("/").length - 1];
-	const leave_id = parseInt(currentUrl);
-	const [signatureDataURL, setSignatureDataUrl] = useState(null)
-	const [downloadLink, setDownloadLink] = useState(null);
+  const [leave, setLeave] = useState(null);
+  const { currentUser } = useAuth();
+  let currentUrl =
+    window.location.href.split("/")[window.location.href.split("/").length - 1];
+  const leave_id = parseInt(currentUrl);
+  const [signatureDataURL, setSignatureDataUrl] = useState(null)
+  const [downloadLink, setDownloadLink] = useState(null);
+  const navigate = useNavigate()
 
-	const approveLeave = async (leave_id) => {
-		try {
-			const resp = await httpClient.post(
-				`${process.env.REACT_APP_API_HOST}/approve_leave`,
-				{ leave_id, level: currentUser.level }
-			);
-			if (resp.data.status == "error") {
-				toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
-			} else {
-				toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
-			}
-		} catch (error) {
-			toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
-		}
-	};
-	const addComment = async (leave_id) => {
-		try {
-			const uid = "comment-" + leave_id;
-			const comment = document.getElementById(uid).value;
-			const resp = await httpClient.post(
-				`${process.env.REACT_APP_API_HOST}/add_comment`,
-				{ comment, leave_id }
-			);
-			if (resp.data.status == "error") {
-				toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
-			} else {
-				toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
-			}
-		} catch (error) {
-			toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
-		}
-	};
 
-	const fetchLeaveInfo = async () => {
-		try {
-			const resp = await httpClient.post(
-				`${process.env.REACT_APP_API_HOST}/get_leave_info_by_id`,
-				{ leave_id }
-			);
-			if (resp.data.status == "success") {
-				let data = resp.data.data[0]					
-				setLeave(data);
-				const imageUrl = "data:image/png;base64," + String(data.signature);
-				setSignatureDataUrl(imageUrl);
-				if (data.file_name) {
-					await handleDownloadClick('leave_document', data.file_name)
-				}
+  const approveLeave = async (leave_id) => {
+    try {
+      const resp = await httpClient.post(
+        `${process.env.REACT_APP_API_HOST}/approve_leave`,
+        { leave_id, level: currentUser.level }
+      );
+      if (resp.data.status == "error") {
+        toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
+      } else {
+        toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
+      }
+    } catch (error) {
+      toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
+    }
+  };
+  const addComment = async (leave_id) => {
+    try {
+      const uid = "comment-" + leave_id;
+      const comment = document.getElementById(uid).value;
+      const resp = await httpClient.post(
+        `${process.env.REACT_APP_API_HOST}/add_comment`,
+        { comment, leave_id }
+      );
+      if (resp.data.status == "error") {
+        toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
+      } else {
+        toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
+      }
+    } catch (error) {
+      toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
+    }
+  };
 
-			} else {
-			}
-		} catch (error) {
-			console.log(error);
-			toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
-		}
-	};
+  const fetchLeaveInfo = async () => {
+    try {
+      const resp = await httpClient.post(
+        `${process.env.REACT_APP_API_HOST}/get_leave_info_by_id`,
+        { leave_id }
+      );
+      if (resp.data.status == "success") {
+        let data = resp.data.data[0];
+        if (from == "past_applications" && data.email != currentUser.email) {
+          navigate("/navigate/pastapplications");
+        }
+        setLeave(data);
+        const imageUrl = "data:image/png;base64," + String(data.signature);
+        setSignatureDataUrl(imageUrl);
+        if (data.file_name) {
+          await handleDownloadClick('leave_document', data.file_name)
+        }
 
-	const disapproveLeave = async (leave_id) => {
-		try {
-			const resp = await httpClient.post(
-				`${process.env.REACT_APP_API_HOST}/disapprove_leave`,
-				{ leave_id }
-			);
-			if (resp.data.status == "error") {
-				toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
-			} else {
-				toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
-			}
-		} catch (error) {
-			toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
-		}
-	};
+      } else {
+      }
+    } catch (error) {
+      console.log(error);
+      toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
+    }
+  };
 
-	const handleDownloadClick = async (query, file_name = null) => {
-		const response = await httpClient.post(`${process.env.REACT_APP_API_HOST}/sample_csvs`, {
-			name: query,
-			file_name: file_name
-		})
-		const encodedData = response.data.data;
-		const decodedData = atob(encodedData);
-		const blob = new Blob([response.data], { type: 'application/pdf' });
-		const url = window.URL.createObjectURL(blob);
-		setDownloadLink(url);
-	};
+  const disapproveLeave = async (leave_id) => {
+    try {
+      const resp = await httpClient.post(
+        `${process.env.REACT_APP_API_HOST}/disapprove_leave`,
+        { leave_id }
+      );
+      if (resp.data.status == "error") {
+        toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
+      } else {
+        toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
+      }
+    } catch (error) {
+      toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
+    }
+  };
 
-	function get_date(date) {	
-		if (!date)	return null;
-		date = new Date(date)
-		const yyyy = date.getFullYear();
-		const mm = String(date.getMonth() + 1).padStart(2, '0');
-		const dd = String(date.getDate()).padStart(2, '0');
-		const formattedDate = `${yyyy}-${mm}-${dd}`;
-		return formattedDate
-	}
+  const handleDownloadClick = async (query, file_name = null) => {
+    const response = await httpClient.post(`${process.env.REACT_APP_API_HOST}/sample_csvs`, {
+      name: query,
+      file_name: file_name
+    })
+    const encodedData = response.data.data;
+    const decodedData = atob(encodedData);
+    const blob = new Blob([response.data], { type: 'application/pdf' });
+    const url = window.URL.createObjectURL(blob);
+    setDownloadLink(url);
+  };
 
-	const saveLeave = (leave_id) => {
-		const pdf = new jsPDF("portrait", "pt", "a2");
-		const input = document.getElementById("first-page-" + leave_id);
-		html2canvas(input, {
-			letterRendering: 1,
-			allowTaint: true,
-			logging: true,
-			useCORS: true,
-		})
-			//By passing this option in function Cross origin images will be rendered properly in the downloaded version of the PDF
-			.then((canvas) => {
-				// document.getElementById("leave-container-" + leave_id).parentNode.style.overflow = 'hidden';
+  function get_date(date) {
+    if (!date) return null;
+    date = new Date(date)
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    const formattedDate = `${yyyy}-${mm}-${dd}`;
+    return formattedDate
+  }
 
-				var imgData = canvas.toDataURL("image/png");
-				// window.open(imgData, "toDataURL() image", "width=800, height=800");
+  const saveLeave = (leave_id) => {
+    const pdf = new jsPDF("portrait", "pt", "a2");
+    const input = document.getElementById("first-page-" + leave_id);
+    html2canvas(input, {
+      letterRendering: 1,
+      allowTaint: true,
+      logging: true,
+      useCORS: true,
+    })
+      //By passing this option in function Cross origin images will be rendered properly in the downloaded version of the PDF
+      .then((canvas) => {
+        // document.getElementById("leave-container-" + leave_id).parentNode.style.overflow = 'hidden';
 
-				pdf.addImage(imgData, "JPEG", 100, 50);
+        var imgData = canvas.toDataURL("image/png");
+        // window.open(imgData, "toDataURL() image", "width=800, height=800");
 
-				pdf.save(`${"leave-" + leave_id}.pdf`);
-			});
-	};
+        pdf.addImage(imgData, "JPEG", 100, 50);
 
-	useEffect(() => {
-		async function test() {
-			await fetchLeaveInfo();
-		}
-		test();
-	}, []);
-	return (
+        pdf.save(`${"leave-" + leave_id}.pdf`);
+      });
+  };
+
+  useEffect(() => {
+    async function test() {
+      await fetchLeaveInfo();
+    }
+    test();
+  }, []);
+  return (
     <>
       {true ? (
         <div>
@@ -210,7 +214,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                       fontWeight: "bold",
                     }}
                   >
-                    छुट्टी केललए अथवा छुट्टी बढानेहेतुआवेदन / Application for
+                    छुट्टी केललए अथवा छुट्टी बढाने हेतु आवेदन / Application for
                     leave or Extension of Leave
                   </p>
                   <p
@@ -220,7 +224,8 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                       marginBottom: "5px",
                     }}
                   >
-                    आकस्मिक छुट्टी/ राजपत्रित अवकाश / विशेष आकस्मिक छुट्टि
+
+                    (अर्जित अवकाश/अर्ध वेतन अवकाश/असाधारण अवकाश/परिवर्तित अवकाश/अवकाश/प्रसूति अवकाश/पितृत्व अवकाश/बाल देखभाल अवकाश)
                   </p>
                   <p
                     style={{
@@ -278,7 +283,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                   className="col-6"
                   style={{ textAlign: "left", border: "1px solid" }}
                 >
-                  3.ववभाग/कार्ाालर्/अनुभाग/Department./Office/Section
+                  3.विभाग/कार्यालय/अनुभाग/Department./Office/Section
                 </div>
                 <div
                   className="col-6"
@@ -295,7 +300,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                   className="col-6"
                   style={{ textAlign: "left", border: "1px solid" }}
                 >
-                  4. आवेवदत छुट्टी का प्रकाि/ Nature of Leave applied for
+                  4. आवेवदत छुट्टी का प्रकार/ Nature of Leave applied for
                 </div>
                 <div
                   className="col-6"
@@ -314,7 +319,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                   className="col-6"
                   style={{ textAlign: "left", border: "1px solid" }}
                 >
-                  5. छुट्टी की अववध/ Period of Leave <br />
+                  5. छुट्टी की अवधि/ Period of Leave <br />
                 </div>
                 <div className="col-6" style={{ textAlign: "left" }}>
                   <div
@@ -349,7 +354,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                         fontSize: "12px",
                       }}
                     >
-                      वदनों की संख्र्ा/No. of days
+                      दिनों की संख्या/No. of days
                     </div>
                   </div>
 
@@ -400,8 +405,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                   className="col-6"
                   style={{ textAlign: "left", border: "1px solid" }}
                 >
-                  6. र्वद कोई, िवववाि औि अवकाश, छुट्टी सेपूवार्ा पश्ाात म /वलए
-                  जा िहे हैं
+                  6. रविवार और अवकाश, यदि कोई हो, को छुट्टी के पहले/प्रत्यय में लगाने का प्रस्ताव है
                   <br></br>
                   Sunday and Holiday, if any, proposed to be prefixed/suffixed
                   to leave
@@ -419,7 +423,8 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                         fontSize: "14px",
                       }}
                     >
-                      के पश् ाात
+
+                      प्रत्यय
                       <br />
                       Suffix
                     </div>
@@ -451,7 +456,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                         fontSize: "12px",
                       }}
                     >
-                      वदनों की संख्र्ा/No. of days
+                      दिनों की संख्या/No. of days
                     </div>
                   </div>
                   <div
@@ -502,7 +507,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                         fontSize: "14px",
                       }}
                     >
-                      केपूवा
+                      के पूर्व
                       <br />
                       Prefix
                     </div>
@@ -534,7 +539,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                         fontSize: "12px",
                       }}
                     >
-                      वदनों की संख्र्ा/No. of days
+                      दिनों की संख्या/No. of days
                     </div>
                   </div>
 
@@ -585,7 +590,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                   className="col-6"
                   style={{ textAlign: "left", border: "1px solid" }}
                 >
-                  7. उद्देश्र् / Purpose
+                  7. उद्देश्य / Purpose
                 </div>
                 <div
                   className="col-6"
@@ -602,8 +607,8 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                   className="col-6"
                   style={{ textAlign: "left", border: "1px solid" }}
                 >
-                  8. कऺाएॊ, प्रशासलनक स्जम्मेदारी आदद (यदद कोई हो तो) के लऱए
-                  वैकस्पऩक व्यवमथा /<br />
+                  8. कक्षाओं, प्रशासनिक जिम्मेदारियों के लिए वैकल्पिक व्यवस्था,
+                  आदि (यदि कोई हो)/<br />
                   Alternative arrangements for classes, administrative
                   responsibilities, etc. (if any)
                 </div>
@@ -642,7 +647,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                   className="col-6"
                   style={{ textAlign: "left", border: "1px solid" }}
                 >
-                  10. छुट्टी केदौिान का पता / Address during the leave
+                  10. छुट्टी के दौरान पता / Address during the leave
                 </div>
                 <div className="col-6" style={{ textAlign: "left" }}>
                   <div
@@ -710,7 +715,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                         fontSize: "14px",
                       }}
                     >
-                      <p>सपं कानं./ Contact No. {leave?.mobile}</p>
+                      <p>दरूभाष/ Contact No. {leave?.mobile}</p>
                     </div>
                   </div>
                 </div>
@@ -724,7 +729,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                   className="col-6"
                   style={{ textAlign: "left", border: "1px solid" }}
                 >
-                  11. क्र्ा स्टेशन छोड़ने की आवश्र्कता है/Whether Station leave
+                  11. क्या स्टेशन छुट्टी की आवश्यकता है/Whether Station leave
                   is required
                 </div>
                 <div className="col-6" style={{ textAlign: "left" }}>
@@ -732,7 +737,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                     className="row"
                     style={{ border: "1px solid", minHeight: "38.6px" }}
                   >
-                    हाूँ/ना /Yes /No : र्वद हाूँ तो /If yes :{" "}
+                    हाँ या नहीं /Yes /No : यदि हाँ तो /If yes :{" "}
                     {leave?.is_station}
                   </div>
                   <div
@@ -780,12 +785,14 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
 
             <div>
               <p style={{ fontWeight: "bold", textDecoration: "underline	" }}>
-                लनयंत्रक अलर्कारी की लिप्पणी एवंलसफाररश/ Remarks and
+
+                नियंत्रण अधिकारी की अभ्युक्तियां और सिफारिशें
+                / Remarks and
                 Recommendations of the controlling officer
               </p>
               <div className="row">
                 <p style={{ textAlign: "right" }}>
-                  वसफारिश की गई/वसफारिश नहीं की गई
+                  अनुशंसित / अनुशंसित नहीं
                   <br />
                   Recommended/not recommended
                 </p>
@@ -798,7 +805,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
               </div>
               <div className="row">
                 <p style={{ textAlign: "right" }}>
-                  ववभागाध्र्क्ष एवंअनुभाग प्रभािी केहस्ताक्षि वदनांक सवहत
+                  दिनांक सहित हस्ताक्षर विभागाध्यक्ष/अनुभाग प्रभारी
                   <br />
                   Signature with date Head of Department/Section In-charge
                 </p>
@@ -813,16 +820,15 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
             >
               <p>
                 <b style={{ textDecoration: "underline" }}>
-                  प्रशासलनक अनुभाग द्वारा प्रयोग हेतु/ For use by the
+                  प्रशासन अनुभाग द्वारा उपयोग के लिए/ For use by the
                   Administration Section
                 </b>
               </p>
               <p style={{ textAlign: "left" }}>
-                प्रमावित वकर्ा जाता है वक _______________ से
-                ______________की______________(अववध) के वलए______________(छुट्टी
-                का प्रकाि) वनम्न वदए गए ववविि केअनुसाि स्वीकाि की जाती है।
-                Certified that ____________ (nature of leave) for_____________
-                period, from____________ To____________ is available as per
+
+                प्रमाणित किया जाता है कि <u>{get_date(leave?.start_date)}</u> से <u>{get_date(leave?.end_date)}</u> की <u>{leave?.duration}</u> (अवधि) के लिए <u>{leave?.type_of_leave}</u> (अवकाश की प्रकृति) के लिए निम्नलिखित विवरण के अनुसार उपलब्ध है:<br />
+                Certified that <u>{leave?.nature}</u> (nature of leave) for <u>{leave?.duration}</u>
+                period, from <u>{get_date(leave?.start_date)}</u> To <u>{get_date(leave?.end_date)}</u> is available as per
                 following details:
               </p>
               <div className="row" style={{ border: "1px solid" }}>

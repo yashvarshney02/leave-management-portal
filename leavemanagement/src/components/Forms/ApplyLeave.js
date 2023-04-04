@@ -157,7 +157,7 @@ export default function NonCasuaLeave({ toast }) {
 												</Col >
 												<Col className="col-al">
 													<legend htmlFor="form_email" style={{ fontSize: "18px" }}>Email</legend>
-													<input type="email" className="form-control" id="form_email" defaultValue={currentUser.email} onChange={(e) => { handleInputChange(e) }} placeholder="Email" readonly required />
+													<input type="email" className="form-control" style={{ cursor: "not-allowed" }} id="form_email" value={currentUser.email} onChange={(e) => { handleInputChange(e) }} placeholder="Email" readonly disabled />
 												</Col >
 											</Row >
 											<Row className="row-al">

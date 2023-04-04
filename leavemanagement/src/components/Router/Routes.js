@@ -2,7 +2,6 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import Dashboard from "../Dashboard/Dashboard";
 import Login from "../Login/Login";
-import ApplyLeave from "../Forms/Casual";
 import NonCasuaLeave from "../Forms/ApplyLeave";
 import PrivateRoute from "../PrivateRoute/PrivateRoute";
 import PastApplications from "../Forms/PastApplications";
@@ -23,23 +22,23 @@ const Paths = (props) => {
 					<Route path="/" element={<Dashboard toast={props.toast} />} />
 				</Route>
 				<Route
-					path="/forms/applyleave"
+					path="/navigate/applyleave"
 					element={<PrivateRoute user={["all"]} toast={props.toast} />}
 				>
 					<Route
-						path="/forms/applyleave"
+						path="/navigate/applyleave"
 						element={<NonCasuaLeave toast={props.toast} />}
 					/>
 				</Route>
-				<Route path='/forms/updateleave' element={<PrivateRoute user={["all"]} toast={props.toast} />}>
-					<Route path="/forms/updateleave" element={<UpdateLeave toast={props.toast} />} />
+				<Route path='/navigate/updateleave' element={<PrivateRoute user={["all"]} toast={props.toast} />}>
+					<Route path="/navigate/updateleave" element={<UpdateLeave toast={props.toast} />} />
 				</Route>
 				<Route
-					path="/forms/pastapplications"
+					path="/navigate/pastapplications"
 					element={<PrivateRoute user={["all"]} toast={props.toast} />}
 				>
 					<Route
-						path="/forms/pastapplications"
+						path="/navigate/pastapplications"
 						element={<PastApplications toast={props.toast} />}
 					/>
 				</Route>
@@ -91,13 +90,13 @@ const Paths = (props) => {
 				</Route>
 
 				<Route
-					path="/forms/dates"
+					path="/navigate/dates"
 					element={<PrivateRoute user={["dean"]} toast={props.toast} />}
 				>
-					<Route path="/forms/dates" element={<Dates toast={props.toast} />} />
+					<Route path="/navigate/dates" element={<Dates toast={props.toast} />} />
 				</Route>
 				<Route
-					path="/forms/checkapplications"
+					path="/navigate/checkapplications"
 					element={
 						<PrivateRoute
 							user={["dean", "hod", "faculty"]}
@@ -106,7 +105,7 @@ const Paths = (props) => {
 					}
 				>
 					<Route
-						path="/forms/checkapplications"
+						path="/navigate/checkapplications"
 						element={<CheckLeaves toast={props.toast} />}
 					/>
 				</Route>

@@ -33,6 +33,10 @@
   color: gray;
 }
 
+.pending {
+  color: 'red'
+}
+
 body {
   background-color: #7E57C2;
 }
@@ -115,8 +119,16 @@ body {
   background-color: #fff;
 }
 
-.taken {
-  background-color: rgb(240, 59, 59);
+.approved {
+  background-color: green;
+  color: #fff;
+}
+.disapproved {
+  background-color: red;
+  color: #fff;
+}
+.pending {
+  background-color: blue;
   color: #fff;
 }
 
