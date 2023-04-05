@@ -185,15 +185,6 @@ export default function Table({ title, headers, initialData, from }) {
 				</Modal.Body>
 				<Modal.Footer>
 					<Button
-						variant="secondary"
-						onClick={() => {
-							setDeleteLeaveID("");
-							handleClose();
-						}}
-					>
-						Discard
-					</Button>
-					<Button
 						variant="danger"
 						onClick={async () => {
 							await handleDeleteLeaveApplication(deleteLeaveID);
