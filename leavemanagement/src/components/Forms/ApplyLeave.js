@@ -9,6 +9,7 @@ import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
 import SignaturePad from 'react-signature-canvas'
 import "./Form.css";
+import { useNavigate } from 'react-router-dom';
 
 export default function ApplyLeave({ toast }) {
 	const { currentUser } = useAuth();
@@ -60,7 +61,7 @@ export default function ApplyLeave({ toast }) {
 		sigPadRef.current.clear();
 	};
 
-
+	const navigate = useNavigate();
 
 	const handleSubmit = async (e) => {
 		try {
@@ -89,6 +90,9 @@ export default function ApplyLeave({ toast }) {
 				const resp = await httpClient.post(`${process.env.REACT_APP_API_HOST}/apply_leave`, form);
 				if (resp.data.status == 'success') {
 					toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT)
+					setTimeout(() => {
+						navigate("/navigate/pastapplications");
+					  }, 2000);
 				} else {
 					toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT)
 				}
