@@ -9,8 +9,10 @@ import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
 import SignaturePad from 'react-signature-canvas'
 import "./Form.css";
+import { useNavigate } from 'react-router-dom';
 
 export default function NonCasuaLeave({ toast }) {
+	const navigate = useNavigate();
 	const { currentUser } = useAuth();
 	const [typesOfLeave, setTypesofLeave] = useState(["CASUAL LEAVE", "RESTRICTED HOLIDAY", "SPECIAL CASUAL LEAVE", "ON DUTY"])
 	const [duration, setDuration] = useState(0);
@@ -39,23 +41,30 @@ export default function NonCasuaLeave({ toast }) {
 		return new Blob([ab], { type: mimeString });
 	}
 
+	function getToday() {
+		const today = new Date();
+		const year = today.getFullYear();
+		const month = String(today.getMonth() + 1).padStart(2, "0"); // add leading zero if needed
+		const day = String(today.getDate()).padStart(2, "0"); // add leading zero if needed
+		const todayString = `${year}-${month}-${day}`;
+		return todayString
+	}
+
 	const handleInputChange = async (e) => {
-		const propName = e.target.id;
-		const propVal = e.target.value;
-		setFormData({ ...formData, [propName]: propVal });
+		return
 	};
 
-	const handleFileInputChange = (e) => {
-		const file = e.target.files[0];
-		const fileSize = file.size;
-		setDocument(file)
-		if (fileSize > 1 * 1024 * 1024) {
-			alert("File size must be less than 1MB");
-			return;
-		}
-		setFormLoading(true);
-		setFormData({ ...formData, "form_filename": `${currentUser.user_id}_${Date.now()}_${file.name}` });
-	};
+	// const handleFileInputChange = (e) => {
+	// 	const file = e.target.files[0];
+	// 	const fileSize = file.size;
+	// 	setDocument(file)
+	// 	if (fileSize > 1 * 1024 * 1024) {
+	// 		alert("File size must be less than 1MB");
+	// 		return;
+	// 	}
+	// 	setFormLoading(true);
+	// 	setFormData({ ...formData, "form_filename": `${currentUser.user_id}_${Date.now()}_${file.name}` });
+	// };
 
 	const clear = () => {
 		sigPadRef.current.clear();
@@ -68,33 +77,33 @@ export default function NonCasuaLeave({ toast }) {
 			e.preventDefault();
 			let form_data = {}
 			formRef.current.querySelectorAll('input').forEach((input) => {
-				form_data[input.id] = input.value == '' ? null: input.value;
+				form_data[input.id] = input.value == '' ? null : input.value;
 			});
 			formRef.current.querySelectorAll('select').forEach((input) => {
-				form_data[input.id] = input.value == '' ? null: input.value;
+				form_data[input.id] = input.value == '' ? null : input.value;
 			});
 			formRef.current.querySelectorAll('textarea').forEach((input) => {
-				form_data[input.id] = input.value == '' ? null: input.value;
-			});		
+				form_data[input.id] = input.value == '' ? null : input.value;
+			});
 			if (form_data['form_isStation'] == 'No') {
 				form_data['form_station_sdate'] = null;
 				form_data['form_station_edate'] = null;
 			}
+			form_data['form_rdate'] = getToday()
+			if (sigPadRef.current.isEmpty()) {
+				toast.error("Signature can't be kept empty", toast.POSITION.BOTTOM_RIGHT);
+				setFormLoading(false);
+				return;
+			}
 			// return;
-			let dur = adjustDuration();
-			if (isNaN(formData.form_duration)) {
-				toast.error("Error, Check the duration again", toast.POSITION.BOTTOM_RIGHT);
-				return;
-			}
-			else if (parseInt(formData.form_duration * 10) % (5) != 0) {
-				toast.error("Error, Check the duration again", toast.POSITION.BOTTOM_RIGHT);
-				return;
-			}
 			setFormLoading(true);
+
+			// console.log(sigPadRef.current.isEmpty())
 			const trimmedDataURL = sigPadRef.current.getTrimmedCanvas().toDataURL('image/png');
 			const arrayBuffer = await dataURItoBlob(trimmedDataURL).arrayBuffer();
-			const binaryData = new Uint8Array(arrayBuffer);			
-			form_data['form_duration'] = dur;
+			const binaryData = new Uint8Array(arrayBuffer);
+			console.log(binaryData);
+			// return;
 			form_data['signature'] = binaryData;
 			const form = new FormData();
 			form.append('data', JSON.stringify(form_data));
@@ -102,7 +111,10 @@ export default function NonCasuaLeave({ toast }) {
 			try {
 				const resp = await httpClient.post(`${process.env.REACT_APP_API_HOST}/apply_leave`, form);
 				if (resp.data.status == 'success') {
-					toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT)
+					toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
+					setTimeout(() => {
+						navigate("/navigate/pastapplications");
+					}, 2000);
 				} else {
 					toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT)
 				}
@@ -114,19 +126,6 @@ export default function NonCasuaLeave({ toast }) {
 		}
 	}
 
-	const adjustDuration = (e) => {
-		let startDate, endDate;
-		endDate = new Date(formData.form_edate)
-		startDate = new Date(formData.form_sdate);
-		if (startDate && endDate && endDate >= startDate) {
-			const differenceInMs = endDate.getTime() - startDate.getTime();
-			const differenceInDays = differenceInMs / (1000 * 60 * 60 * 24);
-			setDuration(differenceInDays + 1)
-			setFormData({ ...formData, "form_duration": differenceInDays + 1 });
-			return differenceInDays + 1
-		}
-		return 0;
-	}
 
 	const handleTypeOfLeave = (e) => {
 		const propVal = e.target.value;
@@ -139,13 +138,20 @@ export default function NonCasuaLeave({ toast }) {
 		}
 	}
 
+	if (!currentUser?.name || currentUser?.name == '') {
+		toast.error("You need to add you name on your profile section by clicking on edit icon", toast.POSITION.BOTTOM_RIGHT);
+		setTimeout(() => {
+			navigate("/");
+		}, 3000);
+	}
+
 	return (
 		<div className="container-al">
 			<Card style={{ width: "100%" }}>
 				<Card.Body style={{ width: "100%" }}>
 					<Card.Title className="title-al" >Apply Leave</Card.Title>
 					<Card.Text>
-						<form ref={formRef}>
+						<form ref={formRef} onSubmit={async (e) => { await handleSubmit(e) }}>
 							<Container className="content-al">
 								<div className="user-details-al">
 									<div className="input-box-al">
@@ -153,21 +159,21 @@ export default function NonCasuaLeave({ toast }) {
 											<Row className="row-al">
 												<Col className="col-al">
 													<legend htmlFor="form_name" style={{ fontSize: "18px" }}>Name</legend>
-													<input type="text" className="form-control" style={{ cursor: "not-allowed" }} id="form_name" value={currentUser.name} onChange={(e) => { handleInputChange(e) }} placeholder="Name" readonly disabled />
+													<input required type="text" className="form-control" style={{ cursor: "not-allowed" }} id="form_name" value={currentUser.name} onChange={(e) => { handleInputChange(e) }} placeholder="Name" readonly disabled />
 												</Col >
 												<Col className="col-al">
 													<legend htmlFor="form_email" style={{ fontSize: "18px" }}>Email</legend>
-													<input type="email" className="form-control" style={{ cursor: "not-allowed" }} id="form_email" value={currentUser.email} onChange={(e) => { handleInputChange(e) }} placeholder="Email" readonly disabled />
+													<input required type="email" className="form-control" style={{ cursor: "not-allowed" }} id="form_email" value={currentUser.email} onChange={(e) => { handleInputChange(e) }} placeholder="Email" readonly disabled />
 												</Col >
 											</Row >
 											<Row className="row-al">
 												<Col className="col-al">
 													<legend htmlFor="form_phone" style={{ fontSize: "18px" }}>Phone Number</legend>
-													<input type="tel" className="form-control" id="form_phone" defaultValue={currentUser.mobile} onChange={(e) => { handleInputChange(e) }} placeholder="Phone Number" required />
+													<input required type="tel" className="form-control" id="form_phone" defaultValue={currentUser.mobile} onChange={(e) => { handleInputChange(e) }} placeholder="Phone Number" />
 												</Col >
 												<Col className="col-al">
 													<legend htmlFor="form_nature" style={{ fontSize: "18px" }}>Nature of leave</legend>
-													<select className="form-control" id="form_nature" onChange={(e) => { handleInputChange(e); handleTypeOfLeave(e) }} required>
+													<select required className="form-control" id="form_nature" onChange={(e) => { handleInputChange(e); handleTypeOfLeave(e) }}>
 														<option value="">-- Select an option --</option>
 														<option>Casual Leave</option>
 														<option>Non Casual Leave</option>
@@ -177,7 +183,7 @@ export default function NonCasuaLeave({ toast }) {
 											<Row className="row-al">
 												<Col className="col-al">
 													<legend htmlFor="form_type_of_leave" style={{ fontSize: "18px" }}>Type of leave</legend>
-													<select className="form-control" id="form_type_of_leave" onChange={(e) => { handleInputChange(e) }} required>
+													<select required className="form-control" id="form_type_of_leave" onChange={(e) => { handleInputChange(e) }}>
 														<option value="">-- Select an option --</option>
 														{
 															typesOfLeave.map((item, key) => {
@@ -190,80 +196,91 @@ export default function NonCasuaLeave({ toast }) {
 												</Col >
 												<Col className="col-al">
 													<legend htmlFor="form_isStation" style={{ fontSize: "18px" }}>Is it a station leave?</legend>
-													<select className="form-control" id="form_isStation" onChange={(e) => { 
+													<select required className="form-control" id="form_isStation" onChange={(e) => {
 														if (e.target.value == 'Yes') {
 															setDisplayStationLeaveDates("");
 														} else {
 															setDisplayStationLeaveDates("none")
 														}
-													 }}>
+													}}>
 														<option>Yes</option>
 														<option>No</option>
 													</select>
 												</Col >
 												<Col className="col-al">
 													<legend htmlFor="form_duration" style={{ fontSize: "18px" }}>Duration of leave</legend>
-													<input type="number" className="form-control" id="form_duration" placeholder="Duration" disabled value={duration} required />
+													<input required type="number" className="form-control" id="form_duration" placeholder="Duration" />
 												</Col >
 											</Row >
-											<Row className="row-al" style={{display: displayStationLeaveDates}}>
-												<Col className="col-al">
-													<legend htmlFor="form_station_sdate" style={{ fontSize: "18px" }}>Station Leave Start Date</legend>
-													<input type="date" id="form_station_sdate" placeholder="Pick start date" className="form-control" onChange={async (e) => { handleInputChange(e) }} required></input>
-												</Col >
-												<Col className="col-al">
-													<legend htmlFor="form_station_edate" style={{ fontSize: "18px" }}>Station Leave End Date</legend>
-													<input type="date" id="form_station_edate" placeholder="Pick end date" className="form-control" onChange={async (e) => { handleInputChange(e) }} required></input>
-												</Col >
-											</Row >
+											{
+												displayStationLeaveDates == "none" ? "" : (
+													<Row className="row-al" style={{ display: displayStationLeaveDates }}>
+														<Col className="col-al">
+															<legend htmlFor="form_station_sdate" style={{ fontSize: "18px" }}>Station Leave Start Date</legend>
+															<input required type="date" id="form_station_sdate" placeholder="Pick start date" className="form-control" onChange={async (e) => { handleInputChange(e) }}></input>
+														</Col >
+														<Col className="col-al">
+															<legend htmlFor="form_station_edate" style={{ fontSize: "18px" }}>Station Leave End Date</legend>
+															<input required type="date" id="form_station_edate" placeholder="Pick end date" className="form-control" onChange={async (e) => { handleInputChange(e) }}></input>
+														</Col >
+													</Row >
+												)
+											}
+
 											<Row className="row-al">
 												<Col className="col-al">
 													<legend htmlFor="form_sdate" style={{ fontSize: "18px" }}>Start Date</legend>
-													<input type="date" id="form_sdate" placeholder="Pick start date" className="form-control" onChange={async (e) => { handleInputChange(e) }} required></input>
+													<input required type="date" id="form_sdate" placeholder="Pick start date" className="form-control" onChange={async (e) => { handleInputChange(e) }}></input>
 												</Col >
 												<Col className="col-al">
 													<legend htmlFor="form_edate" style={{ fontSize: "18px" }}>End Date</legend>
-													<input type="date" id="form_edate" placeholder="Pick end date" className="form-control" onChange={async (e) => { handleInputChange(e) }} required></input>
+													<input required type="date" id="form_edate" placeholder="Pick end date" className="form-control" onChange={async (e) => { handleInputChange(e) }} ></input>
 												</Col >
 											</Row >
 
+											{
+												displaySpecialFields == "none" ? "" : (
+													<>
+														<Row className="row-al" style={{ display: displaySpecialFields }}>
+															<Col className="col-12">
+																<p style={{ textAlign: "left", marginBottom: "2px", textDecoration: "underline" }}>Sunday and Holiday, if any, proposed to be prefixed/suffixed to leave: </p>
+															</Col >
 
-											<Row className="row-al" style={{ display: displaySpecialFields }}>
-												<Col className="col-12">
-													<p style={{ textAlign: "left", marginBottom: "2px", textDecoration: "underline" }}>Sunday and Holiday, if any, proposed to be prefixed/suffixed to leave: </p>
-												</Col >
+														</Row >
 
-											</Row >
+														<Row className="row-al" style={{ display: displaySpecialFields }}>
+															<Col className="col-4">
+																<legend htmlFor="form_suffs" style={{ fontSize: "16px" }}>Suffix Start Date</legend>
+																<input type="date" id="form_suffs" placeholder="Pick suffix start date" className="form-control" onChange={async (e) => { handleInputChange(e) }}></input>
+															</Col >
+															<Col className="col-4">
+																<legend htmlFor="form_suffe" style={{ fontSize: "16px" }}>Suffix End Date</legend>
+																<input type="date" id="form_suffe" placeholder="Pick suffix end date" className="form-control" onChange={async (e) => { handleInputChange(e) }}></input>
+															</Col >
+															<Col className="col-4">
+																<legend htmlFor="form_suffduration" style={{ fontSize: "16px" }}>Duration of suffix</legend>
+																<input type="number" className="form-control" id="form_suffduration" placeholder="Suffix Duration" />
+															</Col >
+														</Row >
 
-											<Row className="row-al" style={{ display: displaySpecialFields }}>
-												<Col className="col-4">
-													<legend htmlFor="form_suffs" style={{ fontSize: "16px" }}>Suffix Start Date</legend>
-													<input type="date" id="form_suffs" placeholder="Pick suffix start date" className="form-control" onChange={async (e) => { handleInputChange(e) }} required></input>
-												</Col >
-												<Col className="col-4">
-													<legend htmlFor="form_suffe" style={{ fontSize: "16px" }}>Suffix End Date</legend>
-													<input type="date" id="form_suffe" placeholder="Pick suffix end date" className="form-control" onChange={async (e) => { handleInputChange(e) }} required></input>
-												</Col >
-												<Col className="col-4">
-													<legend htmlFor="form_suffduration" style={{ fontSize: "16px" }}>Duration of suffix</legend>
-													<input type="number" className="form-control" id="form_suffduration" placeholder="Suffix Duration" required />
-												</Col >
-											</Row >
+														<Row className="row-al" style={{ display: displaySpecialFields }}>
+															<Col className="col-4">
+																<legend htmlFor="form_pres" style={{ fontSize: "16px" }}>Prefix Start Date</legend>
+																<input type="date" id="form_pres" placeholder="Pick prefix start date" className="form-control" onChange={async (e) => { handleInputChange(e) }}></input>
+															</Col >
+															<Col className="col-4">
+																<legend htmlFor="form_pree" style={{ fontSize: "16px" }}>Prefix End Date</legend>
+																<input type="date" id="form_pree" placeholder="Pick prefix end date" className="form-control" onChange={async (e) => { handleInputChange(e) }}></input>
+															</Col >
+															<Col className="col-4">
+																<legend htmlFor="form_preduration" style={{ fontSize: "16px" }}>Duration of Prefix</legend>
+																<input type="number" className="form-control" id="form_preduration" placeholder="Prefix Duration" />
+															</Col >
+														</Row >
+													</>
+												)
+											}
 
-											<Row className="row-al" style={{ display: displaySpecialFields }}>
-												<Col className="col-4">
-													<legend htmlFor="form_pres" style={{ fontSize: "16px" }}>Prefix Start Date</legend>
-													<input type="date" id="form_pres" placeholder="Pick prefix start date" className="form-control" onChange={async (e) => { handleInputChange(e) }} required></input>
-												</Col >
-												<Col className="col-4">
-													<legend htmlFor="form_pree" style={{ fontSize: "16px" }}>Prefix End Date</legend>
-													<input type="date" id="form_pree" placeholder="Pick prefix end date" className="form-control" onChange={async (e) => { handleInputChange(e) }} required></input>
-												</Col >
-												<Col className="col-4">
-													<legend htmlFor="form_preduration" style={{ fontSize: "16px" }}>Duration of Prefix</legend>
-													<input type="number" className="form-control" id="form_preduration" placeholder="Prefix Duration" required />
-												</Col >
-											</Row >
 
 											<Row className="row-al">
 												<Col className="col-al">
@@ -289,7 +306,7 @@ export default function NonCasuaLeave({ toast }) {
 												</Col>
 											</Row>
 
-											<br />
+											{/* <br />
 											<Row className="row-al">
 												<Col className="col-al">
 													<legend htmlFor="form_document" style={{ fontSize: "18px" }}>Document</legend>
@@ -300,7 +317,7 @@ export default function NonCasuaLeave({ toast }) {
 														onChange={handleFileInputChange}
 													/>
 												</Col >
-											</Row>
+											</Row> */}
 											<br />
 
 											<Row className="row-al">
@@ -317,7 +334,7 @@ export default function NonCasuaLeave({ toast }) {
 											</Row>
 											<Row className="row-al">
 												<Col>
-													<button type="submit" onClick={async (e) => { await handleSubmit(e) }} className="btn btn-primary btn-block">{formLoading ? <LoadingIndicator color={"white"}></LoadingIndicator> : "Apply Leave"}</button>
+													<button type="submit" className="btn btn-primary btn-block">{formLoading ? <LoadingIndicator color={"white"}></LoadingIndicator> : "Apply Leave"}</button>
 												</Col>
 											</Row>
 										</div>

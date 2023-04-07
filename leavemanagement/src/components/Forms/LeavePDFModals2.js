@@ -132,8 +132,18 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
         // window.open(imgData, "toDataURL() image", "width=800, height=800");
 
         pdf.addImage(imgData, "JPEG", 100, 50);
+        const input1 = document.getElementById("second-page-" + leave_id);
+        html2canvas(input1)
+          .then((canvas) => {
+            // document.getElementById("leave-container-" + leave_id).parentNode.style.overflow = 'hidden';
 
-        pdf.save(`${"leave-" + leave_id}.pdf`);
+            var imgData = canvas.toDataURL('image/png');
+            // window.open(imgData, "toDataURL() image", "width=800, height=800");
+            pdf.addPage();
+            pdf.addImage(imgData, 'JPEG', 100, 50);
+            pdf.save(`${"leave-" + leave_id}.pdf`);
+          })
+
       });
   };
 
@@ -780,9 +790,10 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                 </div>
               </div>
             </div>
+          </div>
+          <hr />
 
-            <hr />
-
+          <div className='container' id={"second-page-" + leave?.leave_id} style={{ width: "1000px" }}>
             <div>
               <p style={{ fontWeight: "bold", textDecoration: "underline	" }}>
 
@@ -813,7 +824,6 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
             </div>
 
             <hr />
-
             <div
               className="establishment-office text-center"
               id={"leave-footer-" + leave?.leave_id}
@@ -865,13 +875,13 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
               <br />
               <div className="row">
                 <div className="col-4">
-                  सॊबॊलधत सहायक (त्रवभाग)/(मथाऩना)/Dealing Asstt.
+                  सम्बंधित सहायक (विभाग)/(अनुमानित)/Dealing Asstt.
                   (Deptt.)/(Estt.)
                 </div>
                 <div className="col-4">
                   अधी./सहा.कु ऱसलिव/उऩकु ऱसलिव/Supdt./AR/DR
                 </div>
-                <div className="col-4">कुलसवाव/Registrar</div>
+                <div className="col-4">रजिस्ट्रार/Registrar</div>
               </div>
             </div>
             <hr />
@@ -880,8 +890,8 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                 <div className="col-4"></div>
                 <div className="col-8">
                   <p>{leave?.authority_comment}</p>
-                  छुट्टी प्रदान करनेके लऱए सऺम प्रालधकारी की दटप्ऩणी: मवीकृ
-                  त/अमवीकृ त<br />
+                  छुट्टी प्रदान करने के लिए सक्षम प्राधिकारी की टिप्पणियाँ: स्वीकृत
+                  / स्वीकृत नहीं<br />
                   Comments of the competent authority to grant leave: Sanctioned
                   / Not Sanctioned
                   <br />
@@ -918,6 +928,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
             )}
             <hr />
           </div>
+
           {from === "check_application" ? (
             <div className="text-center">
               <textarea

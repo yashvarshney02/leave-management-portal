@@ -18,33 +18,38 @@ export const SidebarData = [
 
     subNav: [
       {
-        title: 'Apply Leave Form',
+        title: 'Apply Leave',
         path: '/navigate/applyleave',
         icon: <IoIcons.IoIosPaper />,
-        cName: 'sub-nav'
+        cName: 'sub-nav',
+        allowed: ['admin', 'hod', 'faculty', 'student']
       },
       {
-        title: 'Update Leave Form',
+        title: 'Office Portal',
         path: '/navigate/updateleave',
         icon: <IoIcons.IoIosPaper />,
-        cName: 'sub-nav'
+        cName: 'sub-nav',
+        allowed: ['admin', 'office']
       },
       {
         title: 'Past Appilcations',
         path: '/navigate/pastapplications',
         icon: <IoIcons.IoIosPaper />,
-        cName: 'sub-nav'
+        cName: 'sub-nav',
+        allowed: ['admin', 'student', 'faculty', 'hod']
       },
       {
         title: 'Process Applications',
         path: '/navigate/checkapplications',
         icon: <IoIcons.IoIosPaper />,
-        cName: 'sub-nav'
+        cName: 'sub-nav',
+        allowed: ['admin', 'faculty', 'hod', 'dean', 'office', 'registrar']
       },
       {
         title: 'Dates',
         path: '/navigate/dates',
-        icon: <IoIcons.IoIosPaper />
+        icon: <IoIcons.IoIosPaper />,
+        allowed: ['admin']
       }
     ]
   },

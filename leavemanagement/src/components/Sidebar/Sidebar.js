@@ -63,8 +63,7 @@ const Sidebar = () => {
           </NavIcon>
           <div style={{ marginLeft: "auto", width: "200px", color: "white" }}>
             Hi, {currentUser ? currentUser.name : 'User'} {currentUser ? <FaIcons.FaArrowCircleRight style={{ cursor: "pointer" }} onClick={async () => {
-              let res = await logout();
-              console.log(res);
+              let res = await logout();              
               if (res.data['status'] == 'success') {
                 toast.success(res.data['data'], toast.POSITION.BOTTOM_RIGHT);
                 let res1 = await refresh_user();
@@ -84,14 +83,15 @@ const Sidebar = () => {
               <AiIcons.AiOutlineClose onClick={showSidebar} />
             </NavIcon>
             {SidebarData.map((item, index) => {
+              
               if (!currentUser && item.title == 'Logout') {
                 return <></>
               } if (currentUser && item.title == 'Login') {
                 return <></>
               } else if (item.title == 'Logout') {
-                return <SubMenu item={item} key={index} showSidebar={showSidebar} />;
+                return <SubMenu item={item} key={index} showSidebar={showSidebar} currentUser={currentUser} />;
               } else {
-                return <SubMenu item={item} key={index} showSidebar={showSidebar} />;
+                return <SubMenu item={item} key={index} showSidebar={showSidebar} currentUser={currentUser}/>;
               }
             })}
           </SidebarWrap>

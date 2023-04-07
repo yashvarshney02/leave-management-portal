@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-import "./Dashboard.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import httpClient from "../../httpClient";
+import "./Calendar.css"
 import { faArrowLeft, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 
 function Calendar({ data }) {
@@ -37,8 +36,7 @@ function Calendar({ data }) {
   return (
     <div>
       <div class="calendar-panel">
-        <button class="arrow">
-          <FontAwesomeIcon icon={faArrowLeft} onClick={prevMonth} />
+        <button class="arrow left-arrow" onClick={prevMonth}>
         </button>
         <div class="calendar">
           <span>{`${new Date(year, month).toLocaleString("default", {
@@ -81,8 +79,7 @@ function Calendar({ data }) {
             </div>
           ))}
         </div>
-        <button class="arrow" onClick={nextMonth}>
-          <FontAwesomeIcon icon={faArrowRight} />
+        <button class="arrow right-arrow" onClick={nextMonth}>
         </button>
       </div>
       {/* <button onClick={prevMonth}>Prev</button>

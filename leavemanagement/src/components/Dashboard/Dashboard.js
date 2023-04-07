@@ -247,7 +247,7 @@ export default function Dashboard({ toast }) {
                         type="button"
                         class="btn btn-primary"
                         onClick={() => {
-                          navigate("/forms/applyleave");
+                          navigate("/navigate/applyleave");
                         }}
                       >
                         Apply Leave
@@ -257,7 +257,7 @@ export default function Dashboard({ toast }) {
                         type="button"
                         class="btn btn-success"
                         onClick={() => {
-                          navigate("/forms/pastapplications");
+                          navigate("/navigate/pastapplications");
                         }}
                       >
                         Past Applications

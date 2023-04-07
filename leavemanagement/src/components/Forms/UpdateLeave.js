@@ -88,7 +88,7 @@ export default function UpdateLeave({ toast }) {
       const resp = await httpClient.get(
         `${process.env.REACT_APP_API_HOST}/collective_data`
       );
-      if (resp.data.status == "success") {
+      if (resp.data.status == "success") {        
         setinitialCollectiveData(resp.data.data);
         setCollectiveData(resp.data.data);
         // toast.success("Leaves fetched Successfully", toast.POSITION.BOTTOM_RIGHT);
@@ -236,11 +236,11 @@ export default function UpdateLeave({ toast }) {
             </Modal.Header>
             <Modal.Body>
               <ul>
-                {specificData?.leave_ids.map((item, idx) => {                  
+                {specificData?.leave_ids.map((item, idx) => {                         
                   return (
                     <li style={{ textAlign: "left" }}>
                       <a
-                        href={`/past_applications/${item[0]}`}
+                        href={`/past_applications/${item[2].toLowerCase().startsWith("casual")?"casual": "non_casual"}/${item[0]}`}
                         target="blank"
                         style={{ fontWeight: "bold" }}
                       >
@@ -271,7 +271,7 @@ export default function UpdateLeave({ toast }) {
                 placeholder="Search by email or name"
               />
               <br />
-              {collectiveData?.map((item, key) => {
+              {collectiveData?.map((item, key) => {                
                 return (
                   <Accordion defaultActiveKey={"0"}>
                     <Accordion.Item eventKey={key}>

@@ -17,20 +17,20 @@ const Paths = (props) => {
 			<Routes>
 				<Route
 					path="/"
-					element={<PrivateRoute user={"all"} toast={props.toast} />}
+					element={<PrivateRoute user={["all"]} toast={props.toast} />}
 				>
 					<Route path="/" element={<Dashboard toast={props.toast} />} />
 				</Route>
 				<Route
 					path="/navigate/applyleave"
-					element={<PrivateRoute user={["all"]} toast={props.toast} />}
+					element={<PrivateRoute user={['admin', 'hod', 'faculty', 'student']} toast={props.toast} />}
 				>
 					<Route
 						path="/navigate/applyleave"
 						element={<NonCasuaLeave toast={props.toast} />}
 					/>
 				</Route>
-				<Route path='/navigate/updateleave' element={<PrivateRoute user={["all"]} toast={props.toast} />}>
+				<Route path='/navigate/updateleave' element={<PrivateRoute user={['admin', 'office']} toast={props.toast} />}>
 					<Route path="/navigate/updateleave" element={<UpdateLeave toast={props.toast} />} />
 				</Route>
 				<Route
@@ -91,7 +91,7 @@ const Paths = (props) => {
 
 				<Route
 					path="/navigate/dates"
-					element={<PrivateRoute user={["dean"]} toast={props.toast} />}
+					element={<PrivateRoute user={["admin"]} toast={props.toast} />}
 				>
 					<Route path="/navigate/dates" element={<Dates toast={props.toast} />} />
 				</Route>
@@ -99,7 +99,7 @@ const Paths = (props) => {
 					path="/navigate/checkapplications"
 					element={
 						<PrivateRoute
-							user={["dean", "hod", "faculty"]}
+							user={['admin', 'faculty', 'hod', 'dean', 'office', 'registrar']}
 							toast={props.toast}
 						/>
 					}

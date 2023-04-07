@@ -43,12 +43,13 @@ const DropdownLink = styled(Link)`
   }
 `;
 
-const SubMenu = ({ item, showSidebar }) => {
+const SubMenu = ({ item, showSidebar, currentUser }) => {
   const [subnav, setSubnav] = useState(false);
   const { logout, refresh_user } = useAuth();
   const navigate = useNavigate();
 
   const showSubnav = () => setSubnav(!subnav);
+
 
   return (
     <>
@@ -59,7 +60,6 @@ const SubMenu = ({ item, showSidebar }) => {
         }
         if (item.title == 'Logout') {
           let res = await logout();
-          console.log(res);
           if (res.data['status'] == 'success') {
             toast.success(res.data['data'], toast.POSITION.BOTTOM_RIGHT);
             let res1 = await refresh_user();
@@ -85,6 +85,15 @@ const SubMenu = ({ item, showSidebar }) => {
       </SidebarLink>
       {item.subNav && subnav &&
         item.subNav.map((item, index) => {
+          let found = false;
+          for (let i in item.allowed) {            
+            if (item.allowed[i].includes(currentUser?.position.toLowerCase())) {
+              found = true;
+            }
+          }
+          if (!found) {
+            return <></>
+          }
           return (
             <DropdownLink to={item.path} onClick={showSidebar} key={index}>
               {item.icon}

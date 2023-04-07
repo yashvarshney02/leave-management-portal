@@ -9,139 +9,148 @@ import { useNavigate } from "react-router-dom";
 import { Document, Page } from 'react-pdf';
 
 const LeavePDFModals = ({ toast, from }) => {
-	const [leave, setLeave] = useState(null);
-	const { currentUser } = useAuth();
-	let currentUrl =
-		window.location.href.split("/")[window.location.href.split("/").length - 1];
-	const leave_id = parseInt(currentUrl);
-	const [signatureDataURL, setSignatureDataUrl] = useState(null)
-	const [downloadLink, setDownloadLink] = useState(null);
+  const [leave, setLeave] = useState(null);
+  const { currentUser } = useAuth();
+  let currentUrl =
+    window.location.href.split("/")[window.location.href.split("/").length - 1];
+  const leave_id = parseInt(currentUrl);
+  const [signatureDataURL, setSignatureDataUrl] = useState(null)
+  const [downloadLink, setDownloadLink] = useState(null);
 
-	const approveLeave = async (leave_id) => {
-		try {
-			const resp = await httpClient.post(
-				`${process.env.REACT_APP_API_HOST}/approve_leave`,
-				{ leave_id, level: currentUser.level }
-			);
-			if (resp.data.status == "error") {
-				toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
-			} else {
-				toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
-			}
-		} catch (error) {
-			toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
-		}
-	};
-	const addComment = async (leave_id) => {
-		try {
-			const uid = "comment-" + leave_id;
-			const comment = document.getElementById(uid).value;
-			const resp = await httpClient.post(
-				`${process.env.REACT_APP_API_HOST}/add_comment`,
-				{ comment, leave_id }
-			);
-			if (resp.data.status == "error") {
-				toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
-			} else {
-				toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
-			}
-		} catch (error) {
-			toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
-		}
-	};
+  const approveLeave = async (leave_id) => {
+    try {
+      const resp = await httpClient.post(
+        `${process.env.REACT_APP_API_HOST}/approve_leave`,
+        { leave_id, level: currentUser.level }
+      );
+      if (resp.data.status == "error") {
+        toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
+      } else {
+        toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
+      }
+      setTimeout(() => {
+        window.location.reload()
+      }, 3000);
+    } catch (error) {
+      toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
+    }
+  };
+  const addComment = async (leave_id) => {
+    try {
+      const uid = "comment-" + leave_id;
+      const comment = document.getElementById(uid).value;
+      const resp = await httpClient.post(
+        `${process.env.REACT_APP_API_HOST}/add_comment`,
+        { comment, leave_id }
+      );
+      if (resp.data.status == "error") {
+        toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
+      } else {
+        toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
+      }
+      setTimeout(() => {
+        window.location.reload()
+      }, 3000);
+    } catch (error) {
+      toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
+    }
+  };
 
-	const fetchLeaveInfo = async () => {
-		try {
-			const resp = await httpClient.post(
-				`${process.env.REACT_APP_API_HOST}/get_leave_info_by_id`,
-				{ leave_id }
-			);
-			if (resp.data.status == "success") {
-				let data = resp.data.data[0]				
-				setLeave(data);
-				const imageUrl = "data:image/png;base64," + String(data.signature);
-				setSignatureDataUrl(imageUrl);
-				if (data.file_name) {
-					await handleDownloadClick('leave_document', data.file_name)
-				}
+  const fetchLeaveInfo = async () => {
+    try {
+      const resp = await httpClient.post(
+        `${process.env.REACT_APP_API_HOST}/get_leave_info_by_id`,
+        { leave_id }
+      );
+      if (resp.data.status == "success") {
+        let data = resp.data.data[0]
+        setLeave(data);
+        const imageUrl = "data:image/png;base64," + String(data.signature);
+        setSignatureDataUrl(imageUrl);
+        if (data.file_name) {
+          await handleDownloadClick('leave_document', data.file_name)
+        }
 
-			} else {
-			}
-		} catch (error) {
-			console.log(error);
-			toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
-		}
-	};
+      } else {
+      }
+    } catch (error) {
+      console.log(error);
+      toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
+    }
+  };
 
-	const disapproveLeave = async (leave_id) => {
-		try {
-			const resp = await httpClient.post(
-				`${process.env.REACT_APP_API_HOST}/disapprove_leave`,
-				{ leave_id }
-			);
-			if (resp.data.status == "error") {
-				toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
-			} else {
-				toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
-			}
-		} catch (error) {
-			toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
-		}
-	};
+  const disapproveLeave = async (leave_id) => {
+    try {
+      const resp = await httpClient.post(
+        `${process.env.REACT_APP_API_HOST}/disapprove_leave`,
+        { leave_id }
+      );
+      if (resp.data.status == "error") {
+        toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
+      } else {
+        toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
+      }
+      setTimeout(() => {
+        window.location.reload()
+      }, 3000);
+    } catch (error) {
+      toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
+    }
+  };
 
-	const handleDownloadClick = async (query, file_name = null) => {
-		const response = await httpClient.post(`${process.env.REACT_APP_API_HOST}/sample_csvs`, {
-			name: query,
-			file_name: file_name
-		})
-		const encodedData = response.data.data;
-		const decodedData = atob(encodedData);
-		const blob = new Blob([response.data], { type: 'application/pdf' });
-		const url = window.URL.createObjectURL(blob);
-		setDownloadLink(url);
-	};
+  const handleDownloadClick = async (query, file_name = null) => {
+    const response = await httpClient.post(`${process.env.REACT_APP_API_HOST}/sample_csvs`, {
+      name: query,
+      file_name: file_name
+    })
+    const encodedData = response.data.data;
+    const decodedData = atob(encodedData);
+    const blob = new Blob([response.data], { type: 'application/pdf' });
+    const url = window.URL.createObjectURL(blob);
+    setDownloadLink(url);
+  };
 
-	const saveLeave = (leave_id) => {
-		const pdf = new jsPDF("portrait", "pt", "a2");
-		const input = document.getElementById("first-page-" + leave_id);
-		html2canvas(input, {
-			letterRendering: 1,
-			allowTaint: true,
-			logging: true,
-			useCORS: true,
-		})
-			//By passing this option in function Cross origin images will be rendered properly in the downloaded version of the PDF
-			.then((canvas) => {
-				// document.getElementById("leave-container-" + leave_id).parentNode.style.overflow = 'hidden';
+  const saveLeave = (leave_id) => {
+    const pdf = new jsPDF("portrait", "pt", "a2");
+    const input = document.getElementById("first-page-" + leave_id);
+    html2canvas(input, {
+      letterRendering: 1,
+      allowTaint: true,
+      logging: true,
+      useCORS: true,
+    })
+      //By passing this option in function Cross origin images will be rendered properly in the downloaded version of the PDF
+      .then((canvas) => {
+        // document.getElementById("leave-container-" + leave_id).parentNode.style.overflow = 'hidden';
 
-				var imgData = canvas.toDataURL("image/png");
-				// window.open(imgData, "toDataURL() image", "width=800, height=800");
+        var imgData = canvas.toDataURL("image/png");
+        // window.open(imgData, "toDataURL() image", "width=800, height=800");
 
-				pdf.addImage(imgData, "JPEG", 100, 50);
+        pdf.addImage(imgData, "JPEG", 100, 50);
 
-				pdf.save(`${"leave-" + leave_id}.pdf`);
-			});
-	};
+        pdf.save(`${"leave-" + leave_id}.pdf`);
+      });
+  };
 
-	function get_date(date) {
-		if (!date) {
-			return null;
-		}
-		date = new Date(date);
-		const yyyy = date.getFullYear();
-		const mm = String(date.getMonth() + 1).padStart(2, '0');
-		const dd = String(date.getDate()).padStart(2, '0');
-		const formattedDate = `${yyyy}-${mm}-${dd}`;
-		return formattedDate
-	}
+  function get_date(date) {
+    if (!date) {
+      return null;
+    }
+    date = new Date(date);
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    const formattedDate = `${yyyy}-${mm}-${dd}`;
+    return formattedDate
+  }
 
-	useEffect(() => {
-		async function test() {
-			await fetchLeaveInfo();
-		}
-		test();
-	}, []);
-	return (
+  useEffect(() => {
+    async function test() {
+      await fetchLeaveInfo();
+    }
+    test();
+  }, []);
+  return (
     <>
       {true ? (
         <div>
@@ -386,7 +395,7 @@ const LeavePDFModals = ({ toast, from }) => {
                   <br />
                   <br />
                   <br />
-                  सॊबॊलधत सहायक (त्रवभाग)/(मथाऩना)/Dealing Asstt.
+                  सम्बंधित सहायक (विभाग)/(अनुमानित)/Dealing Asstt.
                   (Deptt.)/(Estt.)
                 </div>
                 <div className="col-6">
