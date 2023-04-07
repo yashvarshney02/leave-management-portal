@@ -18,7 +18,7 @@ export default function PastApplications({ toast }) {
 		try {
 			const resp = await httpClient.post(
 				`${process.env.REACT_APP_API_HOST}/past_applications`
-			);			
+			);					
 			if (resp.data.status == "success") {				
 			} else {				
 				return;
@@ -33,6 +33,8 @@ export default function PastApplications({ toast }) {
 					status = `${temp_data[i].status.split(" ")[0]} by hod`
 				} else if (temp_data[i].status.includes("Dean")) {
 					status = `${temp_data[i].status.split(" ")[0]} by dean`
+				} else {
+					status = temp_data[i].status
 				}
 				temp.push([temp_data[i].leave_id, temp_data[i].nature,temp_data[i].type_of_leave,new Date(temp_data[i].request_date).toDateString(), temp_data[i].start_date?.slice(0, -12), temp_data[i].duration, status]);
 			}

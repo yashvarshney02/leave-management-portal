@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import httpClient from '../../httpClient';
 import "./ApplyForm.css"
 import LoadingIndicator from '../LoadingIndicator';
@@ -70,6 +70,10 @@ export default function NonCasuaLeave({ toast }) {
 		sigPadRef.current.clear();
 	};
 
+	useEffect(()=>{		
+		sigPadRef.current.fromDataURL(currentUser.signature)
+	}, [])
+
 
 
 	const handleSubmit = async (e) => {
@@ -98,11 +102,9 @@ export default function NonCasuaLeave({ toast }) {
 			// return;
 			setFormLoading(true);
 
-			// console.log(sigPadRef.current.isEmpty())
 			const trimmedDataURL = sigPadRef.current.getTrimmedCanvas().toDataURL('image/png');
 			const arrayBuffer = await dataURItoBlob(trimmedDataURL).arrayBuffer();
 			const binaryData = new Uint8Array(arrayBuffer);
-			console.log(binaryData);
 			// return;
 			form_data['signature'] = binaryData;
 			const form = new FormData();
@@ -144,6 +146,8 @@ export default function NonCasuaLeave({ toast }) {
 			navigate("/");
 		}, 3000);
 	}
+
+	console.log(currentUser)
 
 	return (
 		<div className="container-al">
@@ -321,12 +325,12 @@ export default function NonCasuaLeave({ toast }) {
 											<br />
 
 											<Row className="row-al">
-												<span style={{ textAlign: "left" }}>Use your mouse to place your signature here</span>
+												<span style={{ textAlign: "left" }}>Use your mouse to place your signature here<br />(In case, you have applied previously, your old signature will appear here)</span>
 											</Row>
 
 											<Row className='row-al'>
 												<div className={"sigContainer"}>
-													<SignaturePad canvasProps={{ className: 'sigPad' }} ref={sigPadRef} onChange={(e) => { }} />
+													<SignaturePad fromDataUrl={currentUser.signature} canvasProps={{ className: 'sigPad' }} ref={sigPadRef} onChange={(e) => { }} />
 												</div>
 											</Row>
 											<Row className="row-al">

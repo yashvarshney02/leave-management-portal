@@ -1,12 +1,12 @@
-import React from "react";
+import React, { useRef } from "react";
 import httpClient from "../../httpClient";
 import { useAuth } from "../../contexts/AuthContext";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import { FaDownload } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
-import { Document, Page } from 'react-pdf';
+import { Row, Col } from "react-bootstrap"
+import SignaturePad from 'react-signature-canvas';
 
 const LeavePDFModals = ({ toast, from }) => {
   const [leave, setLeave] = useState(null);
@@ -16,12 +16,62 @@ const LeavePDFModals = ({ toast, from }) => {
   const leave_id = parseInt(currentUrl);
   const [signatureDataURL, setSignatureDataUrl] = useState(null)
   const [downloadLink, setDownloadLink] = useState(null);
+  const sigPadRef = useRef();
+
+  const clear = () => {
+    sigPadRef.current.clear();
+  };
+
+  function dataURItoBlob(dataURI) {
+    const byteString = atob(dataURI.split(',')[1]);
+    const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+    return new Blob([ab], { type: mimeString });
+  }
 
   const approveLeave = async (leave_id) => {
+    if (sigPadRef.current.isEmpty()) {
+      toast.error("Signature can't be kept empty in approval", toast.POSITION.BOTTOM_RIGHT);
+      return;
+    }
     try {
+      const trimmedDataURL = sigPadRef.current.getTrimmedCanvas().toDataURL('image/png');
+      const arrayBuffer = await dataURItoBlob(trimmedDataURL).arrayBuffer();
+      const binaryData = new Uint8Array(arrayBuffer);
       const resp = await httpClient.post(
         `${process.env.REACT_APP_API_HOST}/approve_leave`,
-        { leave_id, level: currentUser.level }
+        { leave_id, level: currentUser.level, signature: binaryData }
+      );
+      if (resp.data.status == "error") {
+        toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
+      } else {
+        toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
+      }
+      setTimeout(() => {
+        window.location.reload()
+      }, 3000);
+    } catch (error) {
+      toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
+    }
+  };
+
+
+  const submitOfficeSignature = async (leave_id) => {
+    if (sigPadRef.current.isEmpty()) {
+      toast.error("Signature can't be kept empty in approval", toast.POSITION.BOTTOM_RIGHT);
+      return;
+    }
+    try {
+      const trimmedDataURL = sigPadRef.current.getTrimmedCanvas().toDataURL('image/png');
+      const arrayBuffer = await dataURItoBlob(trimmedDataURL).arrayBuffer();
+      const binaryData = new Uint8Array(arrayBuffer);
+      const resp = await httpClient.post(
+        `${process.env.REACT_APP_API_HOST}/submit_office_signature`,
+        { leave_id, signature: binaryData }
       );
       if (resp.data.status == "error") {
         toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
@@ -63,7 +113,10 @@ const LeavePDFModals = ({ toast, from }) => {
         { leave_id }
       );
       if (resp.data.status == "success") {
-        let data = resp.data.data[0]
+        let data = resp.data.data[0];        
+        if (currentUser.signature) {
+          sigPadRef.current.fromDataURL(currentUser.signature)
+        }
         setLeave(data);
         const imageUrl = "data:image/png;base64," + String(data.signature);
         setSignatureDataUrl(imageUrl);
@@ -142,6 +195,58 @@ const LeavePDFModals = ({ toast, from }) => {
     const dd = String(date.getDate()).padStart(2, '0');
     const formattedDate = `${yyyy}-${mm}-${dd}`;
     return formattedDate
+  }
+
+  function get_status_element(leave) {
+    if (!leave) return ''
+    let status = leave?.status.toLowerCase();
+    let imageUrl = "";
+    if (status.startsWith("approved") && status.includes("hod")) {
+      if (leave.hod_sig) {
+        imageUrl = "data:image/png;base64," + String(leave.hod_sig);
+      }
+    } else if (status.startsWith("approved") && status.includes("dean")) {
+      if (leave.dean_sig) {
+        imageUrl = "data:image/png;base64," + String(leave.dean_sig);
+      }
+    }
+    if (imageUrl.length) {
+      return (
+        <img
+          style={{
+            maxHeight: "60px",
+            maxWidth: "450px",
+            width: "40%",
+          }}
+          src={imageUrl}
+          alt="Signature"
+        />
+      )
+    }
+    return leave?.status
+  }
+
+  function get_office_status_element(leave) {
+    if (!leave) return ''
+    let imageUrl = "";    
+    if (leave.office_sig && leave.office_sig[0]) {
+      imageUrl = "data:image/png;base64," + String(leave.office_sig);
+    }
+    if (imageUrl.length) {
+      return (
+        <img
+          style={{
+            maxHeight: "60px",
+            maxWidth: "450px",
+            width: "40%",
+          }}
+          src={imageUrl}
+          alt="Signature"
+        />
+      )
+    }
+    return '';
+
   }
 
   useEffect(() => {
@@ -395,6 +500,8 @@ const LeavePDFModals = ({ toast, from }) => {
                   <br />
                   <br />
                   <br />
+                  {get_office_status_element(leave)}
+                  <br />
                   सम्बंधित सहायक (विभाग)/(अनुमानित)/Dealing Asstt.
                   (Deptt.)/(Estt.)
                 </div>
@@ -423,7 +530,7 @@ const LeavePDFModals = ({ toast, from }) => {
               <div className="row">
                 <div className="col-4"></div>
                 <div className="col-8">
-                  <p>{leave?.status}</p>
+                  <p>{get_status_element(leave)}</p>
                   (त्रवभागाध्यऺ / कु ऱसलिव / अलधष्ठाता (सॊकाय मामऱेएवॊप्रशासन) /
                   लनदेशक)
                   <br />
@@ -446,27 +553,30 @@ const LeavePDFModals = ({ toast, from }) => {
             )}
             <hr />
           </div>
-          {from === "check_application" ? (
-            <div className="text-center">
-              <textarea
-                id={"comment-" + leave?.leave_id}
-                placeholder="Add Comment"
-                style={{ width: "250px" }}
-              ></textarea>
-            </div>
-          ) : (
-            ""
-          )}
           <div>
-            {from === "check_applications" ? (
+            {(from === "check_applications" && ['hod', 'dean', 'faculty'].includes(currentUser?.position)) ? (
               <>
-                <div className="text-center">
-                  <textarea
-                    id={"comment-" + leave?.leave_id}
-                    placeholder="Add Comment"
-                    style={{ width: "250px" }}
-                  ></textarea>
-                </div>
+                <Row>
+                  <Col>
+                    <div className="text-center">
+                      <textarea
+                        id={"comment-" + leave?.leave_id}
+                        placeholder="Add Comment"
+                        style={{ width: "250px" }}
+                      ></textarea>
+                    </div>
+                  </Col>
+                  <Col>
+                    <div className={"sigContainer"}>
+                      <SignaturePad canvasProps={{ className: 'sigPad' }} ref={sigPadRef} onChange={(e) => { }} />
+                    </div>
+                    <Row className="row-al">
+                      <span onClick={clear} style={{ textAlign: "left", cursor: "pointer" }}>Clear</span>
+                    </Row>
+                  </Col>
+
+                </Row>
+
                 <button
                   type="button"
                   className="btn btn-outline-success"
@@ -495,6 +605,32 @@ const LeavePDFModals = ({ toast, from }) => {
                   }}
                 >
                   Add Comment
+                </button>
+              </>
+            ) : (
+              ""
+            )}
+            {(from === "check_applications" && ['office'].includes(currentUser?.position)) ? (
+              <>
+                <Row>
+                  <Col>
+                    <div className={"sigContainer"}>
+                      <SignaturePad canvasProps={{ className: 'sigPad' }} ref={sigPadRef} onChange={(e) => { }} />
+                    </div>
+                  </Col>
+                </Row>
+                <Row className="row-al">
+                  <span onClick={clear} style={{ textAlign: "left", cursor: "pointer" }}>Clear</span>
+                </Row>
+
+                <button
+                  type="button"
+                  className="btn btn-outline-success"
+                  onClick={async () => {
+                    await submitOfficeSignature(leave?.leave_id);
+                  }}
+                >
+                  Submit your signature
                 </button>
               </>
             ) : (
