@@ -11,40 +11,45 @@ export const SidebarData = [
     icon: <FaIcons.FaHome />
   },
   {
-    title: 'Forms',    
+    title: 'Navigate',    
     icon: <IoIcons.IoIosPaper />,
     iconClosed: <RiIcons.RiArrowDownSFill />,
     iconOpened: <RiIcons.RiArrowUpSFill />,
 
     subNav: [
       {
-        title: 'Apply Leave Form',
-        path: '/forms/applyleave',
+        title: 'Apply Leave',
+        path: '/navigate/applyleave',
         icon: <IoIcons.IoIosPaper />,
-        cName: 'sub-nav'
+        cName: 'sub-nav',
+        allowed: ['admin', 'hod', 'faculty', 'student']
       },
       {
-        title: 'Update Leave Form',
-        path: '/forms/updateleave',
+        title: 'Office Portal',
+        path: '/navigate/updateleave',
         icon: <IoIcons.IoIosPaper />,
-        cName: 'sub-nav'
+        cName: 'sub-nav',
+        allowed: ['admin', 'office']
       },
       {
         title: 'Past Appilcations',
-        path: '/forms/pastapplications',
+        path: '/navigate/pastapplications',
         icon: <IoIcons.IoIosPaper />,
-        cName: 'sub-nav'
+        cName: 'sub-nav',
+        allowed: ['admin', 'student', 'faculty', 'hod']
       },
       {
         title: 'Process Applications',
-        path: '/forms/checkapplications',
+        path: '/navigate/checkapplications',
         icon: <IoIcons.IoIosPaper />,
-        cName: 'sub-nav'
+        cName: 'sub-nav',
+        allowed: ['admin', 'faculty', 'hod', 'dean', 'office', 'registrar']
       },
       {
         title: 'Dates',
-        path: '/forms/dates',
-        icon: <IoIcons.IoIosPaper />
+        path: '/navigate/dates',
+        icon: <IoIcons.IoIosPaper />,
+        allowed: ['admin']
       }
     ]
   },
@@ -58,35 +63,35 @@ export const SidebarData = [
     path: '/login',
     icon: <FaIcons.FaArrowCircleRight />
   },  
-  {
-    title: 'Team',
-    path: '/team',
-    icon: <IoIcons.IoMdPeople />
-  },
-  {
-    title: 'Messages',
-    path: '/messages',
-    icon: <FaIcons.FaEnvelopeOpenText />,
+  // {
+  //   title: 'Team',
+  //   path: '/team',
+  //   icon: <IoIcons.IoMdPeople />
+  // },
+  // {
+  //   title: 'Messages',
+  //   path: '/messages',
+  //   icon: <FaIcons.FaEnvelopeOpenText />,
 
-    iconClosed: <RiIcons.RiArrowDownSFill />,
-    iconOpened: <RiIcons.RiArrowUpSFill />,
+  //   iconClosed: <RiIcons.RiArrowDownSFill />,
+  //   iconOpened: <RiIcons.RiArrowUpSFill />,
 
-    subNav: [
-      {
-        title: 'Message 1',
-        path: '/messages/message1',
-        icon: <IoIcons.IoIosPaper />
-      },
-      {
-        title: 'Message 2',
-        path: '/messages/message2',
-        icon: <IoIcons.IoIosPaper />
-      }
-    ]
-  },
-  {
-    title: 'Support',
-    path: '/support',
-    icon: <IoIcons.IoMdHelpCircle />
-  }
+  //   subNav: [
+  //     {
+  //       title: 'Message 1',
+  //       path: '/messages/message1',
+  //       icon: <IoIcons.IoIosPaper />
+  //     },
+  //     {
+  //       title: 'Message 2',
+  //       path: '/messages/message2',
+  //       icon: <IoIcons.IoIosPaper />
+  //     }
+  //   ]
+  // },
+  // {
+  //   title: 'Support',
+  //   path: '/support',
+  //   icon: <IoIcons.IoMdHelpCircle />
+  // }
 ];

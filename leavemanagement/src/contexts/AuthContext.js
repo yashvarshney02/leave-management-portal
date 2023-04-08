@@ -75,17 +75,25 @@ export function AuthProvider({ children }) {
 
 	async function loginWithGoogle() {
 		const googleProvider = new GoogleAuthProvider();
-		const res = await auth.signInWithPopup(googleProvider);		
+		const res = await auth.signInWithPopup(googleProvider);
 	}
 	async function refresh_user() {
-		let res = await httpClient.get(`${process.env.REACT_APP_API_HOST}/get_user_info`);		
+		let res = await httpClient.get(`${process.env.REACT_APP_API_HOST}/get_user_info`);
+		if (res.data.data && res.data.data.signature) {
+			const imageUrl = "data:image/png;base64," + String(res.data.data.signature);
+			res.data.data.signature = imageUrl
+		}
 		setCurrentUser(res.data.data);
 		return res;
 	}
 
 	useEffect(() => {
 		async function test() {
-			let user_data = await httpClient.get(`${process.env.REACT_APP_API_HOST}/get_user_info`);
+			let user_data = await httpClient.get(`${process.env.REACT_APP_API_HOST}/get_user_info`);					
+			if (user_data.data.data && user_data.data.data.signature) {
+				const imageUrl = "data:image/png;base64," + String(user_data.data.data.signature);
+				user_data.data.data.signature = imageUrl
+			}
 			setCurrentUser(user_data.data.data);
 			setLoading(false);
 		}

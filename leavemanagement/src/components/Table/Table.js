@@ -31,6 +31,8 @@ export default function Table({ title, headers, initialData, from }) {
 		...prepData(headers, initialData, "Status", "approved by hod"),
 		...prepData(headers, initialData, "Status", "approved by dean"),
 		...prepData(headers, initialData, "Status", "approved by faculty"),
+		...prepData(headers, initialData, "Status", "approved by dean, hod"),
+		...prepData(headers, initialData, "Status", "approved by hod, dean"),
 		...prepData(headers, initialData, "Status", "disapproved by dean"),
 		...prepData(headers, initialData, "Status", "disapproved by hod"),
 		...prepData(headers, initialData, "Status", "disapproved by faculty"),
@@ -141,7 +143,7 @@ export default function Table({ title, headers, initialData, from }) {
 						style={{ cursor: "pointer" }}
 						color="green"
 						onClick={(e) => {
-							navigate(`/${from}/${row[1].toLowerCase().startsWith("casual")?"casual": "non_casual"}/${row[0]}`);
+							navigate(`/${from}/${row[1].toLowerCase().startsWith("casual") ? "casual" : "non_casual"}/${row[0]}`);
 						}}
 					/>
 					&nbsp;
@@ -163,7 +165,7 @@ export default function Table({ title, headers, initialData, from }) {
 						style={{ cursor: "pointer" }}
 						color="green"
 						onClick={(e) => {
-							navigate(`/${from}/${row[1].toLowerCase().startsWith("casual")?"casual": "non_casual"}/${row[0]}`);
+							navigate(`/${from}/${row[1].toLowerCase().startsWith("casual") ? "casual" : "non_casual"}/${row[0]}`);
 						}}
 					/>
 					&nbsp;
@@ -185,20 +187,14 @@ export default function Table({ title, headers, initialData, from }) {
 				</Modal.Body>
 				<Modal.Footer>
 					<Button
-						variant="secondary"
-						onClick={() => {
-							setDeleteLeaveID("");
-							handleClose();
-						}}
-					>
-						Discard
-					</Button>
-					<Button
 						variant="danger"
 						onClick={async () => {
 							await handleDeleteLeaveApplication(deleteLeaveID);
 							setDeleteLeaveID("");
 							handleClose();
+							setTimeout(() => {
+								window.location.reload()
+							}, 2000);
 						}}
 					>
 						<FaIcons.FaTrash></FaIcons.FaTrash>
@@ -275,7 +271,7 @@ export default function Table({ title, headers, initialData, from }) {
 										);
 									})}
 									{title == "Applied Leaves" ||
-									title == "Check Leave Applications" ? (
+										title == "Check Leave Applications" ? (
 										<th>Action</th>
 									) : (
 										""

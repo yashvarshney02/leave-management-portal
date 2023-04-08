@@ -14,7 +14,7 @@ const PieChart = (props) => {
       setInterval(() => {
         progressValue++;
         if (progressValue <= props.endValue) {
-          casual_value.textContent = `Taken = ${props.taken}; Total = ${props.total}`;
+          casual_value.textContent = `Taken = ${props.taken} Total = ${props.total}`;
           casual.style.background = `conic-gradient(
         #4d5bf9 ${progressValue * 3.6}deg,
         #cadcff ${progressValue * 3.6}deg)`;

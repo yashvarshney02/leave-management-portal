@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-import "./Dashboard.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import httpClient from "../../httpClient";
+import "./Calendar.css"
 import { faArrowLeft, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 
 function Calendar({ data }) {
@@ -10,8 +9,7 @@ function Calendar({ data }) {
 
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstDayOfMonth = new Date(year, month, 1).getDay();
-  //   const lastDayOfMonth = new Date(year, month, daysInMonth).getDay();
-  console.log(data);
+  //   const lastDayOfMonth = new Date(year, month, daysInMonth).getDay();  
   const days = [];
   for (let i = 1; i <= daysInMonth; i++) {
     days.push(i);
@@ -38,8 +36,7 @@ function Calendar({ data }) {
   return (
     <div>
       <div class="calendar-panel">
-        <button class="arrow">
-          <FontAwesomeIcon icon={faArrowLeft} onClick={prevMonth} />
+        <button class="arrow left-arrow" onClick={prevMonth}>
         </button>
         <div class="calendar">
           <span>{`${new Date(year, month).toLocaleString("default", {
@@ -59,12 +56,20 @@ function Calendar({ data }) {
               {[...Array(7)].map((_, dayIndex) => {
                 const day = weekIndex * 7 + dayIndex + 1 - firstDayOfMonth;
                 let isLeaveTaken = false;
-                if (data && data[month] && data[month].includes(day) && day > 0 && day <= daysInMonth)
+                let list = [], status = {};
+                if (data && data[month]) {
+                  for (let idx in data[month]) {
+                    list.push(data[month][idx][0])
+                    status[data[month][idx][0]] = data[month][idx][1]
+                  }
+                }
+                let curr_status = status[day]?.split(" ")[0].toLowerCase() ? status[day]?.split(" ")[0].toLowerCase(): ''
+                if (data && data[month] && list.includes(day) && day > 0 && day <= daysInMonth)
                   isLeaveTaken = true;
                 else isLeaveTaken = false;
                 return (
                   <span
-                    class={`day ${isLeaveTaken ? "taken" : "not-taken"}`}
+                    class={`day ${curr_status}`}
                     key={dayIndex}
                   >
                     {day > 0 && day <= daysInMonth ? day : ""}
@@ -74,8 +79,7 @@ function Calendar({ data }) {
             </div>
           ))}
         </div>
-        <button class="arrow" onClick={nextMonth}>
-          <FontAwesomeIcon icon={faArrowRight} />
+        <button class="arrow right-arrow" onClick={nextMonth}>
         </button>
       </div>
       {/* <button onClick={prevMonth}>Prev</button>

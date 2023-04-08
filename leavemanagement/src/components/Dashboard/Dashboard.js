@@ -39,8 +39,7 @@ export default function Dashboard({ toast }) {
       try {
         const resp = await httpClient.post(
           `${process.env.REACT_APP_API_HOST}/past_applications`
-        );
-        console.log(resp);
+        );        
         if (resp.data.status == "success") {
         } else {
           return;
@@ -52,14 +51,13 @@ export default function Dashboard({ toast }) {
           let start_date = new Date(temp_data[i].start_date);
           let end_date = new Date(temp_data[i].end_date);
           while (start_date <= end_date) {
-            let curr_month = start_date.getMonth();
-            if (!Object.keys(dic).includes(curr_month)) {
+            let curr_month = start_date.getMonth();            
+            if (!Object.keys(dic).includes(String(curr_month))) {              
               dic[curr_month] = [];
             }
-            dic[curr_month].push(start_date.getDate());
+            dic[curr_month].push([start_date.getDate(), temp_data[i].status]);
             start_date.setDate(start_date.getDate() + 1);
-          }
-          console.log(dic);
+          }          
           setDayofLeave((dayOfLeave) => ({ ...dayOfLeave, ...dic }));
           temp.push([
             temp_data[i].id,
@@ -249,7 +247,7 @@ export default function Dashboard({ toast }) {
                         type="button"
                         class="btn btn-primary"
                         onClick={() => {
-                          navigate("/forms/applyleave");
+                          navigate("/navigate/applyleave");
                         }}
                       >
                         Apply Leave
@@ -259,7 +257,7 @@ export default function Dashboard({ toast }) {
                         type="button"
                         class="btn btn-success"
                         onClick={() => {
-                          navigate("/forms/pastapplications");
+                          navigate("/navigate/pastapplications");
                         }}
                       >
                         Past Applications
@@ -372,27 +370,6 @@ export default function Dashboard({ toast }) {
                         </div>
                       </div>
                       <span className="status">Status: {recentApplication.status} </span>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                ""
-              )}
-              {currentUser.position == "admin" ||
-              currentUser.position == "admin" ? (
-                <div className="card mb-3" style={{ border: "2px solid grey" }}>
-                  <div className="card-body">
-                    <h2>Add Users</h2>
-                    <div class="row">
-                      <div
-                        class="col-sm-12"
-                        style={{ padding: "0px", margin: "0px" }}
-                      >
-                        <form>
-                          <input type="file" />
-                          <input type="submit" value="Upload" />
-                        </form>
-                      </div>
                     </div>
                   </div>
                 </div>

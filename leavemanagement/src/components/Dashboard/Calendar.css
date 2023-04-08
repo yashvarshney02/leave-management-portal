@@ -1,0 +1,48 @@
+.arrow {
+  display: inline-block;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  position: relative;
+}
+
+.arrow i {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.arrow:hover i {
+  color: #666;
+}
+
+.left-arrow::before {
+  content: "";
+  display: block;
+  width: 0;
+  height: 0;
+  border-top: 0.75rem solid transparent;
+  border-bottom: 0.75rem solid transparent;
+  border-right: 1rem solid #333;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.right-arrow::before {
+  content: "";
+  display: block;
+  width: 0;
+  height: 0;
+  border-top: 0.75rem solid transparent;
+  border-bottom: 0.75rem solid transparent;
+  border-left: 1rem solid #333;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}

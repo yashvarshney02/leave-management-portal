@@ -1,147 +1,261 @@
-import React from "react";
+import React, { useRef } from "react";
 import httpClient from "../../httpClient";
 import { useAuth } from "../../contexts/AuthContext";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import { FaDownload } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
-import { Document, Page } from 'react-pdf';
+import { Row, Col } from "react-bootstrap"
+import SignaturePad from 'react-signature-canvas';
 
 const LeavePDFModals = ({ toast, from }) => {
-	const [leave, setLeave] = useState(null);
-	const { currentUser } = useAuth();
-	let currentUrl =
-		window.location.href.split("/")[window.location.href.split("/").length - 1];
-	const leave_id = parseInt(currentUrl);
-	const [signatureDataURL, setSignatureDataUrl] = useState(null)
-	const [downloadLink, setDownloadLink] = useState(null);
+  const [leave, setLeave] = useState(null);
+  const { currentUser } = useAuth();
+  let currentUrl =
+    window.location.href.split("/")[window.location.href.split("/").length - 1];
+  const leave_id = parseInt(currentUrl);
+  const [signatureDataURL, setSignatureDataUrl] = useState(null)
+  const [downloadLink, setDownloadLink] = useState(null);
+  const sigPadRef = useRef();
 
-	const approveLeave = async (leave_id) => {
-		try {
-			const resp = await httpClient.post(
-				`${process.env.REACT_APP_API_HOST}/approve_leave`,
-				{ leave_id, level: currentUser.level }
-			);
-			if (resp.data.status == "error") {
-				toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
-			} else {
-				toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
-			}
-		} catch (error) {
-			toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
-		}
-	};
-	const addComment = async (leave_id) => {
-		try {
-			const uid = "comment-" + leave_id;
-			const comment = document.getElementById(uid).value;
-			const resp = await httpClient.post(
-				`${process.env.REACT_APP_API_HOST}/add_comment`,
-				{ comment, leave_id }
-			);
-			if (resp.data.status == "error") {
-				toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
-			} else {
-				toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
-			}
-		} catch (error) {
-			toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
-		}
-	};
+  const clear = () => {
+    sigPadRef.current.clear();
+  };
 
-	const fetchLeaveInfo = async () => {
-		try {
-			const resp = await httpClient.post(
-				`${process.env.REACT_APP_API_HOST}/get_leave_info_by_id`,
-				{ leave_id }
-			);
-			if (resp.data.status == "success") {
-				let data = resp.data.data[0]				
-				setLeave(data);
-				const imageUrl = "data:image/png;base64," + String(data.signature);
-				setSignatureDataUrl(imageUrl);
-				if (data.file_name) {
-					await handleDownloadClick('leave_document', data.file_name)
-				}
+  function dataURItoBlob(dataURI) {
+    const byteString = atob(dataURI.split(',')[1]);
+    const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+    return new Blob([ab], { type: mimeString });
+  }
 
-			} else {
-			}
-		} catch (error) {
-			console.log(error);
-			toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
-		}
-	};
+  const approveLeave = async (leave_id) => {
+    if (sigPadRef.current.isEmpty()) {
+      toast.error("Signature can't be kept empty in approval", toast.POSITION.BOTTOM_RIGHT);
+      return;
+    }
+    try {
+      const trimmedDataURL = sigPadRef.current.getTrimmedCanvas().toDataURL('image/png');
+      const arrayBuffer = await dataURItoBlob(trimmedDataURL).arrayBuffer();
+      const binaryData = new Uint8Array(arrayBuffer);
+      const resp = await httpClient.post(
+        `${process.env.REACT_APP_API_HOST}/approve_leave`,
+        { leave_id, level: currentUser.level, signature: binaryData }
+      );
+      if (resp.data.status == "error") {
+        toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
+      } else {
+        toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
+      }
+      setTimeout(() => {
+        window.location.reload()
+      }, 3000);
+    } catch (error) {
+      toast.error("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
+    }
+  };
 
-	const disapproveLeave = async (leave_id) => {
-		try {
-			const resp = await httpClient.post(
-				`${process.env.REACT_APP_API_HOST}/disapprove_leave`,
-				{ leave_id }
-			);
-			if (resp.data.status == "error") {
-				toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
-			} else {
-				toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
-			}
-		} catch (error) {
-			toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
-		}
-	};
 
-	const handleDownloadClick = async (query, file_name = null) => {
-		const response = await httpClient.post(`${process.env.REACT_APP_API_HOST}/sample_csvs`, {
-			name: query,
-			file_name: file_name
-		})
-		const encodedData = response.data.data;
-		const decodedData = atob(encodedData);
-		const blob = new Blob([response.data], { type: 'application/pdf' });
-		const url = window.URL.createObjectURL(blob);
-		setDownloadLink(url);
-	};
+  const submitOfficeSignature = async (leave_id) => {
+    if (sigPadRef.current.isEmpty()) {
+      toast.error("Signature can't be kept empty in approval", toast.POSITION.BOTTOM_RIGHT);
+      return;
+    }
+    try {
+      const trimmedDataURL = sigPadRef.current.getTrimmedCanvas().toDataURL('image/png');
+      const arrayBuffer = await dataURItoBlob(trimmedDataURL).arrayBuffer();
+      const binaryData = new Uint8Array(arrayBuffer);
+      const resp = await httpClient.post(
+        `${process.env.REACT_APP_API_HOST}/submit_office_signature`,
+        { leave_id, signature: binaryData }
+      );
+      if (resp.data.status == "error") {
+        toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
+      } else {
+        toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
+      }
+      setTimeout(() => {
+        window.location.reload()
+      }, 3000);
+    } catch (error) {
+      toast.error("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
+    }
+  };
+  const addComment = async (leave_id) => {
+    try {
+      const uid = "comment-" + leave_id;
+      const comment = document.getElementById(uid).value;
+      const resp = await httpClient.post(
+        `${process.env.REACT_APP_API_HOST}/add_comment`,
+        { comment, leave_id }
+      );
+      if (resp.data.status == "error") {
+        toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
+      } else {
+        toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
+      }
+      setTimeout(() => {
+        window.location.reload()
+      }, 3000);
+    } catch (error) {
+      toast.error("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
+    }
+  };
 
-	const saveLeave = (leave_id) => {
-		const pdf = new jsPDF("portrait", "pt", "a2");
-		const input = document.getElementById("first-page-" + leave_id);
-		html2canvas(input, {
-			letterRendering: 1,
-			allowTaint: true,
-			logging: true,
-			useCORS: true,
-		})
-			//By passing this option in function Cross origin images will be rendered properly in the downloaded version of the PDF
-			.then((canvas) => {
-				// document.getElementById("leave-container-" + leave_id).parentNode.style.overflow = 'hidden';
+  const fetchLeaveInfo = async () => {
+    try {
+      const resp = await httpClient.post(
+        `${process.env.REACT_APP_API_HOST}/get_leave_info_by_id`,
+        { leave_id }
+      );
+      if (resp.data.status === "success") {
+        let data = resp.data.data[0];       
+        if (currentUser?.signature && from == "check_applications") {
+          sigPadRef.current.fromDataURL(currentUser.signature)
+        }
+        setLeave(data);
+        const imageUrl = "data:image/png;base64," + String(data.signature);
+        setSignatureDataUrl(imageUrl);
+        if (data.file_name) {
+          await handleDownloadClick('leave_document', data.file_name)
+        }
 
-				var imgData = canvas.toDataURL("image/png");
-				// window.open(imgData, "toDataURL() image", "width=800, height=800");
+      } else {
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
+    }
+  };
 
-				pdf.addImage(imgData, "JPEG", 100, 50);
+  const disapproveLeave = async (leave_id) => {
+    try {
+      const resp = await httpClient.post(
+        `${process.env.REACT_APP_API_HOST}/disapprove_leave`,
+        { leave_id }
+      );
+      if (resp.data.status == "error") {
+        toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
+      } else {
+        toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
+      }
+      setTimeout(() => {
+        window.location.reload()
+      }, 3000);
+    } catch (error) {
+      toast.error("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
+    }
+  };
 
-				pdf.save(`${"leave-" + leave_id}.pdf`);
-			});
-	};
+  const handleDownloadClick = async (query, file_name = null) => {
+    const response = await httpClient.post(`${process.env.REACT_APP_API_HOST}/sample_csvs`, {
+      name: query,
+      file_name: file_name
+    })
+    const encodedData = response.data.data;
+    const decodedData = atob(encodedData);
+    const blob = new Blob([response.data], { type: 'application/pdf' });
+    const url = window.URL.createObjectURL(blob);
+    setDownloadLink(url);
+  };
 
-	function get_date(date) {
-		if (!date) {
-			return null;
-		}
-		date = new Date(date);
-		const yyyy = date.getFullYear();
-		const mm = String(date.getMonth() + 1).padStart(2, '0');
-		const dd = String(date.getDate()).padStart(2, '0');
-		const formattedDate = `${yyyy}-${mm}-${dd}`;
-		return formattedDate
-	}
+  const saveLeave = (leave_id) => {
+    const pdf = new jsPDF("portrait", "pt", "a2");
+    const input = document.getElementById("first-page-" + leave_id);
+    html2canvas(input, {
+      letterRendering: 1,
+      allowTaint: true,
+      logging: true,
+      useCORS: true,
+    })
+      //By passing this option in function Cross origin images will be rendered properly in the downloaded version of the PDF
+      .then((canvas) => {
+        // document.getElementById("leave-container-" + leave_id).parentNode.style.overflow = 'hidden';
 
-	useEffect(() => {
-		async function test() {
-			await fetchLeaveInfo();
-		}
-		test();
-	}, []);
-	return (
+        var imgData = canvas.toDataURL("image/png");
+        // window.open(imgData, "toDataURL() image", "width=800, height=800");
+
+        pdf.addImage(imgData, "JPEG", 100, 50);
+
+        pdf.save(`${"leave-" + leave_id}.pdf`);
+      });
+  };
+
+  function get_date(date) {
+    if (!date) {
+      return null;
+    }
+    date = new Date(date);
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    const formattedDate = `${yyyy}-${mm}-${dd}`;
+    return formattedDate
+  }
+
+  function get_status_element(leave) {
+    if (!leave) return ''
+    let status = leave?.status.toLowerCase();
+    let imageUrl = "";
+    if (status.startsWith("approved") && status.includes("hod")) {
+      if (leave.hod_sig) {
+        imageUrl = "data:image/png;base64," + String(leave.hod_sig);
+      }
+    } else if (status.startsWith("approved") && status.includes("dean")) {
+      if (leave.dean_sig) {
+        imageUrl = "data:image/png;base64," + String(leave.dean_sig);
+      }
+    }
+    if (imageUrl.length) {
+      return (
+        <img
+          style={{
+            maxHeight: "60px",
+            maxWidth: "450px",
+            width: "40%",
+          }}
+          src={imageUrl}
+          alt="Signature"
+        />
+      )
+    }
+    return leave?.status
+  }
+
+  function get_office_status_element(leave) {
+    if (!leave) return ''
+    let imageUrl = "";    
+    if (leave.office_sig && leave.office_sig[0]) {
+      imageUrl = "data:image/png;base64," + String(leave.office_sig);
+    }
+    if (imageUrl.length) {
+      return (
+        <img
+          style={{
+            maxHeight: "60px",
+            maxWidth: "450px",
+            width: "40%",
+          }}
+          src={imageUrl}
+          alt="Signature"
+        />
+      )
+    }
+    return '';
+
+  }
+
+  useEffect(() => {
+    async function test() {
+      await fetchLeaveInfo();
+    }
+    test();
+  }, []);
+  return (
     <>
       {true ? (
         <div>
@@ -217,8 +331,8 @@ const LeavePDFModals = ({ toast, from }) => {
               </div>
               <div className="row" style={{ border: "1px solid" }}>
                 <div className="col-6" style={{ textAlign: "left" }}>
-                  आवश्यक छुट्टी का मवरूऩ : आकस्ममक छुट्टी /
-                  राज.अव./त्रव.आ.छुट्टी <br />
+                  आवश्यक छुट्टी की प्रकृति: सीएल / आरएच / एससीएल / ओडी
+                  <br />
                   Nature of Leave Required : CL / RH / SCL/ OD
                 </div>
                 <div className="col-1" style={{ textAlign: "left" }}>
@@ -241,8 +355,8 @@ const LeavePDFModals = ({ toast, from }) => {
               </div>
               <div className="row" style={{ border: "1px solid" }}>
                 <div className="col-6" style={{ textAlign: "left" }}>
-                  उद्देश्य / Purpose (के वऱ त्रवशेष आकस्ममक छुट्टी के लऱए लनमॊिण
-                  ऩि की प्रलत सॊऱगन करं) /<br />
+                  उद्देश्य / Purpose (केवल एससीएल के मामले में संलग्न आमंत्रण
+                  पत्र की प्रति) /<br />
                   (Copy of the invitation letter enclosed in case of SCL only)
                 </div>
                 <div className="col-1" style={{ textAlign: "left" }}>
@@ -254,8 +368,8 @@ const LeavePDFModals = ({ toast, from }) => {
               </div>
               <div className="row" style={{ border: "1px solid" }}>
                 <div className="col-6" style={{ textAlign: "left" }}>
-                  कऺाएॊ, प्रशासलनक स्जम्मेदारी आदद (यदद कोई हो तो) के लऱए
-                  वैकस्पऩक व्यवमथा /<br />
+                  कक्षाओं, प्रशासनिक के लिए वैकल्पिक व्यवस्था जिम्मेदारियां, आदि
+                  /<br />
                   Alternative arrangements for classes, administrative
                   responsibilities, etc. (if any)
                   <br />
@@ -301,7 +415,7 @@ const LeavePDFModals = ({ toast, from }) => {
               </div>
               <div className="row" style={{ border: "1px solid" }}>
                 <div className="col-6" style={{ textAlign: "left" }}>
-                  छुट्टी के दौरान का ऩता
+                  छुट्टी के दौरान/ड्यूटी पर पता
                   <br />
                   Address during the leave/on duty
                 </div>
@@ -336,7 +450,7 @@ const LeavePDFModals = ({ toast, from }) => {
                     )}
                   </div>
                   <br />
-                  आवेदक के हस्ताक्षर तारीख साहित/Signature with date of the
+                  आवेदक की तारीख के साथ हस्ताक्षर/Signature with date of the
                   applicant
                 </div>
               </div>
@@ -386,7 +500,9 @@ const LeavePDFModals = ({ toast, from }) => {
                   <br />
                   <br />
                   <br />
-                  सॊबॊलधत सहायक (त्रवभाग)/(मथाऩना)/Dealing Asstt.
+                  {get_office_status_element(leave)}
+                  <br />
+                  सम्बंधित सहायक (विभाग)/(अनुमानित)/Dealing Asstt.
                   (Deptt.)/(Estt.)
                 </div>
                 <div className="col-6">
@@ -403,8 +519,9 @@ const LeavePDFModals = ({ toast, from }) => {
                 <div className="col-4"></div>
                 <div className="col-8">
                   <p>{leave?.authority_comment}</p>
-                  छुट्टी प्रदान करनेके लऱए सऺम प्रालधकारी की दटप्ऩणी: मवीकृ
-                  त/अमवीकृ त<br />
+                  छुट्टी प्रदान करने के लिए सक्षम प्राधिकारी की टिप्पणियाँ:
+                  स्वीकृत / स्वीकृत नहीं
+                  <br />
                   Comments of the competent authority to grant leave: Sanctioned
                   / Not Sanctioned
                 </div>
@@ -414,7 +531,7 @@ const LeavePDFModals = ({ toast, from }) => {
               <div className="row">
                 <div className="col-4"></div>
                 <div className="col-8">
-                  <p>{leave?.status}</p>
+                  <p>{get_status_element(leave)}</p>
                   (त्रवभागाध्यऺ / कु ऱसलिव / अलधष्ठाता (सॊकाय मामऱेएवॊप्रशासन) /
                   लनदेशक)
                   <br />
@@ -437,27 +554,38 @@ const LeavePDFModals = ({ toast, from }) => {
             )}
             <hr />
           </div>
-          {from === "check_application" ? (
-            <div className="text-center">
-              <textarea
-                id={"comment-" + leave?.leave_id}
-                placeholder="Add Comment"
-                style={{ width: "250px" }}
-              ></textarea>
-            </div>
-          ) : (
-            ""
-          )}
           <div>
-            {from === "check_applications" ? (
+            {from === "check_applications" &&
+            ["hod", "dean", "faculty"].includes(currentUser?.position) ? (
               <>
-                <div className="text-center">
-                  <textarea
-                    id={"comment-" + leave?.leave_id}
-                    placeholder="Add Comment"
-                    style={{ width: "250px" }}
-                  ></textarea>
-                </div>
+                <Row>
+                  <Col>
+                    <div className="text-center">
+                      <textarea
+                        id={"comment-" + leave?.leave_id}
+                        placeholder="Add Comment"
+                        style={{ width: "250px" }}
+                      ></textarea>
+                    </div>
+                  </Col>
+                  <Col>
+                    <div className={"sigContainer"}>
+                      <SignaturePad
+                        canvasProps={{ className: "sigPad" }}
+                        ref={sigPadRef}
+                        onChange={(e) => {}}
+                      />
+                    </div>
+                    <Row className="row-al">
+                      <span
+                        onClick={clear}
+                        style={{ textAlign: "left", cursor: "pointer" }}
+                      >
+                        Clear
+                      </span>
+                    </Row>
+                  </Col>
+                </Row>
                 <button
                   type="button"
                   className="btn btn-outline-success"
@@ -486,6 +614,42 @@ const LeavePDFModals = ({ toast, from }) => {
                   }}
                 >
                   Add Comment
+                </button>
+              </>
+            ) : (
+              ""
+            )}
+            {from === "check_applications" &&
+            ["office"].includes(currentUser?.position) ? (
+              <>
+                <Row>
+                  <Col>
+                    <div className={"sigContainer"}>
+                      <SignaturePad
+                        canvasProps={{ className: "sigPad" }}
+                        ref={sigPadRef}
+                        onChange={(e) => {}}
+                      />
+                    </div>
+                  </Col>
+                </Row>
+                <Row className="row-al">
+                  <span
+                    onClick={clear}
+                    style={{ textAlign: "left", cursor: "pointer" }}
+                  >
+                    Clear
+                  </span>
+                </Row>
+
+                <button
+                  type="button"
+                  className="btn btn-outline-success"
+                  onClick={async () => {
+                    await submitOfficeSignature(leave?.leave_id);
+                  }}
+                >
+                  Submit your signature
                 </button>
               </>
             ) : (
