@@ -30,7 +30,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
         toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
       }
     } catch (error) {
-      toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
+      toast.error("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
     }
   };
   const addComment = async (leave_id) => {
@@ -47,7 +47,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
         toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
       }
     } catch (error) {
-      toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
+      toast.error("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
     }
   };
 
@@ -73,7 +73,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
       }
     } catch (error) {
       console.log(error);
-      toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
+      toast.error("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
     }
   };
 
@@ -89,7 +89,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
         toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
       }
     } catch (error) {
-      toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
+      toast.error("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
     }
   };
 
