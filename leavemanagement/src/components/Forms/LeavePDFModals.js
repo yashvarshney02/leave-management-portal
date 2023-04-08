@@ -331,8 +331,8 @@ const LeavePDFModals = ({ toast, from }) => {
               </div>
               <div className="row" style={{ border: "1px solid" }}>
                 <div className="col-6" style={{ textAlign: "left" }}>
-                  आवश्यक छुट्टी का मवरूऩ : आकस्ममक छुट्टी /
-                  राज.अव./त्रव.आ.छुट्टी <br />
+                  आवश्यक छुट्टी की प्रकृति: सीएल / आरएच / एससीएल / ओडी
+                  <br />
                   Nature of Leave Required : CL / RH / SCL/ OD
                 </div>
                 <div className="col-1" style={{ textAlign: "left" }}>
@@ -355,8 +355,8 @@ const LeavePDFModals = ({ toast, from }) => {
               </div>
               <div className="row" style={{ border: "1px solid" }}>
                 <div className="col-6" style={{ textAlign: "left" }}>
-                  उद्देश्य / Purpose (के वऱ त्रवशेष आकस्ममक छुट्टी के लऱए लनमॊिण
-                  ऩि की प्रलत सॊऱगन करं) /<br />
+                  उद्देश्य / Purpose (केवल एससीएल के मामले में संलग्न आमंत्रण
+                  पत्र की प्रति) /<br />
                   (Copy of the invitation letter enclosed in case of SCL only)
                 </div>
                 <div className="col-1" style={{ textAlign: "left" }}>
@@ -368,8 +368,8 @@ const LeavePDFModals = ({ toast, from }) => {
               </div>
               <div className="row" style={{ border: "1px solid" }}>
                 <div className="col-6" style={{ textAlign: "left" }}>
-                  कऺाएॊ, प्रशासलनक स्जम्मेदारी आदद (यदद कोई हो तो) के लऱए
-                  वैकस्पऩक व्यवमथा /<br />
+                  कक्षाओं, प्रशासनिक के लिए वैकल्पिक व्यवस्था जिम्मेदारियां, आदि
+                  /<br />
                   Alternative arrangements for classes, administrative
                   responsibilities, etc. (if any)
                   <br />
@@ -415,7 +415,7 @@ const LeavePDFModals = ({ toast, from }) => {
               </div>
               <div className="row" style={{ border: "1px solid" }}>
                 <div className="col-6" style={{ textAlign: "left" }}>
-                  छुट्टी के दौरान का ऩता
+                  छुट्टी के दौरान/ड्यूटी पर पता
                   <br />
                   Address during the leave/on duty
                 </div>
@@ -450,7 +450,7 @@ const LeavePDFModals = ({ toast, from }) => {
                     )}
                   </div>
                   <br />
-                  आवेदक के हस्ताक्षर तारीख साहित/Signature with date of the
+                  आवेदक की तारीख के साथ हस्ताक्षर/Signature with date of the
                   applicant
                 </div>
               </div>
@@ -519,8 +519,9 @@ const LeavePDFModals = ({ toast, from }) => {
                 <div className="col-4"></div>
                 <div className="col-8">
                   <p>{leave?.authority_comment}</p>
-                  छुट्टी प्रदान करनेके लऱए सऺम प्रालधकारी की दटप्ऩणी: मवीकृ
-                  त/अमवीकृ त<br />
+                  छुट्टी प्रदान करने के लिए सक्षम प्राधिकारी की टिप्पणियाँ:
+                  स्वीकृत / स्वीकृत नहीं
+                  <br />
                   Comments of the competent authority to grant leave: Sanctioned
                   / Not Sanctioned
                 </div>
@@ -554,7 +555,8 @@ const LeavePDFModals = ({ toast, from }) => {
             <hr />
           </div>
           <div>
-            {(from === "check_applications" && ['hod', 'dean', 'faculty'].includes(currentUser?.position)) ? (
+            {from === "check_applications" &&
+            ["hod", "dean", "faculty"].includes(currentUser?.position) ? (
               <>
                 <Row>
                   <Col>
@@ -568,15 +570,22 @@ const LeavePDFModals = ({ toast, from }) => {
                   </Col>
                   <Col>
                     <div className={"sigContainer"}>
-                      <SignaturePad canvasProps={{ className: 'sigPad' }} ref={sigPadRef} onChange={(e) => { }} />
+                      <SignaturePad
+                        canvasProps={{ className: "sigPad" }}
+                        ref={sigPadRef}
+                        onChange={(e) => {}}
+                      />
                     </div>
                     <Row className="row-al">
-                      <span onClick={clear} style={{ textAlign: "left", cursor: "pointer" }}>Clear</span>
+                      <span
+                        onClick={clear}
+                        style={{ textAlign: "left", cursor: "pointer" }}
+                      >
+                        Clear
+                      </span>
                     </Row>
                   </Col>
-
                 </Row>
-
                 <button
                   type="button"
                   className="btn btn-outline-success"
@@ -610,17 +619,27 @@ const LeavePDFModals = ({ toast, from }) => {
             ) : (
               ""
             )}
-            {(from === "check_applications" && ['office'].includes(currentUser?.position)) ? (
+            {from === "check_applications" &&
+            ["office"].includes(currentUser?.position) ? (
               <>
                 <Row>
                   <Col>
                     <div className={"sigContainer"}>
-                      <SignaturePad canvasProps={{ className: 'sigPad' }} ref={sigPadRef} onChange={(e) => { }} />
+                      <SignaturePad
+                        canvasProps={{ className: "sigPad" }}
+                        ref={sigPadRef}
+                        onChange={(e) => {}}
+                      />
                     </div>
                   </Col>
                 </Row>
                 <Row className="row-al">
-                  <span onClick={clear} style={{ textAlign: "left", cursor: "pointer" }}>Clear</span>
+                  <span
+                    onClick={clear}
+                    style={{ textAlign: "left", cursor: "pointer" }}
+                  >
+                    Clear
+                  </span>
                 </Row>
 
                 <button
