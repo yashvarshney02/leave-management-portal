@@ -13,7 +13,8 @@ import {
 import "./Table.css";
 import { useNavigate } from "react-router-dom";
 
-export default function Table({ title, headers, initialData, from }) {
+export default function Table({ title, headers, initialData, from }) {	
+	console.log("test ", initialData)
 	const navigate = useNavigate();
 	//to set initial search values = ""
 	let initColSearchKey = {};
@@ -111,6 +112,7 @@ export default function Table({ title, headers, initialData, from }) {
 				cnt++;
 			}
 		}
+		console.log({initialData})
 		setPendingCount(cnt);
 	}, [data]);
 

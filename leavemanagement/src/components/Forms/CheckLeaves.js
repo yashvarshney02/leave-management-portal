@@ -22,19 +22,19 @@ export default function CheckLeaves({ toast }) {
       }
       let temp = [], data = resp.data.data;
       for (let i = 0; i < data.length; i++) {
-        try {          
+        try {
           let status;
-          if (data[i].status.includes("Hod") && data[i].status.includes("Hod")) {
+          if (data[i].status.toLowerCase().includes("hod") && data[i].status.toLowerCase().includes("dean")) {
             status = `${data} dean, hod`
-          } else if (data[i].status.includes("Hod")) {
+          } else if (data[i].status.toLowerCase().includes("hod")) {
             status = `${data[i].status.split(" ")[0]} by hod`
-          } else if (data[i].status.includes("Dean")) {
+          } else if (data[i].status.toLowerCase().includes("dean")) {
             status = `${data[i].status.split(" ")[0]} by dean`
           } else {
-            status = data[i].status;
-          }          
+            status = data[i].status
+          }
           temp.push([data[i].id, data[i].nature, data[i].name, data[i].position, new Date(data[i].request_date).toDateString(), data[i].start_date.slice(0, -12), status]);
-        } catch (error) {          
+        } catch (error) {
           continue;
         }
       }
