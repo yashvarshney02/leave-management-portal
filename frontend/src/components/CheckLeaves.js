@@ -31,8 +31,7 @@ export default function CheckLeaves({ user }) {
   }
   const fetchNumberOfLeaves = async (e) => {
     try {
-      const resp = await httpClient.post("http://localhost:5000//fetchNumberOfLeaves");      
-      console.log(resp['data']['result']);
+      const resp = await httpClient.post("http://localhost:5000//fetchNumberOfLeaves");            
       return resp["data"]["result"]
 
     } catch (error) {
