@@ -13,8 +13,7 @@ import {
 import "./Table.css";
 import { useNavigate } from "react-router-dom";
 
-export default function Table({ title, headers, initialData, from }) {	
-	console.log("test ", initialData)
+export default function Table({ title, headers, initialData, from }) {
 	const navigate = useNavigate();
 	//to set initial search values = ""
 	let initColSearchKey = {};
@@ -44,6 +43,8 @@ export default function Table({ title, headers, initialData, from }) {
 	const [colSearchKey, setColSearchKey] = useState({ initColSearchKey });
 	const [data, setData] = useState(initialData);
 	const [deleteLeaveID, setDeleteLeaveID] = useState("");
+	const [currentLeaveStatus, setCurrentLeaveStatus] = useState("");
+	const [currentLeaveWithdrawReason, setCurrentLeaveWithdrawReason] = useState("");
 	const [showConfirmDeleteAction, setShowConfirmDeleteAction] = useState(false);
 	const [displayTab, setDisplayTab] = useState(0);
 	const [pendingCount, setPendingCount] = useState(0);
@@ -71,6 +72,7 @@ export default function Table({ title, headers, initialData, from }) {
 			];
 		} else if (toShow === "withdrawn") {
 			finalData = [
+				...prepData(headers, initialData, "Status", "Withdrawn"),
 				...prepData(headers, initialData, "Status", "pending withdrawn"),
 				...prepData(headers, initialData, "Status", "approved withdrawn")
 			];
@@ -112,7 +114,6 @@ export default function Table({ title, headers, initialData, from }) {
 				cnt++;
 			}
 		}
-		console.log({initialData})
 		setPendingCount(cnt);
 	}, [data]);
 
@@ -124,16 +125,58 @@ export default function Table({ title, headers, initialData, from }) {
 	const handleShow = () => setShowConfirmDeleteAction(true);
 
 	async function handleDeleteLeaveApplication(leaveID) {
+		if (currentLeaveStatus.startsWith("Approved") && currentLeaveWithdrawReason.length == 0) {
+			toast.error("Withdraw reason must be mentioned", toast.POSITION.BOTTOM_RIGHT);
+			return;
+		}
 		const resp = await httpClient.post(
 			`${process.env.REACT_APP_API_HOST}/delete_application`,
 			{
-				leave_id: leaveID,
+				leave_id: leaveID, reason: currentLeaveWithdrawReason
 			}
 		);
 		if (resp.data.status == "error") {
 			toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
 		} else {
 			toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
+			setTimeout(() => {
+				window.location.reload()
+			}, 2000);
+		}
+	}
+
+	async function approveWithdraw(leaveID) {
+		const resp = await httpClient.post(
+			`${process.env.REACT_APP_API_HOST}/approve_withdraw_leave`,
+			{
+				leave_id: leaveID
+			}
+		);
+		if (resp.data.status == "error") {
+			toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
+		} else {
+			toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
+			setTimeout(() => {
+				window.location.reload()
+			}, 2000);
+		}
+	}
+
+	async function disapproveWithdraw(leaveID) {
+		console.log(leaveID)
+		const resp = await httpClient.post(
+			`${process.env.REACT_APP_API_HOST}/disapprove_withdraw_leave`,
+			{
+				leave_id: leaveID
+			}
+		);
+		if (resp.data.status == "error") {
+			toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
+		} else {
+			toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
+			setTimeout(() => {
+				window.location.reload()
+			}, 2000);
 		}
 	}
 
@@ -154,6 +197,7 @@ export default function Table({ title, headers, initialData, from }) {
 						color="red"
 						onClick={(e) => {
 							setDeleteLeaveID(row[0]);
+							setCurrentLeaveStatus(row[6])
 							handleShow();
 						}}
 					/>
@@ -186,6 +230,14 @@ export default function Table({ title, headers, initialData, from }) {
 				</Modal.Header>
 				<Modal.Body>
 					{`Are you sure you want to delete the leave with ID: ${deleteLeaveID}`}{" "}
+					{currentLeaveStatus?.startsWith("Approved") ? (
+						<div>
+							<br />
+							<p>Enter the reason for withdraw:</p>
+							<textarea onChange={(e) => { setCurrentLeaveWithdrawReason(e.target.value) }}>
+							</textarea>
+						</div>
+					) : ""}
 				</Modal.Body>
 				<Modal.Footer>
 					<Button
@@ -194,9 +246,6 @@ export default function Table({ title, headers, initialData, from }) {
 							await handleDeleteLeaveApplication(deleteLeaveID);
 							setDeleteLeaveID("");
 							handleClose();
-							setTimeout(() => {
-								window.location.reload()
-							}, 2000);
 						}}
 					>
 						<FaIcons.FaTrash></FaIcons.FaTrash>
@@ -325,15 +374,42 @@ export default function Table({ title, headers, initialData, from }) {
 																className="leave-nature-hover"
 																data-toggle="tooltip"
 																data-placement="right"
-																title={item}
+																title={item}																
 															>
 																<FaIcons.FaQuestionCircle></FaIcons.FaQuestionCircle>
 															</button>
 														</td>
 													);
+												} else if (
+													i == 7 && item?.length
+												) {
+													return (
+														<td>														
+															<button
+																type="button"
+																className="leave-nature-hover"
+																data-toggle="tooltip"
+																data-placement="right"
+																title={`Reason - ${item}`}
+																onClick={async ()=>{await approveWithdraw(row[0])}}
+															>
+																<FaIcons.FaCheck color="green"></FaIcons.FaCheck>
+															</button>&nbsp;&nbsp;:&nbsp;&nbsp;
+															<button
+																type="button"
+																className="leave-nature-hover"
+																data-toggle="tooltip"
+																data-placement="right"
+																title={`Reason - ${item}`}
+																onClick={async ()=>{await disapproveWithdraw(row[0])}}
+															>
+																<FaIcons.FaTimes color="red"></FaIcons.FaTimes>
+															</button>
+														</td>
+													)
 												}
 												return <td key={i}>{item}</td>;
-											})}
+											})}											
 											{getActions(title, row)}
 										</tr>
 									);

@@ -66,7 +66,7 @@ export default function UpdateLeave({ toast }) {
           "Query Executed Successfully",
           toast.POSITION.BOTTOM_RIGHT
         );
-        await getCollectiveData();
+        let res = await getCollectiveData();
       } else {
         toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
         return;

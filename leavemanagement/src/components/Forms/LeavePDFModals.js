@@ -44,7 +44,7 @@ const LeavePDFModals = ({ toast, from }) => {
       const binaryData = new Uint8Array(arrayBuffer);
       const resp = await httpClient.post(
         `${process.env.REACT_APP_API_HOST}/approve_leave`,
-        { leave_id, level: currentUser.level, signature: binaryData }
+        { leave_id, level: currentUser.level, signature: binaryData, applicant_id: leave.user_id }
       );
       if (resp.data.status == "error") {
         toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
@@ -91,7 +91,7 @@ const LeavePDFModals = ({ toast, from }) => {
       const comment = document.getElementById(uid).value;
       const resp = await httpClient.post(
         `${process.env.REACT_APP_API_HOST}/add_comment`,
-        { comment, leave_id }
+        { comment, leave_id, applicant_id: leave.user_id }
       );
       if (resp.data.status == "error") {
         toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
@@ -136,7 +136,7 @@ const LeavePDFModals = ({ toast, from }) => {
     try {
       const resp = await httpClient.post(
         `${process.env.REACT_APP_API_HOST}/disapprove_leave`,
-        { leave_id }
+        { leave_id, applicant_id: leave.user_id }
       );
       if (resp.data.status == "error") {
         toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);

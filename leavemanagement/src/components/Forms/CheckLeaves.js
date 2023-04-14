@@ -8,7 +8,7 @@ import LoadingIndicator from "../LoadingIndicator";
 
 export default function CheckLeaves({ toast }) {
   const [leaves, setLeaves] = useState([]);
-  const headers = ["Leave Id", "Nature", "Name", "Position", "Request Date", "Start Date", "Status"];
+  const headers = ["Leave Id", "Nature", "Name", "Position", "Request Date", "Start Date", "Status", "Withdraw Request"];
   const [data, setData] = useState(null);
 
   const fetchLeaves = async (e) => {
@@ -32,8 +32,8 @@ export default function CheckLeaves({ toast }) {
             status = `${data[i].status.split(" ")[0]} by dean`
           } else {
             status = data[i].status
-          }
-          temp.push([data[i].id, data[i].nature, data[i].name, data[i].position, new Date(data[i].request_date).toDateString(), data[i].start_date.slice(0, -12), status]);
+          }          
+          temp.push([data[i].leave_id, data[i].nature, data[i].name, data[i].position, new Date(data[i].request_date).toDateString(), data[i].start_date.slice(0, -12), status, data[i].withdraw_reason]);
         } catch (error) {
           continue;
         }
