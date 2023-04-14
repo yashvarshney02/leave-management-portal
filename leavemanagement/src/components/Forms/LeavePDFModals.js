@@ -55,7 +55,7 @@ const LeavePDFModals = ({ toast, from }) => {
         window.location.reload()
       }, 3000);
     } catch (error) {
-      toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
+      toast.error("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
     }
   };
 
@@ -82,7 +82,7 @@ const LeavePDFModals = ({ toast, from }) => {
         window.location.reload()
       }, 3000);
     } catch (error) {
-      toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
+      toast.error("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
     }
   };
   const addComment = async (leave_id) => {
@@ -102,7 +102,7 @@ const LeavePDFModals = ({ toast, from }) => {
         window.location.reload()
       }, 3000);
     } catch (error) {
-      toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
+      toast.error("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
     }
   };
 
@@ -112,9 +112,9 @@ const LeavePDFModals = ({ toast, from }) => {
         `${process.env.REACT_APP_API_HOST}/get_leave_info_by_id`,
         { leave_id }
       );
-      if (resp.data.status == "success") {
-        let data = resp.data.data[0];        
-        if (currentUser.signature) {
+      if (resp.data.status === "success") {
+        let data = resp.data.data[0];       
+        if (currentUser?.signature && from == "check_applications") {
           sigPadRef.current.fromDataURL(currentUser.signature)
         }
         setLeave(data);
@@ -128,7 +128,7 @@ const LeavePDFModals = ({ toast, from }) => {
       }
     } catch (error) {
       console.log(error);
-      toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
+      toast.error("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
     }
   };
 
@@ -147,7 +147,7 @@ const LeavePDFModals = ({ toast, from }) => {
         window.location.reload()
       }, 3000);
     } catch (error) {
-      toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
+      toast.error("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
     }
   };
 

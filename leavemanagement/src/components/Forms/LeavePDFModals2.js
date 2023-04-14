@@ -59,7 +59,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
         window.location.reload()
       }, 3000);
     } catch (error) {
-      toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
+      toast.error("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
     }
   };
 
@@ -78,7 +78,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
         toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
       }
     } catch (error) {
-      toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
+      toast.error("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
     }
   };
 
@@ -130,7 +130,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
       }
     } catch (error) {
       console.log(error);
-      toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
+      toast.error("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
     }
   };
 
@@ -146,7 +146,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
         toast.success(resp.data.data, toast.POSITION.BOTTOM_RIGHT);
       }
     } catch (error) {
-      toast.success("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
+      toast.error("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
     }
   };
 
