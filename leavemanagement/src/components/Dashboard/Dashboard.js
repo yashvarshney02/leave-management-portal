@@ -318,12 +318,12 @@ export default function Dashboard({ toast }) {
                           >
                             View
                           </button>
-                          <button
+                          {/* <button
                             type="button"
                             class="btn btn-secondary btn-sm"
                           >
                             Withdraw
-                          </button>
+                          </button> */}
                         </div>
                       </div>
                       <span className="status">Status: {recentApplication.status} </span>
