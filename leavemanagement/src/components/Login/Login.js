@@ -90,7 +90,6 @@ export default function Login(props) {
       let res = await httpClient.post(`${process.env.REACT_APP_API_HOST}/login_oauth`, {
         data: info,
       });      
-      console.log(res)
       if (res.data['status'] == 'success') {
         props.toast.success(res.data['data'], {
           position: props.toast.POSITION.BOTTOM_RIGHT

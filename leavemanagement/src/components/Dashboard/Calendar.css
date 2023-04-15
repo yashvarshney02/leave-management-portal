@@ -1,48 +1,71 @@
-.arrow {
-  display: inline-block;
-  background-color: transparent;
-  border: none;
-  cursor: pointer;
-  position: relative;
+.pending {
+  background-color: #7CB9E8;
 }
 
-.arrow i {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 1.5rem;
-  color: #333;
+.approved {
+  background-color: #29AB87;
 }
 
-.arrow:hover i {
-  color: #666;
+.disapproved {
+  background-color: #fd5c63;
 }
 
-.left-arrow::before {
-  content: "";
-  display: block;
-  width: 0;
-  height: 0;
-  border-top: 0.75rem solid transparent;
-  border-bottom: 0.75rem solid transparent;
-  border-right: 1rem solid #333;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+.withdrawn {
+  background-color: #FFD700;
 }
 
-.right-arrow::before {
-  content: "";
-  display: block;
-  width: 0;
-  height: 0;
-  border-top: 0.75rem solid transparent;
-  border-bottom: 0.75rem solid transparent;
-  border-left: 1rem solid #333;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+.tile-content {
+  color: black;
+  font-weight: bold;
+  font-size: 14px;
+  text-align: center;
+  padding-top: 10px;
+}
+
+
+.react-calendar { 
+ width: 600px;
+ max-width: 100%;
+ margin: 60px auto 0;
+ background-color: #fff;
+ color: #222;
+ border-radius: 8px;
+ box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+ font-family: Arial, Helvetica, sans-serif;
+ line-height: 1.125em;
+}
+.react-calendar__navigation button {
+ color: #6f48eb;
+ min-width: 44px;
+ background: none;
+ font-size: 16px;
+ margin-top: 8px;
+}
+.react-calendar__navigation button:enabled:hover,
+.react-calendar__navigation button:enabled:focus {
+ background-color: #f8f8fa;
+}
+.react-calendar__navigation button[disabled] {
+ background-color: #f0f0f0;
+}
+abbr[title] {
+  color: "black" !important;
+ text-decoration: none;
+}
+/* .react-calendar__month-view__days__day--weekend {
+ color: #d10000;
+} */
+
+
+@media screen and (min-width: 788px) {
+  .react-calendar {
+    max-width: 450px;
+  }
+}
+
+@media screen and (min-width: 1024px) {
+  .react-calendar {
+    max-width: 1200px;
+    min-width: 800px;
+  }
 }

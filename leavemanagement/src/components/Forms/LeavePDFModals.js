@@ -127,7 +127,6 @@ const LeavePDFModals = ({ toast, from }) => {
       } else {
       }
     } catch (error) {
-      console.log(error);
       toast.error("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
     }
   };
@@ -201,7 +200,6 @@ const LeavePDFModals = ({ toast, from }) => {
     if (!leave) return ''
     let status = leave?.status.toLowerCase();
     let imageUrl = "";
-    console.log(status)
     if (status.startsWith("approved") && status.includes("hod")) {
       if (leave.hod_sig) {
         imageUrl = "data:image/png;base64," + String(leave.hod_sig);

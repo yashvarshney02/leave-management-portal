@@ -17,7 +17,8 @@ export default function PastApplications({ toast }) {
 				`${process.env.REACT_APP_API_HOST}/past_applications`
 			);					
 			if (resp.data.status == "success") {				
-			} else {				
+			} else {	
+				setData([])			
 				return;
 			}
 			const temp_data = resp.data.data;
@@ -37,6 +38,7 @@ export default function PastApplications({ toast }) {
 			}
 			setData(temp);
 		} catch (error) {
+			setData([]);
 			console.log(error);
 			// toast.error("something went wrong", toast.POSITION.BOTTOM_RIGHT);
 		}

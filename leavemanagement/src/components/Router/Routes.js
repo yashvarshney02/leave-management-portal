@@ -9,7 +9,7 @@ import CheckLeaves from "../Forms/CheckLeaves";
 import Dates from "../Forms/Dates";
 import UpdateLeave from "../Forms/UpdateLeave";
 import LeavePDFModals from "../Forms/LeavePDFModals";
-import LeavePDFModalsNonCasual from "../Forms/LeavePDFModals2"
+import LeavePDFModalsNonCasual from "../Forms/LeavePDFModals2";
 
 const Paths = (props) => {
 	return (

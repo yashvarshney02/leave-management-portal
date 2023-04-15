@@ -147,7 +147,6 @@ export default function NonCasuaLeave({ toast }) {
 		}, 3000);
 	}
 
-	console.log(currentUser)
 
 	return (
 		<div className="container-al">

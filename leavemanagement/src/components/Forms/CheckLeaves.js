@@ -17,6 +17,7 @@ export default function CheckLeaves({ toast }) {
       if (resp.data.status == "success") {
         // toast.success("Leaves fetched Successfully", toast.POSITION.BOTTOM_RIGHT);
       } else {
+        setData([])
         // toast.error(resp.data.emsg, toast.POSITION.BOTTOM_RIGHT);
         return;
       }
@@ -41,6 +42,7 @@ export default function CheckLeaves({ toast }) {
       setData(temp);
       setLeaves(data)
     } catch (error) {
+      setData([])
       toast.error("something went wrong", toast.POSITION.BOTTOM_RIGHT);
     }
   }

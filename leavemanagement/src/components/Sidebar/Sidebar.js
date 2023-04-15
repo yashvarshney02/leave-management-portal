@@ -61,6 +61,9 @@ const Sidebar = () => {
           <NavIcon to='#'>
             <FaIcons.FaBars onClick={showSidebar} />
           </NavIcon>
+          <div style={{ marginRight: "auto", width: "500px", fontSize:"20px", color: "white" }}>
+            Leave Management Portal
+          </div>
           <div style={{ marginLeft: "auto", width: "200px", color: "white" }}>
             Hi, {currentUser ? currentUser.name : 'User'} {currentUser ? <FaIcons.FaArrowCircleRight style={{ cursor: "pointer" }} onClick={async () => {
               let res = await logout();              

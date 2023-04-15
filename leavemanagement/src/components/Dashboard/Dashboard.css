@@ -139,12 +139,12 @@ body {
 
 span{
   font-size: 1.2rem;
-  font-family:'Times New Roman', Times, serif;
+  font-family:'Roboto'
 }
 
 .mt-4 > button {
   font-size: 1.3rem;
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'Roboto';
   /* font-size: 25px; */
   /* font-family:'Times New Roman', Times, serif; */
 }
@@ -175,7 +175,7 @@ span{
 }
 
 .recent-application>div{
-  font-family:'Times New Roman', Times, serif; 
+  font-family:Roboto; 
 }
 
 .card-header{
@@ -220,3 +220,6 @@ span{
   height: 1.5em;
   width: 1.5em;
 }
+
+
+

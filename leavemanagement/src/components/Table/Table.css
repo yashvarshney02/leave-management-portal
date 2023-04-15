@@ -115,3 +115,17 @@ tr {
 	background-color: rgba(0, 0, 0, 0);
 	border: none;
 }
+
+.no-data {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+}
+
+.no-data svg {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: gray;
+}

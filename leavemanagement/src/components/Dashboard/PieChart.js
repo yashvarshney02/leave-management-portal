@@ -61,7 +61,7 @@ const OuterContainer = styled.div`
     position: relative;
     width: 5em;
     font-size: 1.5em;
-    font-family: "Times New Roman", Times, serif;
+    font-family: Roboto
     color: #231c3d;
   }
 `;

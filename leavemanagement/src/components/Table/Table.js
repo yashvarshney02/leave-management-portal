@@ -163,7 +163,6 @@ export default function Table({ title, headers, initialData, from }) {
 	}
 
 	async function disapproveWithdraw(leaveID) {
-		console.log(leaveID)
 		const resp = await httpClient.post(
 			`${process.env.REACT_APP_API_HOST}/disapprove_withdraw_leave`,
 			{
@@ -222,6 +221,14 @@ export default function Table({ title, headers, initialData, from }) {
 		}
 	}
 
+	if (initialData.length == 0) {
+		return (
+			<div class="no-data">
+				<FaIcons.FaSearch />
+				<p>No data to show</p>
+			</div>
+		)
+	}
 	return (
 		<div className="container ">
 			<Modal show={showConfirmDeleteAction} onHide={handleClose}>
@@ -374,7 +381,7 @@ export default function Table({ title, headers, initialData, from }) {
 																className="leave-nature-hover"
 																data-toggle="tooltip"
 																data-placement="right"
-																title={item}																
+																title={item}
 															>
 																<FaIcons.FaQuestionCircle></FaIcons.FaQuestionCircle>
 															</button>
@@ -384,14 +391,14 @@ export default function Table({ title, headers, initialData, from }) {
 													i == 7 && item?.length
 												) {
 													return (
-														<td>														
+														<td>
 															<button
 																type="button"
 																className="leave-nature-hover"
 																data-toggle="tooltip"
 																data-placement="right"
 																title={`Reason - ${item}`}
-																onClick={async ()=>{await approveWithdraw(row[0])}}
+																onClick={async () => { await approveWithdraw(row[0]) }}
 															>
 																<FaIcons.FaCheck color="green"></FaIcons.FaCheck>
 															</button>&nbsp;&nbsp;:&nbsp;&nbsp;
@@ -401,7 +408,7 @@ export default function Table({ title, headers, initialData, from }) {
 																data-toggle="tooltip"
 																data-placement="right"
 																title={`Reason - ${item}`}
-																onClick={async ()=>{await disapproveWithdraw(row[0])}}
+																onClick={async () => { await disapproveWithdraw(row[0]) }}
 															>
 																<FaIcons.FaTimes color="red"></FaIcons.FaTimes>
 															</button>
@@ -409,7 +416,7 @@ export default function Table({ title, headers, initialData, from }) {
 													)
 												}
 												return <td key={i}>{item}</td>;
-											})}											
+											})}
 											{getActions(title, row)}
 										</tr>
 									);

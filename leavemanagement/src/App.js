@@ -5,7 +5,6 @@ import { ToastContainer, toast } from "react-toastify";
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider } from './contexts/AuthContext';
 
-
 function App() {
   return (
     <div className="App">

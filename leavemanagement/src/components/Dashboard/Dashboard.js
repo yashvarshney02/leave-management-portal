@@ -8,10 +8,12 @@ import { useNavigate } from 'react-router-dom';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
-import { Badge } from 'react-bootstrap';
 import { FaEdit, FaMobileAlt } from 'react-icons/fa';
-import PieChart from './PieChart';
-import Calendar from './Calendar';
+import { PieChart } from 'react-minimal-pie-chart';
+import CustomCalendar from './Calendar';
+
+
+import "react-datepicker/dist/react-datepicker.css";
 
 export default function Dashboard({ toast }) {
   const { currentUser, refresh_user, editProfile } = useAuth();
@@ -20,63 +22,53 @@ export default function Dashboard({ toast }) {
   const [leavesData, setLeavesData] = useState();
   const [name, setName] = useState(currentUser.name);
   const [mobile, setMobile] = useState(currentUser.mobile);
-  const [dayOfLeave, setDayofLeave] = useState({});
+  const [leavesStatus, setLeavesStatus] = useState({})
   const [recentApplication, setRecentApplication] = useState(null);
   const handleEdit = () => setShowEditProfileModal(!showEditProfileModal);
   const navigate = useNavigate();
 
+
+
   async function fetchRemainingNumberOfLeaves() {
     const resp = await httpClient.get(`${process.env.REACT_APP_API_HOST}/fetch_remaining_leaves`);
     // console.log(resp.data)
-    if (resp.data.status == "success") {      
+    if (resp.data.status == "success") {
       setLeavesData(resp.data.data);
     } else {
       return;
     }
   }
 
-    const fetchLeaves = async (e) => {
-      try {
-        const resp = await httpClient.post(
-          `${process.env.REACT_APP_API_HOST}/past_applications`
-        );        
-        if (resp.data.status == "success") {
-        } else {
-          return;
-        }
-        const temp_data = resp.data.data;
-        let temp = [],
-          dic = {};
-        for (let i = 0; i < temp_data.length; i++) {
-          let start_date = new Date(temp_data[i].start_date);
-          let end_date = new Date(temp_data[i].end_date);
-          while (start_date <= end_date) {
-            let curr_month = start_date.getMonth();            
-            if (!Object.keys(dic).includes(String(curr_month))) {              
-              dic[curr_month] = [];
-            }
-            dic[curr_month].push([start_date.getDate(), temp_data[i].status]);
-            start_date.setDate(start_date.getDate() + 1);
-          }          
-          setDayofLeave((dayOfLeave) => ({ ...dayOfLeave, ...dic }));
-          temp.push([
-            temp_data[i].id,
-            temp_data[i].nature,
-            temp_data[i].type_of_leave,
-            temp_data[i].start_date?.slice(0, -12),
-            temp_data[i].duration,
-            temp_data[i].status,
-          ]);
-        }
-        if (temp_data.length) {
-          setRecentApplication(temp_data[temp_data.length - 1]);
-        }
-        // setData(temp);
-      } catch (error) {
-        console.log(error);
-        toast.error("something went wrong", toast.POSITION.BOTTOM_RIGHT);
+  const fetchLeaves = async (e) => {
+    try {
+      const resp = await httpClient.post(
+        `${process.env.REACT_APP_API_HOST}/past_applications`
+      );
+      if (resp.data.status == "success") {
+      } else {
+        return;
       }
-    };
+      const temp_data = resp.data.data;
+      let dic = {};
+      for (let i = 0; i < temp_data.length; i++) {
+        let start_date = new Date(temp_data[i].start_date);
+        let end_date = new Date(temp_data[i].end_date);
+        let status = temp_data[i].status
+        while (start_date <= end_date) {
+          let currentDate = start_date.toISOString().slice(0, 10);
+          dic[currentDate] = status
+          start_date.setDate(start_date.getDate() + 1);
+        }
+      }
+      setLeavesStatus(dic);
+      if (temp_data.length) {
+        setRecentApplication(temp_data[temp_data.length - 1]);
+      }
+      // setData(temp);
+    } catch (error) {
+      toast.error("something went wrong", toast.POSITION.BOTTOM_RIGHT);
+    }
+  };
 
 
   useEffect(() => {
@@ -85,8 +77,6 @@ export default function Dashboard({ toast }) {
       await fetchLeaves();
     }
     test();
-    console.log("recent");
-    console.log(recentApplication);
   }, []);
 
 
@@ -193,7 +183,7 @@ export default function Dashboard({ toast }) {
               <div
                 class="card"
                 id="profile"
-                style={{ border: "2px solid grey" }}
+                style={{ border: "1px solid grey" }}
               >
                 <div class="card-body">
                   <div class="d-flex flex-column align-items-center text-center">
@@ -269,45 +259,12 @@ export default function Dashboard({ toast }) {
                     </div>
                   </div>
                 </div>
+
               </div>
+
             </div>
             <div class="col-md-8">
-              <div class="Leaves-remaining container">
-                {leavesData ? (
-                  <PieChart
-                    total={leavesData?.total_casual_leaves}
-                    taken={leavesData?.taken_casual_leaves}
-                    leaveType="Casual-Leave"
-                    endValue={
-                      leavesData?.taken_casual_leaves === 0
-                        ? 1
-                        : (leavesData?.taken_casual_leaves * 100) /
-                          leavesData?.total_casual_leaves
-                    }
-                    speed={20}
-                  />
-                ) : (
-                  ""
-                )}
-                {leavesData ? (
-                  <PieChart
-                    total={leavesData?.total_non_casual_leave}
-                    taken={leavesData?.taken_non_casual_leave}
-                    leaveType="Non-casual-Leave"
-                    endValue={
-                      leavesData?.taken_non_casual_leave === 0
-                        ? 1
-                        : (leavesData?.taken_non_casual_leave * 100) /
-                          leavesData?.total_non_casual_leave
-                    }
-                    speed={20}
-                  />
-                ) : (
-                  ""
-                )}
-              </div>
-              <br />
-              <Calendar data={dayOfLeave} />
+              <CustomCalendar data={leavesStatus} />
               <br />
               {recentApplication ? (
                 <div class="recent-box">

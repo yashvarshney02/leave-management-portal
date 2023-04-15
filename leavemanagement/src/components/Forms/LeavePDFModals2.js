@@ -129,7 +129,6 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
       } else {
       }
     } catch (error) {
-      console.log(error);
       toast.error("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
     }
   };
