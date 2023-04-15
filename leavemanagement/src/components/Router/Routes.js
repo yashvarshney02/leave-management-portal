@@ -7,7 +7,7 @@ import PrivateRoute from "../PrivateRoute/PrivateRoute";
 import PastApplications from "../Forms/PastApplications";
 import CheckLeaves from "../Forms/CheckLeaves";
 import Dates from "../Forms/Dates";
-import UpdateLeave from "../Forms/UpdateLeave";
+import UpdateLeave from "../Forms/OfficePortal";
 import LeavePDFModals from "../Forms/LeavePDFModals";
 import LeavePDFModalsNonCasual from "../Forms/LeavePDFModals2";
 

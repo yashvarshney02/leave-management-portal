@@ -22,7 +22,7 @@ export default function UpdateLeave({ toast }) {
 
   const listOfQueries = {
     "Add Users": "users_sample",
-    "Add Leaves Info": "leaves_sample",
+    "Update Leaves Balance": "leaves_balance",
   };
   const [formLoading, setFormLoading] = useState(false);
   const [fileName, setFileName] = useState("");
@@ -63,7 +63,7 @@ export default function UpdateLeave({ toast }) {
       );
       if (resp.data.status == "success") {
         toast.success(
-          "Query Executed Successfully",
+          `Query Executed Successfully. ${resp.data.data}`,
           toast.POSITION.BOTTOM_RIGHT
         );
         let res = await getCollectiveData();

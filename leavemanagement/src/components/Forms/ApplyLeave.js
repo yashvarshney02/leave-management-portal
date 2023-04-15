@@ -17,6 +17,7 @@ export default function NonCasuaLeave({ toast }) {
 	const [typesOfLeave, setTypesofLeave] = useState(["CASUAL LEAVE", "RESTRICTED HOLIDAY", "SPECIAL CASUAL LEAVE", "ON DUTY"])
 	const [duration, setDuration] = useState(0);
 	const [document, setDocument] = useState();
+	const [fileName, setFileName] = useState("");
 	const [displaySpecialFields, setDisplaySpecialFields] = useState("none");
 	const [displayStationLeaveDates, setDisplayStationLeaveDates] = useState("")
 	const [formData, setFormData] = useState({
@@ -54,23 +55,22 @@ export default function NonCasuaLeave({ toast }) {
 		return
 	};
 
-	// const handleFileInputChange = (e) => {
-	// 	const file = e.target.files[0];
-	// 	const fileSize = file.size;
-	// 	setDocument(file)
-	// 	if (fileSize > 1 * 1024 * 1024) {
-	// 		alert("File size must be less than 1MB");
-	// 		return;
-	// 	}
-	// 	setFormLoading(true);
-	// 	setFormData({ ...formData, "form_filename": `${currentUser.user_id}_${Date.now()}_${file.name}` });
-	// };
+	const handleFileInputChange = (e) => {
+		const file = e.target.files[0];
+		const fileSize = file.size;
+		setDocument(file)
+		if (fileSize > 1 * 1024 * 1024) {
+			alert("File size must be less than 1MB");
+			return;
+		}
+		setFileName(`${currentUser.user_id}_${Date.now()}_${file.name}`);
+	};
 
 	const clear = () => {
 		sigPadRef.current.clear();
 	};
 
-	useEffect(()=>{		
+	useEffect(() => {
 		sigPadRef.current.fromDataURL(currentUser.signature)
 	}, [])
 
@@ -81,6 +81,9 @@ export default function NonCasuaLeave({ toast }) {
 			e.preventDefault();
 			let form_data = {}
 			formRef.current.querySelectorAll('input').forEach((input) => {
+				if (input.type == "file") {
+					return;
+				}
 				form_data[input.id] = input.value == '' ? null : input.value;
 			});
 			formRef.current.querySelectorAll('select').forEach((input) => {
@@ -98,7 +101,7 @@ export default function NonCasuaLeave({ toast }) {
 				toast.error("Signature can't be kept empty", toast.POSITION.BOTTOM_RIGHT);
 				setFormLoading(false);
 				return;
-			}
+			}			
 			// return;
 			setFormLoading(true);
 
@@ -107,6 +110,9 @@ export default function NonCasuaLeave({ toast }) {
 			const binaryData = new Uint8Array(arrayBuffer);
 			// return;
 			form_data['signature'] = binaryData;
+			form_data['form_filename'] = fileName;
+			console.log(form_data,document);
+			// return;
 			const form = new FormData();
 			form.append('data', JSON.stringify(form_data));
 			form.append('file', document);
@@ -308,6 +314,18 @@ export default function NonCasuaLeave({ toast }) {
 													</textarea>
 												</Col>
 											</Row>
+											<div
+												style={{
+													textAlign: "left",
+												}}
+											>
+												<input
+													type="file"
+													accept=".pdf"
+													style={{ border: "none" }}
+													onChange={handleFileInputChange}
+												/>
+											</div>
 
 											{/* <br />
 											<Row className="row-al">

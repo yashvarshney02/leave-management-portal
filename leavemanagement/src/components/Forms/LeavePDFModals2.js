@@ -122,8 +122,8 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
         setLeave(data);
         const imageUrl = "data:image/png;base64," + String(data.signature);
         setSignatureDataUrl(imageUrl);
-        if (data.file_name) {
-          await handleDownloadClick('leave_document', data.file_name)
+        if (data.filename) {
+          await handleDownloadClick('leave_document', data.filename)
         }
 
       } else {
@@ -150,13 +150,20 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
   };
 
   const handleDownloadClick = async (query, file_name = null) => {
-    const response = await httpClient.post(`${process.env.REACT_APP_API_HOST}/sample_csvs`, {
-      name: query,
-      file_name: file_name
-    })
-    const encodedData = response.data.data;
-    const decodedData = atob(encodedData);
-    const blob = new Blob([response.data], { type: 'application/pdf' });
+    const response = await fetch(`${process.env.REACT_APP_API_HOST}/sample_csvs`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/pdf',
+        // Add any other necessary headers
+      },
+      body: JSON.stringify({
+        "name": query,
+        "file_name": file_name
+      }),
+      withCredentials: true,
+    });
+    const blob = await response.blob()
     const url = window.URL.createObjectURL(blob);
     setDownloadLink(url);
   };
@@ -203,7 +210,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
       });
   };
 
-  function get_status_element(leave, position=null) {
+  function get_status_element(leave, position = null) {
     if (!leave) return ''
     let status = leave?.status.toLowerCase();
     let imageUrl = "";
@@ -238,7 +245,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
 
   function get_office_status_element(leave) {
     if (!leave) return ''
-    let imageUrl = "";    
+    let imageUrl = "";
     if (leave.office_sig && leave.office_sig[0]) {
       imageUrl = "data:image/png;base64," + String(leave.office_sig);
     }
@@ -988,7 +995,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
               <br />
               <div className="row">
                 <div className="col-4">
-                {get_office_status_element(leave)}<br />
+                  {get_office_status_element(leave)}<br />
                   सम्बंधित सहायक (विभाग)/(अनुमानित)/Dealing Asstt.
                   (Deptt.)/(Estt.)
                 </div>
@@ -1026,14 +1033,14 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
               </div>
             </div>
             <hr />
-            {leave?.file_name == "" || leave?.file_name == undefined ? (
+            {leave?.filename == "" || leave?.filename == undefined ? (
               <p>Attached Documents: No document attached</p>
             ) : (
               <p>
                 Attached Documents:{" "}
                 {downloadLink && (
-                  <a href={downloadLink} download={leave?.file_name}>
-                    {leave?.file_name}
+                  <a href={downloadLink} download={leave?.filename}>
+                    {leave?.filename}
                   </a>
                 )}
               </p>
