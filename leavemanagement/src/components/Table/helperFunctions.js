@@ -62,6 +62,15 @@ export const globalFiltering = (data,val) => {
     return newData;
 }
 
+export const sortByDate = (arr, headers, colHeading) => {
+    let dateIndex = headers.findIndex((x) => x === colHeading);
+    arr.sort(function(a, b) {
+      var dateA = new Date(a[dateIndex]);
+      var dateB = new Date(b[dateIndex]);
+      return dateB - dateA;
+    });
+    return arr;
+}
 
 
 // export const sortPendingTop = (data) => {

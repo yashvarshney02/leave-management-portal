@@ -9,6 +9,7 @@ import {
 	globalFiltering,
 	makeAbb,
 	prepData,
+	sortByDate,
 } from "./helperFunctions";
 import "./Table.css";
 import { useNavigate } from "react-router-dom";
@@ -25,21 +26,34 @@ export default function Table({ title, headers, initialData, from }) {
 		//this returns an array of leaves for which status === pending
 		// note that where status stricly equals to pending
 		//similarly for all others
-		...prepData(headers, initialData, "Status", "pending"),
-		...prepData(headers, initialData, "Status", "pending withdrawn"),
-		...prepData(headers, initialData, "Status", "approved withdrawn"),
-		...prepData(headers, initialData, "Status", "approved by hod"),
-		...prepData(headers, initialData, "Status", "approved by dean"),
-		...prepData(headers, initialData, "Status", "approved by faculty"),
-		...prepData(headers, initialData, "Status", "approved by dean, hod"),
-		...prepData(headers, initialData, "Status", "approved by hod, dean"),
-		...prepData(headers, initialData, "Status", "disapproved by dean"),
-		...prepData(headers, initialData, "Status", "disapproved by hod"),
-		...prepData(headers, initialData, "Status", "disapproved by faculty"),
+		
+		//sortByDate( data, headers, colByWhichtoSort )
+		...sortByDate( prepData(headers, initialData, "Status", "pending"), headers, "Request Date"),
+		...sortByDate( prepData(headers, initialData, "Status", "pending withdrawn"), headers, "Request Date"),
+		...sortByDate( prepData(headers, initialData, "Status", "approved withdrawn"), headers, "Request Date"),
+		...sortByDate( prepData(headers, initialData, "Status", "approved by hod"), headers, "Request Date"),
+		...sortByDate( prepData(headers, initialData, "Status", "approved by dean"), headers, "Request Date"),
+		...sortByDate( prepData(headers, initialData, "Status", "approved by faculty"), headers, "Request Date"),
+		...sortByDate( prepData(headers, initialData, "Status", "approved by dean, hod"), headers, "Request Date"),
+		...sortByDate( prepData(headers, initialData, "Status", "approved by hod, dean"), headers, "Request Date"),
+		...sortByDate( prepData(headers, initialData, "Status", "disapproved by dean"), headers, "Request Date"),
+		...sortByDate( prepData(headers, initialData, "Status", "disapproved by hod"), headers, "Request Date"),
+		...sortByDate( prepData(headers, initialData, "Status", "disapproved by faculty"), headers, "Request Date"),
+		// ...prepData(headers, initialData, "Status", "pending"),
+		// ...prepData(headers, initialData, "Status", "pending withdrawn"),
+		// ...prepData(headers, initialData, "Status", "approved withdrawn"),
+		// ...prepData(headers, initialData, "Status", "approved by hod"),
+		// ...prepData(headers, initialData, "Status", "approved by dean"),
+		// ...prepData(headers, initialData, "Status", "approved by faculty"),
+		// ...prepData(headers, initialData, "Status", "approved by dean, hod"),
+		// ...prepData(headers, initialData, "Status", "approved by hod, dean"),
+		// ...prepData(headers, initialData, "Status", "disapproved by dean"),
+		// ...prepData(headers, initialData, "Status", "disapproved by hod"),
+		// ...prepData(headers, initialData, "Status", "disapproved by faculty"),
 	];
 
 	initialData = pendingTopData;
-
+	// console.log(initialData)
 	const [colSearchKey, setColSearchKey] = useState({ initColSearchKey });
 	const [data, setData] = useState(initialData);
 	const [deleteLeaveID, setDeleteLeaveID] = useState("");
