@@ -13,7 +13,7 @@ const LeavePDFModals = ({ toast, from }) => {
   const { currentUser } = useAuth();
   let currentUrl =
     window.location.href.split("/")[window.location.href.split("/").length - 1];
-  const leave_id = parseInt(currentUrl);
+  const leave_id = currentUrl;
   const [signatureDataURL, setSignatureDataUrl] = useState(null)
   const [downloadLink, setDownloadLink] = useState(null);
   const sigPadRef = useRef();
@@ -117,7 +117,6 @@ const LeavePDFModals = ({ toast, from }) => {
         if (currentUser?.signature && from == "check_applications") {
           sigPadRef.current.fromDataURL(currentUser.signature)
         }
-        console.log(data)
         setLeave(data);
         const imageUrl = "data:image/png;base64," + String(data.signature);
         setSignatureDataUrl(imageUrl);

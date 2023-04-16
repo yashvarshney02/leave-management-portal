@@ -11,6 +11,8 @@ import Modal from 'react-bootstrap/Modal';
 import { FaEdit, FaMobileAlt } from 'react-icons/fa';
 import { PieChart } from 'react-minimal-pie-chart';
 import CustomCalendar from './Calendar';
+import NoData from '../NoData';
+import ProgressBar from './ProgressBar';
 
 
 import "react-datepicker/dist/react-datepicker.css";
@@ -233,6 +235,9 @@ export default function Dashboard({ toast }) {
                       )}
                       <span>{currentUser.email}</span>
                       <br />
+                      <ProgressBar value={leavesData?.total_casual_leaves - leavesData?.taken_casual_leaves} max={leavesData?.total_casual_leaves} type="CL" />
+                      <ProgressBar value={leavesData?.total_casual_leaves - leavesData?.taken_non_casual_leave} max={leavesData?.total_non_casual_leave} type="NCL" />
+                      <br />
                       <button
                         type="button"
                         class="btn btn-primary"
@@ -266,9 +271,11 @@ export default function Dashboard({ toast }) {
             <div class="col-md-8">
               <CustomCalendar data={leavesStatus} />
               <br />
-              {recentApplication ? (
-                <div class="recent-box">
-                  <span>Recent Application </span>
+              <div class="recent-box">
+                <span>Recent Application </span>
+                {recentApplication ? (
+
+
                   <div class="recent-application card">
                     <div class="card-header">
                       {recentApplication.nature
@@ -329,10 +336,9 @@ export default function Dashboard({ toast }) {
                       <span className="status">Status: {recentApplication.status} </span>
                     </div>
                   </div>
-                </div>
-              ) : (
-                ""
-              )}
+
+                ) : <NoData />}
+              </div>
             </div>
           </div>
         </div>

@@ -4,7 +4,6 @@ import 'react-calendar/dist/Calendar.css';
 import "./Calendar.css";
 
 export default function CustomCalendar({ data }) {
-  console.log(Object.keys(data))
 
   function getTileClassName({ date, view }) {
     let curr_date = date.toISOString().slice(0, 10)

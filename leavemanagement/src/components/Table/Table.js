@@ -12,6 +12,7 @@ import {
 } from "./helperFunctions";
 import "./Table.css";
 import { useNavigate } from "react-router-dom";
+import NoData from "../NoData";
 
 export default function Table({ title, headers, initialData, from }) {
 	const navigate = useNavigate();
@@ -223,10 +224,7 @@ export default function Table({ title, headers, initialData, from }) {
 
 	if (initialData.length == 0) {
 		return (
-			<div class="no-data">
-				<FaIcons.FaSearch />
-				<p>No data to show</p>
-			</div>
+			<NoData />
 		)
 	}
 	return (
