@@ -156,7 +156,9 @@ span{
 }
 
 #profile{
-  border-radius: 30px;
+  /* border-radius: 8px; */
+  box-shadow: 0 20px 24px rgba(0, 0, 0, 0.2);
+  border-radius: 50px;
 }
 
 #profile_parent{
@@ -166,6 +168,8 @@ span{
 }
 
 .recent-box {
+  border-radius: 8px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
   text-align: left;
 }
 
