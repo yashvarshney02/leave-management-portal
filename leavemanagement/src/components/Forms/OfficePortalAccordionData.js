@@ -13,9 +13,7 @@ export default function OfficePortalAccordionData({ item }) {
 				<span style={{ fontWeight: "bold" }}>
 					Taken Casual Leaves:
 				</span>{" "}
-				{item.total_casual_leaves
-					? item.taken_casual_leaves
-					: "NA"}
+				{item?.taken_casual_leaves}
 			</li>
 			<li style={{ textAlign: "left" }}>
 				<span style={{ fontWeight: "bold" }}>
@@ -33,7 +31,7 @@ export default function OfficePortalAccordionData({ item }) {
 				<span style={{ fontWeight: "bold" }}>
 					Total Non Casual Leaves:
 				</span>{" "}
-				{item.total_casual_leaves
+				{item.total_non_casual_leave
 					? item.total_non_casual_leave
 					: "NA"}
 			</li>
@@ -41,9 +39,19 @@ export default function OfficePortalAccordionData({ item }) {
 				<span style={{ fontWeight: "bold" }}>
 					Taken Non Casual Leaves:
 				</span>{" "}
-				{item.total_casual_leaves
-					? item.taken_non_casual_leave
-					: "NA"}
+				{item?.taken_non_casual_leave}
+			</li>
+			<li style={{ textAlign: "left" }}>
+				<span style={{ fontWeight: "bold" }}>
+					Total SCL Leaves:
+				</span>{" "}
+				{item?.total_scl_leaves}
+			</li>
+			<li style={{ textAlign: "left" }}>
+				<span style={{ fontWeight: "bold" }}>
+					Taken SCL Leaves:
+				</span>{" "}
+				{item?.taken_scl_leaves}
 			</li>
 		</>
 	)

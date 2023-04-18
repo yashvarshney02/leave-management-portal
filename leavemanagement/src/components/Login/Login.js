@@ -118,7 +118,7 @@ export default function Login(props) {
                 <Card.Body className="cont">
                   <div className="mb-3 mt-md-4">
                     <h2 className="fw-bold mb-2 text-uppercase " style={{color: "white"}}>Leave Management Portal</h2>
-                    <p className=" mb-5" style={{color:"white"}}>Please enter your email</p>
+                    {/* <p className=" mb-5" style={{color:"white"}}>Please enter your email</p> */}
                     <div className="mb-3">
                       <Form>
                         <Form.Group className="mb-3" controlId="formBasicEmail">

@@ -89,8 +89,7 @@ export default function UpdateLeave({ toast }) {
       const resp = await httpClient.get(
         `${process.env.REACT_APP_API_HOST}/collective_data`
       );
-      if (resp.data.status == "success") {    
-        console.log(resp.data.data)    
+      if (resp.data.status == "success") {     
         setinitialCollectiveData(resp.data.data);
         setCollectiveData(resp.data.data);
         // toast.success("Leaves fetched Successfully", toast.POSITION.BOTTOM_RIGHT);
