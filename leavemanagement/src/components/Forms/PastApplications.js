@@ -26,7 +26,7 @@ export default function PastApplications({ toast }) {
 			for (let i = 0; i < temp_data.length; i++) {
 				let status;
 				if (temp_data[i].status.toLowerCase().includes("hod") && temp_data[i].status.toLowerCase().includes("dean")) {
-					status = `${temp_data} dean, hod`
+					status = `${temp_data[i].status.split("|")[0].split("-")[0]}|${temp_data[i].status.split("|")[1].split("-")[0]}`
 				} else if (temp_data[i].status.toLowerCase().includes("hod")) {
 					status = `${temp_data[i].status.split(" ")[0]} by hod`
 				} else if (temp_data[i].status.toLowerCase().includes("dean")) {
@@ -39,7 +39,6 @@ export default function PastApplications({ toast }) {
 			setData(temp);
 		} catch (error) {
 			setData([]);
-			console.log(error);
 			// toast.error("something went wrong", toast.POSITION.BOTTOM_RIGHT);
 		}
 	};

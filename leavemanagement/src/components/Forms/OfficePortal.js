@@ -9,6 +9,7 @@ import Col from "react-bootstrap/Col";
 import Card from "react-bootstrap/Card";
 import "./Form.css";
 import { Button, Modal, Accordion } from "react-bootstrap";
+import OfficePortalAccordionData from "./OfficePortalAccordionData";
 
 export default function UpdateLeave({ toast }) {
   const [specificData, setSpecificData] = useState();
@@ -88,7 +89,8 @@ export default function UpdateLeave({ toast }) {
       const resp = await httpClient.get(
         `${process.env.REACT_APP_API_HOST}/collective_data`
       );
-      if (resp.data.status == "success") {        
+      if (resp.data.status == "success") {    
+        console.log(resp.data.data)    
         setinitialCollectiveData(resp.data.data);
         setCollectiveData(resp.data.data);
         // toast.success("Leaves fetched Successfully", toast.POSITION.BOTTOM_RIGHT);
@@ -280,38 +282,7 @@ export default function UpdateLeave({ toast }) {
                       </Accordion.Header>
                       <Accordion.Body>
                         <ul>
-                          <li style={{ textAlign: "left" }}>
-                            <span style={{ fontWeight: "bold" }}>
-                              Total Casual Leaves:
-                            </span>{" "}
-                            {item.total_casual_leaves
-                              ? item.total_casual_leaves
-                              : "NA"}
-                          </li>
-                          <li style={{ textAlign: "left" }}>
-                            <span style={{ fontWeight: "bold" }}>
-                              Taken Casual Leaves:
-                            </span>{" "}
-                            {item.total_casual_leaves
-                              ? item.taken_casual_leaves
-                              : "NA"}
-                          </li>
-                          <li style={{ textAlign: "left" }}>
-                            <span style={{ fontWeight: "bold" }}>
-                              Total Non Casual Leaves:
-                            </span>{" "}
-                            {item.total_casual_leaves
-                              ? item.total_non_casual_leave
-                              : "NA"}
-                          </li>
-                          <li style={{ textAlign: "left" }}>
-                            <span style={{ fontWeight: "bold" }}>
-                              Taken Non Casual Leaves:
-                            </span>{" "}
-                            {item.total_casual_leaves
-                              ? item.taken_non_casual_leave
-                              : "NA"}
-                          </li>
+                          <OfficePortalAccordionData item={item}/>
                           <Button
                             variant="primary"
                             onClick={() => {

@@ -26,7 +26,7 @@ export default function CheckLeaves({ toast }) {
         try {
           let status;
           if (data[i].status.toLowerCase().includes("hod") && data[i].status.toLowerCase().includes("dean")) {
-            status = `${data} dean, hod`
+            status = `${data[i].status.split("|")[0].split("-")[0]}|${data[i].status.split("|")[1].split("-")[0]}`
           } else if (data[i].status.toLowerCase().includes("hod")) {
             status = `${data[i].status.split(" ")[0]} by hod`
           } else if (data[i].status.toLowerCase().includes("dean")) {

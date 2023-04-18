@@ -7,13 +7,14 @@ import { jsPDF } from "jspdf";
 import { FaDownload } from "react-icons/fa";
 import { Row, Col } from "react-bootstrap"
 import SignaturePad from 'react-signature-canvas';
+import { map } from "../../global constants/constants";
 
 const LeavePDFModals = ({ toast, from }) => {
   const [leave, setLeave] = useState(null);
   const { currentUser } = useAuth();
   let currentUrl =
     window.location.href.split("/")[window.location.href.split("/").length - 1];
-  const leave_id = currentUrl;
+  const leave_id = currentUrl;  
   const [signatureDataURL, setSignatureDataUrl] = useState(null)
   const [downloadLink, setDownloadLink] = useState(null);
   const sigPadRef = useRef();
@@ -125,8 +126,9 @@ const LeavePDFModals = ({ toast, from }) => {
         }
 
       } else {
+        // console.log(error)
       }
-    } catch (error) {
+    } catch (error) {  
       toast.error("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
     }
   };
@@ -489,15 +491,14 @@ const LeavePDFModals = ({ toast, from }) => {
               </div>
               <div className="row">
                 <div className="col-4" style={{ border: "1px solid" }}>
-                  {leave?.total_casual_leaves - leave?.taken_casual_leaves}
+                {leave? (leave[map[leave.type_of_leave][0]] - leave[map[leave.type_of_leave][1]]): ""}
+                  {}
                 </div>
                 <div className="col-4" style={{ border: "1px solid" }}>
                   {leave?.duration}
                 </div>
                 <div className="col-4" style={{ border: "1px solid" }}>
-                  {leave?.total_casual_leaves -
-                    leave?.taken_casual_leaves -
-                    leave?.duration}
+                  {leave? (leave[map[leave.type_of_leave][0]] - leave[map[leave.type_of_leave][1]] - leave.duration): ""}
                 </div>
               </div>
               <br />

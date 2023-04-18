@@ -9,7 +9,6 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import { FaEdit, FaMobileAlt } from 'react-icons/fa';
-import { PieChart } from 'react-minimal-pie-chart';
 import CustomCalendar from './Calendar';
 import NoData from '../NoData';
 import ProgressBar from './ProgressBar';
@@ -33,7 +32,6 @@ export default function Dashboard({ toast }) {
 
   async function fetchRemainingNumberOfLeaves() {
     const resp = await httpClient.get(`${process.env.REACT_APP_API_HOST}/fetch_remaining_leaves`);
-    // console.log(resp.data)
     if (resp.data.status == "success") {
       setLeavesData(resp.data.data);
     } else {
@@ -64,7 +62,7 @@ export default function Dashboard({ toast }) {
       }
       setLeavesStatus(dic);
       if (temp_data.length) {
-        setRecentApplication(temp_data[temp_data.length - 1]);
+        setRecentApplication(temp_data[0]);
       }
       // setData(temp);
     } catch (error) {
@@ -236,27 +234,45 @@ export default function Dashboard({ toast }) {
                       <span>{currentUser.email}</span>
                       <br />
                       <ProgressBar value={leavesData?.total_casual_leaves - leavesData?.taken_casual_leaves} max={leavesData?.total_casual_leaves} type="CL" />
+                      <ProgressBar value={leavesData?.total_restricted_leaves - leavesData?.taken_restricted_leaves} max={leavesData?.total_restricted_leaves} type="RH" />
+                      <ProgressBar value={leavesData?.total_scl_leaves - leavesData?.taken_scl_leaves} max={leavesData?.total_scl_leaves} type="SCL" />
                       <ProgressBar value={leavesData?.total_casual_leaves - leavesData?.taken_non_casual_leave} max={leavesData?.total_non_casual_leave} type="NCL" />
                       <br />
-                      <button
-                        type="button"
-                        class="btn btn-primary"
-                        onClick={() => {
-                          navigate("/navigate/applyleave");
-                        }}
-                      >
-                        Apply Leave
-                      </button>
+                      {
+                        (currentUser.position == 'hod' || currentUser.position == 'faculty') ? (<button
+                          type="button"
+                          class="btn btn-success"
+                          onClick={() => {
+                            navigate("/navigate/applyleave");
+                          }}
+                        >
+                          Apply Leave
+                        </button>): ''
+                      }
                       <br />
-                      <button
-                        type="button"
-                        class="btn btn-success"
-                        onClick={() => {
-                          navigate("/navigate/pastapplications");
-                        }}
-                      >
-                        Past Applications
-                      </button>
+                      {
+                        (currentUser.position == 'hod' || currentUser.position == 'faculty') ? (<button
+                          type="button"
+                          class="btn btn-success"
+                          onClick={() => {
+                            navigate("/navigate/pastapplications");
+                          }}
+                        >
+                          Past Applications
+                        </button>): ''
+                      }
+                      {
+                        (currentUser.position == 'dean' || currentUser.position == 'office') ? (<button
+                          type="button"
+                          class="btn btn-success"
+                          onClick={() => {
+                            navigate("/navigate/checkapplications");
+                          }}
+                        >
+                          Process Applications
+                        </button>): ''
+                      }
+
                       {/* {(currentUser.position == "faculty" || currentUser.position == "staff" || currentUser.position == "hod") ? (
                         <Badge bg="info" text="dark" style={{cursor: "pointer"}} onClick={() => { navigate('/forms/applyleave') }}>Apply Leave</Badge>
                       ) : ('')} */}
@@ -271,8 +287,9 @@ export default function Dashboard({ toast }) {
             <div class="col-md-8">
               <CustomCalendar data={leavesStatus} />
               <br />
+              <span className='recent-application-title'>Recent Application </span>
               <div class="recent-box">
-                <span>Recent Application </span>
+
                 {recentApplication ? (
 
 

@@ -21,25 +21,25 @@ export default function Table({ title, headers, initialData, from }) {
 	for (let head in headers) {
 		initColSearchKey[headers[head]] = "";
 	}
-	let pendingTopData = [
-		//prepData(headers,initialData,status,pending)
-		//this returns an array of leaves for which status === pending
-		// note that where status stricly equals to pending
-		//similarly for all others
-		...prepData(headers, initialData, "Status", "pending"),
-		...prepData(headers, initialData, "Status", "pending withdrawn"),
-		...prepData(headers, initialData, "Status", "approved withdrawn"),
-		...prepData(headers, initialData, "Status", "approved by hod"),
-		...prepData(headers, initialData, "Status", "approved by dean"),
-		...prepData(headers, initialData, "Status", "approved by faculty"),
-		...prepData(headers, initialData, "Status", "approved by dean, hod"),
-		...prepData(headers, initialData, "Status", "approved by hod, dean"),
-		...prepData(headers, initialData, "Status", "disapproved by dean"),
-		...prepData(headers, initialData, "Status", "disapproved by hod"),
-		...prepData(headers, initialData, "Status", "disapproved by faculty"),
-	];
+	// let pendingTopData = [
+	// 	//prepData(headers,initialData,status,pending)
+	// 	// this returns an array of leaves for which status === pending
+	// 	// note that where status stricly equals to pending
+	// 	//similarly for all others
+	// 	...prepData(headers, initialData, "Status", "pending"),
+	// 	...prepData(headers, initialData, "Status", "pending withdrawn"),
+	// 	...prepData(headers, initialData, "Status", "approved withdrawn"),
+	// 	...prepData(headers, initialData, "Status", "approved by hod"),
+	// 	...prepData(headers, initialData, "Status", "approved by dean"),
+	// 	...prepData(headers, initialData, "Status", "approved by faculty"),
+	// 	...prepData(headers, initialData, "Status", "approved by dean, hod"),
+	// 	...prepData(headers, initialData, "Status", "approved by hod, dean"),
+	// 	...prepData(headers, initialData, "Status", "disapproved by dean"),
+	// 	...prepData(headers, initialData, "Status", "disapproved by hod"),
+	// 	...prepData(headers, initialData, "Status", "disapproved by faculty"),
+	// ];
 
-	initialData = pendingTopData;
+	// initialData = pendingTopData;
 
 	const [colSearchKey, setColSearchKey] = useState({ initColSearchKey });
 	const [data, setData] = useState(initialData);
@@ -348,7 +348,7 @@ export default function Table({ title, headers, initialData, from }) {
 														</td>
 													);
 												} else if (
-													String(item).toLowerCase().startsWith("disapproved")
+													String(item).toLowerCase().includes("disapproved")
 												) {
 													return (
 														<td key={i}>
@@ -363,6 +363,16 @@ export default function Table({ title, headers, initialData, from }) {
 													return (
 														<td key={i}>
 															<Badge pill bg="info" text="light">
+																{item}
+															</Badge>
+														</td>
+													);
+												}else if (
+													String(item).toLowerCase().startsWith("withdrawn")
+												) {
+													return (
+														<td key={i}>
+															<Badge pill bg="warning" text="light">
 																{item}
 															</Badge>
 														</td>

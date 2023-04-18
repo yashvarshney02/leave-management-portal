@@ -14,7 +14,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
   const { currentUser } = useAuth();
   let currentUrl =
     window.location.href.split("/")[window.location.href.split("/").length - 1];
-  const leave_id = parseInt(currentUrl);
+  const leave_id = currentUrl; 
   const [signatureDataURL, setSignatureDataUrl] = useState(null)
   const [downloadLink, setDownloadLink] = useState(null);
   const navigate = useNavigate();
@@ -118,6 +118,9 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
         let data = resp.data.data[0];
         if (from == "past_applications" && data.email != currentUser.email) {
           navigate("/navigate/pastapplications");
+        }
+        if (currentUser?.signature && from == "check_applications") {
+          sigPadRef.current.fromDataURL(currentUser.signature)
         }
         setLeave(data);
         const imageUrl = "data:image/png;base64," + String(data.signature);
@@ -1016,7 +1019,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                   Comments of the competent authority to grant leave: Sanctioned
                   / Not Sanctioned
                   <br />
-                  <p>{get_status_element(leave)}</p>
+                  <p>{get_status_element(leave, "dean")}</p>
                 </div>
               </div>
               <br />

@@ -14,7 +14,7 @@ import { useNavigate } from 'react-router-dom';
 export default function NonCasuaLeave({ toast }) {
 	const navigate = useNavigate();
 	const { currentUser } = useAuth();
-	const [typesOfLeave, setTypesofLeave] = useState(["CASUAL LEAVE", "RESTRICTED HOLIDAY", "SPECIAL CASUAL LEAVE", "ON DUTY"])
+	const [typesOfLeave, setTypesofLeave] = useState(["CASUAL LEAVE", "RESTRICTED HOLIDAY", "SPECIAL CASUAL LEAVE"])
 	const [duration, setDuration] = useState(0);
 	const [document, setDocument] = useState();
 	const [fileName, setFileName] = useState("");
@@ -139,7 +139,7 @@ export default function NonCasuaLeave({ toast }) {
 		const propVal = e.target.value;
 		if (propVal == "Casual Leave") {
 			setDisplaySpecialFields("none")
-			setTypesofLeave(["CASUAL LEAVE", "RESTRICTED HOLIDAY", "SPECIAL CASUAL LEAVE", "ON DUTY"])
+			setTypesofLeave(["CASUAL LEAVE", "RESTRICTED HOLIDAY", "SPECIAL CASUAL LEAVE"])
 		} else {
 			setDisplaySpecialFields("")
 			setTypesofLeave(["Earned Leave", "Half Pay Leave", "Extra Ordinary Leave", "Commuted Leave", "Vacation", "Maternity Leave", "Paternity Leave", "Child Care Leave"])
