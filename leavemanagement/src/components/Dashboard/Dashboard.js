@@ -25,10 +25,21 @@ export default function Dashboard({ toast }) {
   const [mobile, setMobile] = useState(currentUser.mobile);
   const [leavesStatus, setLeavesStatus] = useState({})
   const [recentApplication, setRecentApplication] = useState(null);
+  const [sigUrl, setSigUrl] = useState("");
+  const [binarySig, setBinarySig] = useState(null);
   const handleEdit = () => setShowEditProfileModal(!showEditProfileModal);
   const navigate = useNavigate();
 
-
+  function dataURItoBlob(dataURI) {
+    const byteString = atob(dataURI.split(',')[1]);
+    const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+    return new Blob([ab], { type: mimeString });
+  }
 
   async function fetchRemainingNumberOfLeaves() {
     const resp = await httpClient.get(`${process.env.REACT_APP_API_HOST}/fetch_remaining_leaves`);
@@ -70,11 +81,23 @@ export default function Dashboard({ toast }) {
     }
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = async () => {
+      const arrayBuffer = await dataURItoBlob(reader.result).arrayBuffer();
+      const binaryData = new Uint8Array(arrayBuffer);
+      setBinarySig(binaryData)
+    }
+  };
+
 
   useEffect(() => {
     async function test() {
       await fetchRemainingNumberOfLeaves();
       await fetchLeaves();
+      setSigUrl(currentUser.signature);
     }
     test();
   }, []);
@@ -145,6 +168,19 @@ export default function Dashboard({ toast }) {
                     }}
                     autoFocus
                   />
+                  <Form.Label>Your signature</Form.Label>
+                  <div className='signature-box'>
+                    <img src={sigUrl}>
+                    </img>
+                    <br />
+                    <br />
+                    <input
+                      type="file"
+                      accept=".png"
+                      style={{ border: "none" }}
+                      onChange={handleImageChange}
+                    />
+                  </div>
                 </Form.Group>
               </Form>
             </Modal.Body>
@@ -155,12 +191,16 @@ export default function Dashboard({ toast }) {
               <Button
                 variant="primary"
                 onClick={async () => {
-                  let res = await editProfile(name, mobile);
+                  let res = await editProfile(name, mobile, binarySig);
                   setLoading(true);
                   await refresh_user();
                   if (res.data.status == "success") {
                     toast.success(res.data.data, toast.POSITION.BOTTOM_RIGHT);
+                    setTimeout(() => {
+                      window.location.reload()
+                    }, 2000);
                   } else {
+                    console.log(res.data)
                     toast.success(
                       "Edit Profile Failed",
                       toast.POSITION.BOTTOM_RIGHT
@@ -247,7 +287,7 @@ export default function Dashboard({ toast }) {
                           }}
                         >
                           Apply Leave
-                        </button>): ''
+                        </button>) : ''
                       }
                       <br />
                       {
@@ -259,7 +299,7 @@ export default function Dashboard({ toast }) {
                           }}
                         >
                           Past Applications
-                        </button>): ''
+                        </button>) : ''
                       }
                       {
                         (currentUser.position == 'dean' || currentUser.position == 'office') ? (<button
@@ -270,7 +310,7 @@ export default function Dashboard({ toast }) {
                           }}
                         >
                           Process Applications
-                        </button>): ''
+                        </button>) : ''
                       }
 
                       {/* {(currentUser.position == "faculty" || currentUser.position == "staff" || currentUser.position == "hod") ? (

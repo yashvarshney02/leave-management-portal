@@ -14,14 +14,10 @@ const LeavePDFModals = ({ toast, from }) => {
   const { currentUser } = useAuth();
   let currentUrl =
     window.location.href.split("/")[window.location.href.split("/").length - 1];
-  const leave_id = currentUrl;  
+  const leave_id = currentUrl;
   const [signatureDataURL, setSignatureDataUrl] = useState(null)
   const [downloadLink, setDownloadLink] = useState(null);
-  const sigPadRef = useRef();
-
-  const clear = () => {
-    sigPadRef.current.clear();
-  };
+  const [sigUrl, setSigUrl] = useState();
 
   function dataURItoBlob(dataURI) {
     const byteString = atob(dataURI.split(',')[1]);
@@ -35,13 +31,12 @@ const LeavePDFModals = ({ toast, from }) => {
   }
 
   const approveLeave = async (leave_id) => {
-    if (sigPadRef.current.isEmpty()) {
+    if (!sigUrl) {
       toast.error("Signature can't be kept empty in approval", toast.POSITION.BOTTOM_RIGHT);
       return;
     }
     try {
-      const trimmedDataURL = sigPadRef.current.getTrimmedCanvas().toDataURL('image/png');
-      const arrayBuffer = await dataURItoBlob(trimmedDataURL).arrayBuffer();
+      const arrayBuffer = await dataURItoBlob(sigUrl).arrayBuffer();
       const binaryData = new Uint8Array(arrayBuffer);
       const resp = await httpClient.post(
         `${process.env.REACT_APP_API_HOST}/approve_leave`,
@@ -62,13 +57,12 @@ const LeavePDFModals = ({ toast, from }) => {
 
 
   const submitOfficeSignature = async (leave_id) => {
-    if (sigPadRef.current.isEmpty()) {
+    if (!sigUrl) {
       toast.error("Signature can't be kept empty in approval", toast.POSITION.BOTTOM_RIGHT);
       return;
     }
     try {
-      const trimmedDataURL = sigPadRef.current.getTrimmedCanvas().toDataURL('image/png');
-      const arrayBuffer = await dataURItoBlob(trimmedDataURL).arrayBuffer();
+      const arrayBuffer = await dataURItoBlob(sigUrl).arrayBuffer();
       const binaryData = new Uint8Array(arrayBuffer);
       const resp = await httpClient.post(
         `${process.env.REACT_APP_API_HOST}/submit_office_signature`,
@@ -116,7 +110,7 @@ const LeavePDFModals = ({ toast, from }) => {
       if (resp.data.status === "success") {
         let data = resp.data.data[0];
         if (currentUser?.signature && from == "check_applications") {
-          sigPadRef.current.fromDataURL(currentUser.signature)
+          setSigUrl(currentUser.signature)
         }
         setLeave(data);
         const imageUrl = "data:image/png;base64," + String(data.signature);
@@ -128,7 +122,7 @@ const LeavePDFModals = ({ toast, from }) => {
       } else {
         // console.log(error)
       }
-    } catch (error) {  
+    } catch (error) {
       toast.error("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
     }
   };
@@ -167,7 +161,7 @@ const LeavePDFModals = ({ toast, from }) => {
       withCredentials: true,
     });
     const blob = await response.blob()
-    const url = window.URL.createObjectURL(blob);    
+    const url = window.URL.createObjectURL(blob);
     setDownloadLink(url);
   };
 
@@ -491,14 +485,14 @@ const LeavePDFModals = ({ toast, from }) => {
               </div>
               <div className="row">
                 <div className="col-4" style={{ border: "1px solid" }}>
-                {leave? (leave[map[leave.type_of_leave][0]] - leave[map[leave.type_of_leave][1]]): ""}
-                  {}
+                  {leave ? (leave[map[leave.type_of_leave][0]] - leave[map[leave.type_of_leave][1]]) : ""}
+                  { }
                 </div>
                 <div className="col-4" style={{ border: "1px solid" }}>
                   {leave?.duration}
                 </div>
                 <div className="col-4" style={{ border: "1px solid" }}>
-                  {leave? (leave[map[leave.type_of_leave][0]] - leave[map[leave.type_of_leave][1]] - leave.duration): ""}
+                  {leave ? (leave[map[leave.type_of_leave][0]] - leave[map[leave.type_of_leave][1]] - leave.duration) : ""}
                 </div>
               </div>
               <br />
@@ -575,12 +569,10 @@ const LeavePDFModals = ({ toast, from }) => {
                     </div>
                   </Col>
                   <Col>
-                    <div className={"sigContainer"}>
-                      <SignaturePad canvasProps={{ className: 'sigPad' }} ref={sigPadRef} onChange={(e) => { }} />
+                    <span style={{ textAlign: "left" }}>Your signature will appear here if you have updated this in you profile section<br /></span>
+                    <div className={"signature-box"}>
+                      <img src={sigUrl} />
                     </div>
-                    <Row className="row-al">
-                      <span onClick={clear} style={{ textAlign: "left", cursor: "pointer" }}>Clear</span>
-                    </Row>
                   </Col>
 
                 </Row>
@@ -622,13 +614,11 @@ const LeavePDFModals = ({ toast, from }) => {
               <>
                 <Row>
                   <Col>
-                    <div className={"sigContainer"}>
-                      <SignaturePad canvasProps={{ className: 'sigPad' }} ref={sigPadRef} onChange={(e) => { }} />
+                    <span style={{ textAlign: "left" }}>Your signature will appear here if you have updated this in you profile section<br /></span>
+                    <div className={"signature-box"}>
+                      <img src={sigUrl} />
                     </div>
                   </Col>
-                </Row>
-                <Row className="row-al">
-                  <span onClick={clear} style={{ textAlign: "left", cursor: "pointer" }}>Clear</span>
                 </Row>
 
                 <button

@@ -6,6 +6,10 @@
     height: 100%;
     /* background: white; */
 }
+.signature-box {
+  width: "100px";
+  height: "100px"
+}
 .leaveform {
     width: 80%;
     margin: 50px;

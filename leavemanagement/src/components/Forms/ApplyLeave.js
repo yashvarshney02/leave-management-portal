@@ -27,6 +27,7 @@ export default function NonCasuaLeave({ toast }) {
 		"form_isStation": "Yes"
 	});
 	const [formLoading, setFormLoading] = useState(false);
+	const [sigUrl, setSigUrl] = useState("");
 
 	const sigPadRef = useRef();
 	const formRef = useRef()
@@ -64,14 +65,14 @@ export default function NonCasuaLeave({ toast }) {
 			return;
 		}
 		setFileName(`${currentUser.user_id}_${Date.now()}_${file.name}`);
-	};
+	};	
 
 	const clear = () => {
 		sigPadRef.current.clear();
 	};
 
 	useEffect(() => {
-		sigPadRef.current.fromDataURL(currentUser.signature)
+		setSigUrl(currentUser.signature)
 	}, [])
 
 
@@ -97,21 +98,20 @@ export default function NonCasuaLeave({ toast }) {
 				form_data['form_station_edate'] = null;
 			}
 			form_data['form_rdate'] = getToday()
-			if (sigPadRef.current.isEmpty()) {
+			if (!sigUrl) {
 				toast.error("Signature can't be kept empty", toast.POSITION.BOTTOM_RIGHT);
 				setFormLoading(false);
 				return;
-			}			
+			}
 			// return;
 			setFormLoading(true);
-
-			const trimmedDataURL = sigPadRef.current.getTrimmedCanvas().toDataURL('image/png');
-			const arrayBuffer = await dataURItoBlob(trimmedDataURL).arrayBuffer();
-			const binaryData = new Uint8Array(arrayBuffer);
+			
+			const arrayBuffer = await dataURItoBlob(sigUrl).arrayBuffer();
+			const binaryData = new Uint8Array(arrayBuffer);			
 			// return;
 			form_data['signature'] = binaryData;
 			form_data['form_filename'] = fileName;
-			console.log(form_data,document);
+			console.log(form_data, document);
 			// return;
 			const form = new FormData();
 			form.append('data', JSON.stringify(form_data));
@@ -131,6 +131,7 @@ export default function NonCasuaLeave({ toast }) {
 			}
 			setFormLoading(false);
 		} catch (error) {
+			console.log(error)
 		}
 	}
 
@@ -325,6 +326,7 @@ export default function NonCasuaLeave({ toast }) {
 													style={{ border: "none" }}
 													onChange={handleFileInputChange}
 												/>
+												
 											</div>
 
 											{/* <br />
@@ -342,16 +344,14 @@ export default function NonCasuaLeave({ toast }) {
 											<br />
 
 											<Row className="row-al">
-												<span style={{ textAlign: "left" }}>Use your mouse to place your signature here<br />(In case, you have applied previously, your old signature will appear here)</span>
+												<span style={{ textAlign: "left" }}>Your signature will appear here if you have updated this in you profile section<br /></span>
 											</Row>
 
 											<Row className='row-al'>
-												<div className={"sigContainer"}>
-													<SignaturePad fromDataUrl={currentUser.signature} canvasProps={{ className: 'sigPad' }} ref={sigPadRef} onChange={(e) => { }} />
+												<div className='signature-box'>
+													<img src={sigUrl}>
+													</img>
 												</div>
-											</Row>
-											<Row className="row-al">
-												<span onClick={clear} style={{ textAlign: "left", cursor: "pointer" }}>Clear</span>
 											</Row>
 											<Row className="row-al">
 												<Col>
