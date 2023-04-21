@@ -1,4 +1,5 @@
 export const makeAbb = (x) => {
+    if (x == null) return ''
     const abbr = (str) =>
         str
             .match(/\b([A-Za-z0-9])/g)
@@ -10,7 +11,7 @@ export const makeAbb = (x) => {
         x[1].toUpperCase() +
         "-" +
         abbreviation.substring(1) +
-        "E";
+        "E";    
     return output;
 };
 

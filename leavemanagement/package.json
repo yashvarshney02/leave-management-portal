@@ -6,6 +6,7 @@
     "@fortawesome/fontawesome-svg-core": "^6.3.0",
     "@fortawesome/free-solid-svg-icons": "^6.3.0",
     "@fortawesome/react-fontawesome": "^0.2.0",
+    "@mobiscroll/react-lite": "^4.10.9",
     "@progress/kendo-drawing": "^1.17.5",
     "@progress/kendo-licensing": "^1.3.0",
     "@progress/kendo-react-all": "^5.12.1",
@@ -29,8 +30,12 @@
     "mdb-react-ui-kit": "^5.1.0",
     "react": "^18.2.0",
     "react-bootstrap": "^2.7.2",
+    "react-calendar": "^4.2.1",
+    "react-chartjs-2": "^5.2.0",
+    "react-datepicker": "^4.11.0",
     "react-dom": "^18.2.0",
     "react-icons": "^4.7.1",
+    "react-minimal-pie-chart": "^8.4.0",
     "react-multi-date-picker": "^3.3.4",
     "react-pdf": "^6.2.2",
     "react-router-dom": "^6.8.1",
@@ -64,5 +69,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "sass": "^1.62.0"
   }
 }

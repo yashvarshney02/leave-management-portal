@@ -7,6 +7,8 @@ import { SidebarData } from './SidebarData';
 import SubMenu from './SubMenu';
 import { IconContext } from 'react-icons/lib';
 import { useAuth } from '../../contexts/AuthContext';
+import {toast} from "react-toastify";
+import { useNavigate } from 'react-router-dom';
 
 const Nav = styled.div`
   background: linear-gradient(135deg, #08328B, #265ACB);
@@ -27,7 +29,7 @@ const NavIcon = styled(Link)`
 
 const SidebarNav = styled.nav`
   background: linear-gradient(135deg, #08328B, #08328B);
-  width: 250px;
+  width: 270px;
   height: 100vh;
   display: flex;
   justify-content: center;
@@ -42,11 +44,15 @@ const SidebarWrap = styled.div`
   width: 100%;
 `;
 
-const Sidebar = () => {
+const Sidebar = () => {  
   const [sidebar, setSidebar] = useState(false);
-  const { currentUser } = useAuth();
+  const { currentUser, logout, refresh_user } = useAuth();
   const showSidebar = () => setSidebar(!sidebar);
-
+  const navigate = useNavigate();
+  const path = window.location.href.split("/")[window.location.href.split("/").length -1]  
+  if (path == 'login') {
+    return <></>
+  }
 
   return (
     <>
@@ -55,8 +61,23 @@ const Sidebar = () => {
           <NavIcon to='#'>
             <FaIcons.FaBars onClick={showSidebar} />
           </NavIcon>
+          <div style={{ marginRight: "auto", width: "500px", fontSize:"20px", color: "white" }}>
+            Leave Management Portal
+          </div>
           <div style={{ marginLeft: "auto", width: "200px", color: "white" }}>
-            Hi, {currentUser ? currentUser.name : 'User'}
+            Hi, {currentUser ? currentUser.name : 'User'} {currentUser ? <FaIcons.FaArrowCircleRight style={{ cursor: "pointer" }} onClick={async () => {
+              let res = await logout();              
+              if (res.data['status'] == 'success') {
+                toast.success(res.data['data'], toast.POSITION.BOTTOM_RIGHT);
+                let res1 = await refresh_user();
+                if (res1.data['status'] == 'success') {
+                  navigate("/login");
+                }                
+              } else {
+                toast.success(res['emsg'], toast.POSITION.BOTTOM_RIGHT);
+              }
+            }
+            } /> : ''}
           </div>
         </Nav>
         <SidebarNav sidebar={sidebar}>
@@ -65,12 +86,15 @@ const Sidebar = () => {
               <AiIcons.AiOutlineClose onClick={showSidebar} />
             </NavIcon>
             {SidebarData.map((item, index) => {
+              
               if (!currentUser && item.title == 'Logout') {
                 return <></>
+              } if (currentUser && item.title == 'Login') {
+                return <></>
               } else if (item.title == 'Logout') {
-                return <SubMenu item={item} key={index} showSidebar={showSidebar} />;
+                return <SubMenu item={item} key={index} showSidebar={showSidebar} currentUser={currentUser} />;
               } else {
-                return <SubMenu item={item} key={index} showSidebar={showSidebar} />;
+                return <SubMenu item={item} key={index} showSidebar={showSidebar} currentUser={currentUser}/>;
               }
             })}
           </SidebarWrap>

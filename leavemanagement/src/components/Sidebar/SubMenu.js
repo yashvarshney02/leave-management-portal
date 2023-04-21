@@ -43,30 +43,32 @@ const DropdownLink = styled(Link)`
   }
 `;
 
-const SubMenu = ({ item, showSidebar }) => {
+const SubMenu = ({ item, showSidebar, currentUser }) => {
   const [subnav, setSubnav] = useState(false);
   const { logout, refresh_user } = useAuth();
   const navigate = useNavigate();
 
   const showSubnav = () => setSubnav(!subnav);
 
+
   return (
     <>
-      <SidebarLink to={item.path} onClick={async () => {        
+      <SidebarLink to={item.path} onClick={async () => {
         showSubnav();
         if (!item.subNav) {
           showSidebar();
-        }        
+        }
         if (item.title == 'Logout') {
           let res = await logout();
-          if (res['status'] == 'success') {
-            toast.success(res['data'], toast.POSITION.BOTTOM_RIGHT);
-            await refresh_user();
-            navigate("/login");
+          if (res.data['status'] == 'success') {
+            toast.success(res.data['data'], toast.POSITION.BOTTOM_RIGHT);
+            let res1 = await refresh_user();
+            if (res1.data['status'] == 'success') {
+              navigate("/login");
+            }
           } else {
             toast.success(res['emsg'], toast.POSITION.BOTTOM_RIGHT);
           }
-
         }
       }}>
         <div>
@@ -83,6 +85,15 @@ const SubMenu = ({ item, showSidebar }) => {
       </SidebarLink>
       {item.subNav && subnav &&
         item.subNav.map((item, index) => {
+          let found = false;
+          for (let i in item.allowed) {            
+            if (item.allowed[i].includes(currentUser?.position.toLowerCase())) {
+              found = true;
+            }
+          }
+          if (!found) {
+            return <></>
+          }
           return (
             <DropdownLink to={item.path} onClick={showSidebar} key={index}>
               {item.icon}

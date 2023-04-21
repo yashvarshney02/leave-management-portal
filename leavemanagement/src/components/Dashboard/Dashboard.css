@@ -3,6 +3,11 @@
     padding: 5px;
 }
 
+.dashboard{
+  min-height: 100vh;
+  height: 100%;
+}
+
 .heading-line{
     width: 100px;
     height: 2px;
@@ -26,6 +31,10 @@
 
 .taken-leaves i {
   color: gray;
+}
+
+.pending {
+  color: 'red'
 }
 
 body {
@@ -92,6 +101,7 @@ body {
   justify-content: center;
   align-items: center;
   height: 35px;
+  font-size: 1rem;
   /* font-size: 20px; */
   font-weight: bold;
   color: #333;
@@ -109,8 +119,16 @@ body {
   background-color: #fff;
 }
 
-.taken {
-  background-color: rgb(240, 59, 59);
+.approved {
+  background-color: green;
+  color: #fff;
+}
+.disapproved {
+  background-color: red;
+  color: #fff;
+}
+.pending {
+  background-color: blue;
   color: #fff;
 }
 
@@ -119,10 +137,17 @@ body {
   border: 2px solid #7E57C2;
 }
 
-/* span{
-  font-size: 25px;
-  font-family:'Times New Roman', Times, serif;
-} */
+span{
+  font-size: 1.2rem;
+  font-family:'Roboto'
+}
+
+.mt-4 > button {
+  font-size: 1.0rem;
+  font-family: 'Roboto';
+  /* font-size: 25px; */
+  /* font-family:'Times New Roman', Times, serif; */
+}
 
 .mt-4 > button {
   /* font-size: 20px; */
@@ -130,8 +155,15 @@ body {
   margin-top: 10px;
 }
 
+.signature-box {
+  width: "100px";
+  height: "100px"
+}
+
 #profile{
-  border-radius: 30px;
+  /* border-radius: 8px; */
+  box-shadow: 0 20px 24px rgba(0, 0, 0, 0.2);
+  border-radius: 50px;
 }
 
 #profile_parent{
@@ -141,19 +173,22 @@ body {
 }
 
 .recent-box {
+  border-radius: 8px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
   text-align: left;
 }
 
-.recent-box>span{
+.recent-application-title{
   margin-bottom: 10px;
   font-weight: bold;
 }
 
-/* .recent-application>div{
-  font-family:'Times New Roman', Times, serif;
-} */
+.recent-application>div{
+  font-family:Roboto; 
+}
 
 .card-header{
+  font-size: 1.5em;
   /* font-size: 25px; */
   font-weight: bolder;
 }
@@ -161,7 +196,7 @@ body {
 .dates{
   display: flex;
   justify-content: space-between;
-  width: 30rem;
+  width: 60%;
 }
 
 .content{
@@ -169,11 +204,31 @@ body {
   justify-content: space-between;
 }
 
-.buttons{
+.buttons_dashboard{
   display: flex;
   flex-direction:column;
+  text-align: right;
+  width: 25%;
 }
 
 .btn-sm{
+  font-size: 1rem;
   margin-top: 5px;
 }
+
+.date, .card-title{
+  font-size: 1.2em;
+}
+
+.calendar-panel{
+  display: flex;
+  align-items: center;
+}
+
+.arrow{
+  height: 1.5em;
+  width: 1.5em;
+}
+
+
+
