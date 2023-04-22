@@ -22,7 +22,7 @@ export const SidebarData = [
         path: '/navigate/applyleave',
         icon: <IoIcons.IoIosPaper />,
         cName: 'sub-nav',
-        allowed: ['admin', 'hod', 'faculty', 'student']
+        allowed: ['admin', 'hod', 'faculty', 'pg']
       },
       {
         title: 'Office Portal',
@@ -36,7 +36,7 @@ export const SidebarData = [
         path: '/navigate/pastapplications',
         icon: <IoIcons.IoIosPaper />,
         cName: 'sub-nav',
-        allowed: ['admin', 'student', 'faculty', 'hod']
+        allowed: ['admin', 'hod', 'faculty', 'pg']
       },
       {
         title: 'Process Applications',

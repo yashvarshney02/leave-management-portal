@@ -48,12 +48,15 @@ export function AuthProvider({ children }) {
 		return auth.createUserWithEmailAndPassword(email, password);
 	}
 
-	async function editProfile(name, mobile, binarySig) {
+	async function editProfile(name, mobile, binarySig, entryNumber, TAInstructor, advisor) {
 		if (currentUser) {
 			let res = await httpClient.post(`${process.env.REACT_APP_API_HOST}/edit_user_info`, {
 				name: name,
 				mobile: String(mobile),
-				signature: binarySig
+				signature: binarySig,
+				entry_number: entryNumber,
+				ta_instructor: TAInstructor,
+				advisor: advisor
 			})
 			return res;
 		}
@@ -90,8 +93,7 @@ export function AuthProvider({ children }) {
 
 	useEffect(() => {
 		async function test() {
-			let user_data = await httpClient.get(`${process.env.REACT_APP_API_HOST}/get_user_info`);
-			console.log(user_data.data)					
+			let user_data = await httpClient.get(`${process.env.REACT_APP_API_HOST}/get_user_info`);		
 			if (user_data.data.data && user_data.data.data.signature) {
 				const imageUrl = "data:image/png;base64," + String(user_data.data.data.signature);
 				user_data.data.data.signature = imageUrl

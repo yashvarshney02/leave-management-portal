@@ -33,8 +33,8 @@ export default function CheckLeaves({ toast }) {
             status = `${data[i].status.split(" ")[0]} by dean`
           } else {
             status = data[i].status
-          }          
-          temp.push([data[i].leave_id, data[i].nature, data[i].name, data[i].position, new Date(data[i].request_date).toDateString(), data[i].start_date.slice(0, -12), status, data[i].withdraw_reason]);
+          }         
+          temp.push([data[i].leave_id, data[i].nature, data[i].name, data[i].position, new Date(data[i].request_date).toDateString(), data[i].start_date.slice(0, -12), data[i].int_status ? data[i].int_status : status, data[i].withdraw_reason, data[i].level]);
         } catch (error) {
           continue;
         }

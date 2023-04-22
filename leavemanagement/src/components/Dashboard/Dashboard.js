@@ -21,8 +21,11 @@ export default function Dashboard({ toast }) {
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [leavesData, setLeavesData] = useState();
-  const [name, setName] = useState(currentUser.name);
-  const [mobile, setMobile] = useState(currentUser.mobile);
+  const [name, setName] = useState(currentUser.name ? currentUser.name : "");
+  const [mobile, setMobile] = useState(currentUser.mobile ? currentUser.mobile : "");
+  const [entryNumber, setEntryNumber] = useState(currentUser.entry_number ? currentUser.entry_number : "");
+  const [TAInstructor, setTAInstructor] = useState(currentUser.ta_instructor ? currentUser.ta_instructor : "");
+  const [advisor, setTAdvisor] = useState(currentUser.advisor ? currentUser.advisor : "");
   const [leavesStatus, setLeavesStatus] = useState({})
   const [recentApplication, setRecentApplication] = useState(null);
   const [sigUrl, setSigUrl] = useState("");
@@ -132,15 +135,10 @@ export default function Dashboard({ toast }) {
     }
   });
   return (
-    // <div class="dashboard" style={{ height: "100vh", backgroundImage: `url(${background})`, backgroundPosition: "fixed", backgroundRepeat: "None", backgroundSize: "cover" }}>
     <div
       class="dashboard"
       style={{ margin: "0px", height: "100%", backgroundColor: "aliceblue" }}
     >
-      {/* <div class="Dashboard"> */}
-      {/* <header class="jumbotron text-center"> */}
-      {/* <h2 class="heading">Dashboard</h2> */}
-      {/* <div class="heading-line"></div> */}
 
       <div class="container">
         <div class="main-body">
@@ -168,6 +166,49 @@ export default function Dashboard({ toast }) {
                     }}
                     autoFocus
                   />
+                  {
+                    currentUser?.position == 'pg' ? (
+                      <div>
+                        <Form.Label>Entry Number</Form.Label>
+                        <Form.Control
+                          value={entryNumber}
+                          onChange={(e) => {
+                            setEntryNumber(e.target.value);
+                          }}
+                          autoFocus
+                        />
+                      </div>
+                    ) : ('')
+                  }
+                  {
+                    currentUser?.position == 'pg' ? (
+                      <div>
+                        <Form.Label>TA instructor(Email ID)</Form.Label>
+                        <Form.Control
+                          value={TAInstructor}
+                          onChange={(e) => {
+                            setTAInstructor(e.target.value);
+                          }}
+                          autoFocus
+                        />
+                      </div>
+                    ) : ('')
+                  }
+                  {
+                    currentUser?.position == 'pg' ? (
+                      <div>
+                        <Form.Label>Advisor(Email ID)</Form.Label>
+                        <Form.Control
+                          value={advisor}
+                          onChange={(e) => {
+                            setTAdvisor(e.target.value);
+                          }}
+                          autoFocus
+                        />
+                      </div>
+                    ) : ('')
+                  }
+
                   <Form.Label>Your signature</Form.Label>
                   <div className='signature-box'>
                     <img src={sigUrl}>
@@ -191,7 +232,7 @@ export default function Dashboard({ toast }) {
               <Button
                 variant="primary"
                 onClick={async () => {
-                  let res = await editProfile(name, mobile, binarySig);
+                  let res = await editProfile(name, mobile, binarySig, entryNumber, TAInstructor, advisor);
                   setLoading(true);
                   await refresh_user();
                   if (res.data.status == "success") {
@@ -200,8 +241,7 @@ export default function Dashboard({ toast }) {
                       window.location.reload()
                     }, 2000);
                   } else {
-                    console.log(res.data)
-                    toast.success(
+                    toast.error(
                       "Edit Profile Failed",
                       toast.POSITION.BOTTOM_RIGHT
                     );
@@ -273,13 +313,21 @@ export default function Dashboard({ toast }) {
                       )}
                       <span>{currentUser.email}</span>
                       <br />
-                      <ProgressBar value={leavesData?.total_casual_leaves - leavesData?.taken_casual_leaves} max={leavesData?.total_casual_leaves} type="CL" />
-                      <ProgressBar value={leavesData?.total_restricted_leaves - leavesData?.taken_restricted_leaves} max={leavesData?.total_restricted_leaves} type="RH" />
-                      <ProgressBar value={leavesData?.total_scl_leaves - leavesData?.taken_scl_leaves} max={leavesData?.total_scl_leaves} type="SCL" />
-                      <ProgressBar value={leavesData?.total_casual_leaves - leavesData?.taken_non_casual_leave} max={leavesData?.total_non_casual_leave} type="NCL" />
+                      {
+                        currentUser?.position == 'pg' ? (
+                          <ProgressBar value={leavesData?.total_pg_leaves - leavesData?.taken_pg_leaves} max={leavesData?.total_pg_leaves} type="Leaves" />
+                        ) : (
+                          <>
+                            <ProgressBar value={leavesData?.total_casual_leaves - leavesData?.taken_casual_leaves} max={leavesData?.total_casual_leaves} type="CL" />
+                            <ProgressBar value={leavesData?.total_restricted_leaves - leavesData?.taken_restricted_leaves} max={leavesData?.total_restricted_leaves} type="RH" />
+                            <ProgressBar value={leavesData?.total_scl_leaves - leavesData?.taken_scl_leaves} max={leavesData?.total_scl_leaves} type="SCL" />
+                            <ProgressBar value={leavesData?.total_casual_leaves - leavesData?.taken_non_casual_leave} max={leavesData?.total_non_casual_leave} type="NCL" />
+                          </>
+                        )
+                      }
                       <br />
                       {
-                        (currentUser.position == 'hod' || currentUser.position == 'faculty') ? (<button
+                        (currentUser.position == 'hod' || currentUser.position == 'faculty' || currentUser.position == 'pg') ? (<button
                           type="button"
                           class="btn btn-success"
                           onClick={() => {
@@ -291,7 +339,7 @@ export default function Dashboard({ toast }) {
                       }
                       <br />
                       {
-                        (currentUser.position == 'hod' || currentUser.position == 'faculty') ? (<button
+                        (currentUser.position == 'hod' || currentUser.position == 'faculty' || currentUser.position == 'pg') ? (<button
                           type="button"
                           class="btn btn-success"
                           onClick={() => {
@@ -335,13 +383,7 @@ export default function Dashboard({ toast }) {
 
                   <div class="recent-application card">
                     <div class="card-header">
-                      {recentApplication.nature
-                        ? recentApplication.nature[0]
-                        : ""}
-                      {recentApplication.nature
-                        ? recentApplication.nature.split(" ")[1][0]
-                        : ""}
-                      -{recentApplication.type_of_leave}
+                      {recentApplication.nature}
                     </div>
                     <div class="card-body">
                       <div class="content">
@@ -370,12 +412,18 @@ export default function Dashboard({ toast }) {
                             type="button"
                             class="btn btn-primary btn-sm"
                             onClick={() => {
-                              let url = "/past_applications/";
-                              url += recentApplication.nature
-                                .toLowerCase()
-                                .startsWith("casual")
-                                ? "casual/"
-                                : "non_casual/";
+                              let url;
+                              if (recentApplication.leave_id.startsWith("LMP")) {
+                                url = "/past_applications/";
+                                url += recentApplication.nature
+                                  .toLowerCase()
+                                  .startsWith("casual")
+                                  ? "casual/"
+                                  : "non_casual/";
+                              } else {
+                                url = "/past_applications/";
+                                url += "pg_applications/";
+                              }
                               url += recentApplication.leave_id;
                               navigate(url);
                             }}

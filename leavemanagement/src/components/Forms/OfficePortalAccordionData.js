@@ -1,4 +1,24 @@
 export default function OfficePortalAccordionData({ item }) {
+	if (item?.position == 'pg') {
+		return  (
+			<>
+			<li style={{ textAlign: "left" }}>
+				<span style={{ fontWeight: "bold" }}>
+					Total Leaves:
+				</span>{" "}
+				{item.total_pg_leaves
+					? item.total_pg_leaves
+					: "NA"}
+			</li>
+			<li style={{ textAlign: "left" }}>
+				<span style={{ fontWeight: "bold" }}>
+					Taken Leaves:
+				</span>{" "}
+				{item?.taken_pg_leaves}
+			</li>
+		</>
+		)
+	}
 	return (
 		<>
 			<li style={{ textAlign: "left" }}>

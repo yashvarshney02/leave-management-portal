@@ -333,8 +333,7 @@ const LeavePDFModals = ({ toast, from }) => {
               </div>
               <div className="row" style={{ border: "1px solid" }}>
                 <div className="col-6" style={{ textAlign: "left" }}>
-                  आवश्यक छुट्टी का मवरूऩ : आकस्ममक छुट्टी /
-                  राज.अव./त्रव.आ.छुट्टी <br />
+                  आवश्यक छुट्टी का मवरूऩ : आकस्मिक छुट्टी/ राजपत्रित अवकाश / विशेष आकस्मिक छुट्टि <br />
                   Nature of Leave Required : CL / RH / SCL/ OD
                 </div>
                 <div className="col-1" style={{ textAlign: "left" }}>
@@ -357,8 +356,7 @@ const LeavePDFModals = ({ toast, from }) => {
               </div>
               <div className="row" style={{ border: "1px solid" }}>
                 <div className="col-6" style={{ textAlign: "left" }}>
-                  उद्देश्य / Purpose (के वऱ त्रवशेष आकस्ममक छुट्टी के लऱए लनमॊिण
-                  ऩि की प्रलत सॊऱगन करं) /<br />
+                  उद्देश्य / Purpose (केवल विशेष आकस्मिक छुट्टि के मामले में संलग्न आमंत्रण पत्र की प्रति) /<br />
                   (Copy of the invitation letter enclosed in case of SCL only)
                 </div>
                 <div className="col-1" style={{ textAlign: "left" }}>
@@ -370,8 +368,8 @@ const LeavePDFModals = ({ toast, from }) => {
               </div>
               <div className="row" style={{ border: "1px solid" }}>
                 <div className="col-6" style={{ textAlign: "left" }}>
-                  कऺाएॊ, प्रशासलनक स्जम्मेदारी आदद (यदद कोई हो तो) के लऱए
-                  वैकस्पऩक व्यवमथा /<br />
+
+                  कक्षाओं, प्रशासनिक उत्तरदायित्वों आदि के लिए वैकल्पिक व्यवस्था (यदि कोई हो) /<br />
                   Alternative arrangements for classes, administrative
                   responsibilities, etc. (if any)
                   <br />
@@ -417,7 +415,7 @@ const LeavePDFModals = ({ toast, from }) => {
               </div>
               <div className="row" style={{ border: "1px solid" }}>
                 <div className="col-6" style={{ textAlign: "left" }}>
-                  छुट्टी के दौरान का ऩता
+                  छुट्टी के दौरान/ड्यूटी पर पता
                   <br />
                   Address during the leave/on duty
                 </div>
@@ -520,8 +518,8 @@ const LeavePDFModals = ({ toast, from }) => {
                 <div className="col-4"></div>
                 <div className="col-8">
                   <p>{leave?.authority_comment}</p>
-                  छुट्टी प्रदान करनेके लऱए सऺम प्रालधकारी की दटप्ऩणी: मवीकृ
-                  त/अमवीकृ त<br />
+
+                  छुट्टी प्रदान करने के लिए सक्षम प्राधिकारी की टिप्पणियाँ: स्वीकृत / स्वीकृत नहीं<br />
                   Comments of the competent authority to grant leave: Sanctioned
                   / Not Sanctioned
                 </div>
@@ -532,8 +530,7 @@ const LeavePDFModals = ({ toast, from }) => {
                 <div className="col-4"></div>
                 <div className="col-8">
                   <p>{get_status_element(leave)}</p>
-                  (त्रवभागाध्यऺ / कु ऱसलिव / अलधष्ठाता (सॊकाय मामऱेएवॊप्रशासन) /
-                  लनदेशक)
+                  ((एचओडी / रजिस्ट्रार / डीन (संकाय मामले और प्रशासन)))
                   <br />
                   (HoD / Registrar / Dean(Faculty Affairs & Administration) )
                 </div>

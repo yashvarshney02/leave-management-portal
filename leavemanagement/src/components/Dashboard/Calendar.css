@@ -63,9 +63,9 @@ abbr[title] {
   }
 }
 
-@media screen and (min-width: 1024px) {
+@media screen and (min-width: 1078px) {
   .react-calendar {
-    max-width: 1200px;
+    max-width: 1700px;
     min-width: 800px;
   }
 }

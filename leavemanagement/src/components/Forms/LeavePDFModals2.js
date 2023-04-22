@@ -14,7 +14,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
   const { currentUser } = useAuth();
   let currentUrl =
     window.location.href.split("/")[window.location.href.split("/").length - 1];
-  const leave_id = currentUrl; 
+  const leave_id = currentUrl;
   const [signatureDataURL, setSignatureDataUrl] = useState(null)
   const [downloadLink, setDownloadLink] = useState(null);
   const navigate = useNavigate();
@@ -39,7 +39,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
       toast.error("Signature can't be kept empty in approval", toast.POSITION.BOTTOM_RIGHT);
       return;
     }
-    try {      
+    try {
       const arrayBuffer = await dataURItoBlob(sigUrl).arrayBuffer();
       const binaryData = new Uint8Array(arrayBuffer);
       const resp = await httpClient.post(
@@ -83,7 +83,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
       toast.error("Signature can't be kept empty in approval", toast.POSITION.BOTTOM_RIGHT);
       return;
     }
-    try {      
+    try {
       const arrayBuffer = await dataURItoBlob(sigUrl).arrayBuffer();
       const binaryData = new Uint8Array(arrayBuffer);
       const resp = await httpClient.post(
@@ -758,8 +758,8 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                 }}
               >
                 <div className="col-12" style={{ textAlign: "left" }}>
-                  9. मैं_______________ब्लॉक वर्ाकी छुट्टी केदौिान छुट्टी
-                  र्ात्रा रिर्ार्त लेनेहतेुइच्छुक ह ूँ/ नहीं ह ूँ। / I
+                  9.
+                  मैं अवकाश के दौरान ब्लॉक वर्षों के लिए अवकाश यात्रा रियायत का लाभ लेने का प्रस्ताव करता हूं/नहीं करता हूं। / I
                   propose/do not propose to avail myself of Leave Travel
                   Concession for the block years__________________ during the
                   leave.

@@ -8,7 +8,7 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Card from "react-bootstrap/Card";
 import "./Form.css";
-import { Button, Modal, Accordion } from "react-bootstrap";
+import { Button, Modal, Accordion, Badge } from "react-bootstrap";
 import OfficePortalAccordionData from "./OfficePortalAccordionData";
 
 export default function UpdateLeave({ toast }) {
@@ -110,10 +110,13 @@ export default function UpdateLeave({ toast }) {
     let temp = [];
     for (let idx in initialcollectiveData) {
       if (
-        initialcollectiveData[idx].email_id
+        initialcollectiveData[idx].email
           .toLowerCase()
           .includes(text.toLowerCase()) ||
         initialcollectiveData[idx].name
+          .toLowerCase()
+          .includes(text.toLowerCase()) ||
+        initialcollectiveData[idx].position
           .toLowerCase()
           .includes(text.toLowerCase())
       ) {
@@ -241,7 +244,7 @@ export default function UpdateLeave({ toast }) {
                   return (
                     <li style={{ textAlign: "left" }}>
                       <a
-                        href={`/past_applications/${item[2].toLowerCase().startsWith("casual")?"casual": "non_casual"}/${item[0]}`}
+                        href={ item[0].startsWith("LMP") ? (`/past_applications/${item[2].toLowerCase().startsWith("casual")?"casual": "non_casual"}/${item[0]}`): (`/past_applications/${"pg_applications"}/${item[0]}`)}
                         target="blank"
                         style={{ fontWeight: "bold" }}
                       >
@@ -269,19 +272,21 @@ export default function UpdateLeave({ toast }) {
                 onChange={(e) => {
                   handleFilter(e.target.value);
                 }}
-                placeholder="Search by email or name"
+                placeholder="Search by email or name or position"
               />
               <br />
-              {collectiveData?.map((item, key) => {                
+              {collectiveData?.map((item, key) => {             
                 return (
                   <Accordion defaultActiveKey={"0"}>
                     <Accordion.Item eventKey={key}>
                       <Accordion.Header>
-                        {item.name} ({item.email_id})
+                        {item.name} ({item.email}) &nbsp;&nbsp; &nbsp;&nbsp;<Badge pill bg="secondary" text="light">
+																{item.position}
+															</Badge>
                       </Accordion.Header>
                       <Accordion.Body>
                         <ul>
-                          <OfficePortalAccordionData item={item}/>
+                          <OfficePortalAccordionData item={item} position={item.position}/>
                           <Button
                             variant="primary"
                             onClick={() => {

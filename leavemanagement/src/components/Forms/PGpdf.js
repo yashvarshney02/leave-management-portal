@@ -9,7 +9,7 @@ import { Row, Col } from "react-bootstrap"
 import SignaturePad from 'react-signature-canvas';
 import { useNavigate } from "react-router-dom";
 
-const LeavePDFModalsNonCasual = ({ toast, from }) => {
+const PGLeavePdfModal = ({ toast, from }) => {
   const [leave, setLeave] = useState(null);
   const { currentUser } = useAuth();
   let currentUrl =
@@ -17,7 +17,6 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
   const leave_id = currentUrl;
   const [signatureDataURL, setSignatureDataUrl] = useState(null)
   const [downloadLink, setDownloadLink] = useState(null);
-  const navigate = useNavigate();
 
   const [sigUrl, setSigUrl] = useState();
 
@@ -111,9 +110,6 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
       );
       if (resp.data.status == "success") {
         let data = resp.data.data[0];
-        if (from == "past_applications" && data.email != currentUser.email) {
-          navigate("/navigate/pastapplications");
-        }
         if (currentUser?.signature && from == "check_applications") {
           setSigUrl(currentUser.signature)
         }
@@ -193,18 +189,8 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
         // window.open(imgData, "toDataURL() image", "width=800, height=800");
 
         pdf.addImage(imgData, "JPEG", 100, 50);
-        const input1 = document.getElementById("second-page-" + leave_id);
-        html2canvas(input1)
-          .then((canvas) => {
-            // document.getElementById("leave-container-" + leave_id).parentNode.style.overflow = 'hidden';
 
-            var imgData = canvas.toDataURL('image/png');
-            // window.open(imgData, "toDataURL() image", "width=800, height=800");
-            pdf.addPage();
-            pdf.addImage(imgData, 'JPEG', 100, 50);
-            pdf.save(`${"leave-" + leave_id}.pdf`);
-          })
-
+        pdf.save(`${"leave-" + leave_id}.pdf`);
       });
   };
 
@@ -212,18 +198,10 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
     if (!leave) return ''
     let status = leave?.status.toLowerCase();
     let imageUrl = "";
-    if (position == "hod" && leave.hod_sig && leave.hod_sig[0]) {
-      imageUrl = "data:image/png;base64," + String(leave.hod_sig);
-    } else if (position == "dean" && leave.dean_sig && leave.dean_sig[0]) {
-      imageUrl = "data:image/png;base64," + String(leave.dean_sig);
-    } else if (!position && status.startsWith("approved") && status.includes("hod")) {
-      if (leave.hod_sig) {
-        imageUrl = "data:image/png;base64," + String(leave.hod_sig);
-      }
-    } else if (!position && status.startsWith("approved") && status.includes("dean")) {
-      if (leave.dean_sig) {
-        imageUrl = "data:image/png;base64," + String(leave.dean_sig);
-      }
+    if (position == "ta_instructor" && leave.ta_sig && leave.ta_sig[0]) {
+      imageUrl = "data:image/png;base64," + String(leave.ta_sig);
+    } else if (position == "advisor" && leave.advisor_sig && leave.advisor_sig[0]) {
+      imageUrl = "data:image/png;base64," + String(leave.advisor_sig);
     }
     if (imageUrl.length) {
       return (
@@ -371,7 +349,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                   className="col-6"
                   style={{ textAlign: "left", border: "1px solid" }}
                 >
-                  {leave?.position.toUpperCase()}
+                  {leave?.entry_number?.toUpperCase()}
                 </div>
               </div>
               <div
@@ -394,7 +372,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                   className="col-6"
                   style={{ textAlign: "left", border: "1px solid" }}
                 >
-                  {leave?.department?.toUpperCase()}
+                  {leave?.purpose}
                 </div>
               </div>
               <div
@@ -417,7 +395,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                   className="col-6"
                   style={{ textAlign: "left", border: "1px solid" }}
                 >
-                  <p>{leave?.type_of_leave}</p>
+                  <p>{leave?.venue}</p>
                   {/* <p>From: {leave?.start_date.split("00:00:0}से/To ___________ तक</p> */}
                 </div>
               </div>
@@ -478,7 +456,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                         fontSize: "14px",
                       }}
                     >
-                      {get_date(leave?.start_date)}
+                      {get_date(leave?.duty_start_date)}
                     </div>
                     <div
                       className="col-6"
@@ -488,7 +466,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                         fontSize: "14px",
                       }}
                     >
-                      {get_date(leave?.end_date)}
+                      {get_date(leave?.duty_end_date)}
                     </div>
 
                   </div>
@@ -604,62 +582,11 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                 >
                   Prefix/Suffix
                 </div>
-                <div className="col-6" style={{ textAlign: "left" }}>
-                  <div
-                    className="row"
-                    style={{ fontSize: "14px", minHeight: "38.6px" }}
-                  >
-                    <div
-                      className="col-6"
-                      style={{
-                        textAlign: "left",
-                        border: "1px solid",
-                        fontSize: "14px",
-                      }}
-                    >
-                      Suffix
-                    </div>
-                    <div
-                      className="col-6"
-                      style={{
-                        textAlign: "left",
-                        border: "1px solid",
-                        fontSize: "14px",
-                      }}
-                    >
-                      Prefix
-                    </div>
-
-
-                  </div>
-                  <div
-                    className="row"
-                    style={{ fontSize: "14px", minHeight: "38.6px" }}
-                  >
-                    <div
-                      className="col-6"
-                      style={{
-                        textAlign: "left",
-                        border: "1px solid",
-                        fontSize: "14px",
-                      }}
-                    >
-                      {get_date(leave?.suffix_start_date)}
-                    </div>
-                    <div
-                      className="col-6"
-                      style={{
-                        textAlign: "left",
-                        border: "1px solid",
-                        fontSize: "14px",
-                      }}
-                    >
-                      {get_date(leave?.suffix_end_date)}
-                    </div>
-
-                  </div>
-
-
+                <div
+                  className="col-6"
+                  style={{ textAlign: "left", border: "1px solid" }}
+                >
+                  {leave?.prefix_suffix}
                 </div>
               </div>
 
@@ -684,7 +611,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                   className="col-6"
                   style={{ textAlign: "left", border: "1px solid" }}
                 >
-                  {leave?.purpose}
+                  {leave?.taken_pg_leaves}
                 </div>
               </div>
 
@@ -709,7 +636,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                   className="col-6"
                   style={{ textAlign: "left", border: "1px solid" }}
                 >
-                  {leave?.purpose}
+                  {leave?.total_pg_leaves - leave?.taken_pg_leaves}
                 </div>
               </div>
 
@@ -748,15 +675,15 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                       minHeight: "38.6px",
                     }}
                   >
-                    <div className="col-3" style={{textAlign:"left"}}>
-                    From {get_date(leave?.station_start_date)} 
+                    <div className="col-3" style={{ textAlign: "left" }}>
+                      From {get_date(leave?.station_start_date)}
                     </div>
-                    
-                    <div className="col-3" style={{textAlign:"left"}}> 
-                    To{" "}
-                    {get_date(leave?.station_end_date)}
+
+                    <div className="col-3" style={{ textAlign: "left" }}>
+                      To{" "}
+                      {get_date(leave?.station_end_date)}
                     </div>
-                    
+
                   </div>
                 </div>
               </div>
@@ -795,7 +722,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                         fontSize: "14px",
                       }}
                     >
-                      <p></p>
+                      <p>{leave?.address}</p>
                     </div>
                   </div>
                   <div
@@ -850,7 +777,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                 </div>
               </div>
 
-              
+
 
               <div className="row leave-details-signature">
                 <div className="col-6"></div>
@@ -878,14 +805,12 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                 </div>
               </div>
 
-              
-            </div>
-          </div>
-          {/* <hr /> */}
 
-              
-          <div className='container' id={"second-page-" + leave?.leave_id} style={{ width: "1000px" }}>
-           
+            </div>
+
+            {/* <hr /> */}
+
+
             <div
               className="establishment-office text-center"
               id={"leave-footer-" + leave?.leave_id}
@@ -894,19 +819,22 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
               <br />
               <div className="row">
                 <div className="col-4">
-                  {/* {get_office_status_element(leave)}<br /> */}
+                  {get_status_element(leave, "advisor")}<br />
                   Head of Deptt./School
                 </div>
                 <div className="col-4">
-                  
+
                 </div>
-                <div className="col-4">Faculty Advisor</div>
+                <div className="col-4">
+                  {get_status_element(leave, "ta_instructor")}<br />
+                  Faculty Advisor
+                </div>
               </div>
-                        
+
 
             </div>
             <hr />
-            
+
             {leave?.filename == "" || leave?.filename == undefined ? (
               <p>Attached Documents: No document attached</p>
             ) : (
@@ -925,15 +853,6 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
             {(from === "check_applications" && ['hod', 'dean', 'faculty'].includes(currentUser?.position)) ? (
               <>
                 <Row>
-                  <Col>
-                    <div className="text-center">
-                      <textarea
-                        id={"comment-" + leave?.leave_id}
-                        placeholder="Add Comment"
-                        style={{ width: "250px" }}
-                      ></textarea>
-                    </div>
-                  </Col>
                   <Col>
                     <span style={{ textAlign: "left" }}>Your signature will appear here if you have updated this in you profile section<br /></span>
                     <div className={"signature-box"}>
@@ -962,16 +881,6 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                 >
                   Disapprove
                 </button>{" "}
-                &nbsp;&nbsp;&nbsp;&nbsp;
-                <button
-                  type="button"
-                  className="btn btn-outline-primary"
-                  onClick={() => {
-                    addComment(leave?.leave_id);
-                  }}
-                >
-                  Add Comment
-                </button>
               </>
             ) : (
               ""
@@ -1009,4 +918,4 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
   );
 };
 
-export default LeavePDFModalsNonCasual;
+export default PGLeavePdfModal;

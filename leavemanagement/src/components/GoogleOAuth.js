@@ -16,7 +16,6 @@ const GoogleOAuth = ({}) => {
 		const profile = GoogleUser.getBasicProfile();
 		const email = profile.getEmail();
 		const imageUrl = profile.getImageUrl();
-		console.log(email, imageUrl)
 		// Do something with email and imageUrl
 	}
 

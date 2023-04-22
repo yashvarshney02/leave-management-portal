@@ -181,6 +181,13 @@ export default function Table({ title, headers, initialData, from }) {
 	}
 
 	function getActions(title, row) {
+		let position = row[row.length - 1], status;
+		for (let i in row) {
+			if (["pending", "approved", "disapproved"].includes(String(row[i])?.toLowerCase())) {
+				status = row[i];
+				break;
+			}
+		}
 		if (title == "Applied Leaves") {
 			return (
 				<td>
@@ -188,7 +195,10 @@ export default function Table({ title, headers, initialData, from }) {
 						style={{ cursor: "pointer" }}
 						color="green"
 						onClick={(e) => {
-							navigate(`/${from}/${row[1].toLowerCase().startsWith("casual") ? "casual" : "non_casual"}/${row[0]}`);
+							if (position != 'pg')
+								navigate(`/${from}/${row[1].toLowerCase().startsWith("casual") ? "casual" : "non_casual"}/${row[0]}`);
+							else
+								navigate(`/${from}/${"pg_applications"}/${row[0]}`);
 						}}
 					/>
 					&nbsp;
@@ -197,7 +207,7 @@ export default function Table({ title, headers, initialData, from }) {
 						color="red"
 						onClick={(e) => {
 							setDeleteLeaveID(row[0]);
-							setCurrentLeaveStatus(row[6])
+							setCurrentLeaveStatus(status)
 							handleShow();
 						}}
 					/>
@@ -211,7 +221,10 @@ export default function Table({ title, headers, initialData, from }) {
 						style={{ cursor: "pointer" }}
 						color="green"
 						onClick={(e) => {
-							navigate(`/${from}/${row[1].toLowerCase().startsWith("casual") ? "casual" : "non_casual"}/${row[0]}`);
+							if (position != 'pg')
+								navigate(`/${from}/${row[1].toLowerCase().startsWith("casual") ? "casual" : "non_casual"}/${row[0]}`);
+							else
+								navigate(`/${from}/${"pg_applications"}/${row[0]}`);
 						}}
 					/>
 					&nbsp;
@@ -339,15 +352,7 @@ export default function Table({ title, headers, initialData, from }) {
 									return (
 										<tr key={idx} className="cell-1">
 											{row.map((item, i) => {
-												if (String(item).toLowerCase().startsWith("approved")) {
-													return (
-														<td key={i}>
-															<Badge pill bg="success" text="light">
-																{item}
-															</Badge>
-														</td>
-													);
-												} else if (
+												if (
 													String(item).toLowerCase().includes("disapproved")
 												) {
 													return (
@@ -357,7 +362,15 @@ export default function Table({ title, headers, initialData, from }) {
 															</Badge>
 														</td>
 													);
-												} else if (
+												} else if (String(item).toLowerCase().startsWith("approved")) {
+													return (
+														<td key={i}>
+															<Badge pill bg="success" text="light">
+																{item}
+															</Badge>
+														</td>
+													);
+												}  else if (
 													String(item).toLowerCase().startsWith("pending")
 												) {
 													return (
@@ -422,6 +435,8 @@ export default function Table({ title, headers, initialData, from }) {
 															</button>
 														</td>
 													)
+												} else if (i == row.length - 1) {
+													return <></>
 												}
 												return <td key={i}>{item}</td>;
 											})}

@@ -8,7 +8,15 @@ import LoadingIndicator from "../LoadingIndicator";
 
 export default function PastApplications({ toast }) {
 	const { currentUser } = useAuth();
-	const [headers, setHeaders] = useState(["Leave Id", "Nature","Type of Leave","Request Date", "Start Date", "Duration", "Status"]);
+	
+	let headers_temp = [];
+	if (currentUser.position != 'pg') {
+		headers_temp = ["Leave Id", "Nature","Request Date", "Start Date", "Duration", "Status"]
+	} else {
+		headers_temp = ["Leave Id", "Nature","Request Date", "Start Date", "Duration", "Status"]
+	}
+	const [headers, setHeaders] = useState(headers_temp);
+
 	const [data, setData] = useState(null);
 
 	const fetchLeaves = async (e) => {
@@ -34,7 +42,12 @@ export default function PastApplications({ toast }) {
 				} else {
 					status = temp_data[i].status
 				}
-				temp.push([temp_data[i].leave_id, temp_data[i].nature,temp_data[i].type_of_leave,new Date(temp_data[i].request_date).toDateString(), temp_data[i].start_date?.slice(0, -12), temp_data[i].duration, status]);
+				// remember last item is for url don't change it
+				if (currentUser.position == 'pg') {
+					temp.push([temp_data[i].leave_id, temp_data[i].nature,new Date(temp_data[i].request_date).toDateString(), temp_data[i].start_date?.slice(0, -12), temp_data[i].duration, temp_data[i].int_status ? temp_data[i].int_status : status, temp_data[i].level]);
+				} else {
+					temp.push([temp_data[i].leave_id, temp_data[i].nature,new Date(temp_data[i].request_date).toDateString(), temp_data[i].start_date?.slice(0, -12), temp_data[i].duration, status, temp_data[i].level]);
+				}				
 			}
 			setData(temp);
 		} catch (error) {

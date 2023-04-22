@@ -7,11 +7,10 @@ import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
-import SignaturePad from 'react-signature-canvas'
 import "./Form.css";
 import { useNavigate } from 'react-router-dom';
 
-export default function NonCasuaLeave({ toast }) {
+export default function ApplyLeave({ toast }) {
 	const navigate = useNavigate();
 	const { currentUser } = useAuth();
 	const [typesOfLeave, setTypesofLeave] = useState(["CASUAL LEAVE", "RESTRICTED HOLIDAY", "SPECIAL CASUAL LEAVE"])
@@ -111,7 +110,6 @@ export default function NonCasuaLeave({ toast }) {
 			// return;
 			form_data['signature'] = binaryData;
 			form_data['form_filename'] = fileName;
-			console.log(form_data, document);
 			// return;
 			const form = new FormData();
 			form.append('data', JSON.stringify(form_data));
