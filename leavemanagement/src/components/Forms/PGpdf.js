@@ -6,8 +6,6 @@ import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import { FaDownload } from "react-icons/fa";
 import { Row, Col } from "react-bootstrap"
-import SignaturePad from 'react-signature-canvas';
-import { useNavigate } from "react-router-dom";
 
 const PGLeavePdfModal = ({ toast, from }) => {
   const [leave, setLeave] = useState(null);
@@ -17,7 +15,7 @@ const PGLeavePdfModal = ({ toast, from }) => {
   const leave_id = currentUrl;
   const [signatureDataURL, setSignatureDataUrl] = useState(null)
   const [downloadLink, setDownloadLink] = useState(null);
-
+  const [leaveNature, setLeaveNature] = useState("")
   const [sigUrl, setSigUrl] = useState();
 
 
@@ -113,6 +111,7 @@ const PGLeavePdfModal = ({ toast, from }) => {
         if (currentUser?.signature && from == "check_applications") {
           setSigUrl(currentUser.signature)
         }
+        setLeaveNature()
         setLeave(data);
         const imageUrl = "data:image/png;base64," + String(data.signature);
         setSignatureDataUrl(imageUrl);
@@ -248,6 +247,23 @@ const PGLeavePdfModal = ({ toast, from }) => {
     }
     test();
   }, []);
+
+  function DisplayNature(nature ) {
+    if (!nature) return;
+    nature = nature.split(" ")[0].toUpperCase();
+    
+    return (
+      <div className="nature-container">
+        <span className="nature">{nature}</span>
+        {nature === 'CASUAL' ? (
+          <span className="arrow">&rarr;</span>
+        ) : nature === 'DUTY' ? (
+          <span className="arrow">&rarr;</span>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
     <>
       {true ? (
@@ -292,7 +308,7 @@ const PGLeavePdfModal = ({ toast, from }) => {
                   LEAVE APPLICATION FORM FOR PG
                 </h5>
                 <h5>
-                  (CASUAL/MEDICAL/DUTY)
+                  {leave?.nature}
                 </h5>
               </div>
             </div>
@@ -777,6 +793,30 @@ const PGLeavePdfModal = ({ toast, from }) => {
                 </div>
               </div>
 
+              <div
+                className="row"
+                style={{ fontSize: "14px", minHeight: "38.6px" }}
+              >
+                <div
+                  className="col-1"
+                  style={{ textAlign: "left", border: "1px solid" }}
+                >
+                  7.
+                </div>
+                <div
+                  className="col-5"
+                  style={{ textAlign: "left", border: "1px solid" }}
+                >
+                  Remarks(if any)
+                </div>
+                <div
+                  className="col-6"
+                  style={{ textAlign: "left", border: "1px solid" }}
+                >
+                  {leave?.remarks}
+                </div>
+              </div>
+
 
 
               <div className="row leave-details-signature">
@@ -820,7 +860,7 @@ const PGLeavePdfModal = ({ toast, from }) => {
               <div className="row">
                 <div className="col-4">
                   {get_status_element(leave, "advisor")}<br />
-                  Head of Deptt./School
+                  Signature of TA instructor
                 </div>
                 <div className="col-4">
 
@@ -832,6 +872,32 @@ const PGLeavePdfModal = ({ toast, from }) => {
               </div>
 
 
+            </div>
+
+            <hr />
+
+            <div className="row" style={{ border: "1px solid" }}>
+              <div className="col-4" style={{ border: "1px solid" }}>
+                Balance as on Date /<br />
+              </div>
+              <div className="col-4" style={{ border: "1px solid" }}>
+                Leave Applied For (No. of days) /<br />
+              </div>
+              <div className="col-4" style={{ border: "1px solid" }}>
+                Balance / <br />
+              </div>
+            </div>
+            <div className="row">
+              <div className="col-4" style={{ border: "1px solid" }}>
+                {leave ? (leave.total_pg_leaves - leave.taken_pg_leaves) : ""}
+                { }
+              </div>
+              <div className="col-4" style={{ border: "1px solid" }}>
+                {leave?.duration}
+              </div>
+              <div className="col-4" style={{ border: "1px solid" }}>
+                {leave ? (leave.total_pg_leaves - leave.taken_pg_leaves - leave.duration) : ""}
+              </div>
             </div>
             <hr />
 
@@ -856,7 +922,11 @@ const PGLeavePdfModal = ({ toast, from }) => {
                   <Col>
                     <span style={{ textAlign: "left" }}>Your signature will appear here if you have updated this in you profile section<br /></span>
                     <div className={"signature-box"}>
-                      <img src={sigUrl} />
+                      <img src={sigUrl} style={{
+                        maxHeight: "60px",
+                        maxWidth: "450px",
+                        width: "40%",
+                      }} />
                     </div>
                   </Col>
 

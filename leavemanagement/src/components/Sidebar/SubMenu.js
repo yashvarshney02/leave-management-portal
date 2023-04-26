@@ -87,7 +87,7 @@ const SubMenu = ({ item, showSidebar, currentUser }) => {
         item.subNav.map((item, index) => {
           let found = false;
           for (let i in item.allowed) {           
-            if (item.allowed[i].includes(currentUser?.position.toLowerCase())) {
+            if (currentUser?.position.toLowerCase().includes(item.allowed[i])) {
               found = true;
             }
           }

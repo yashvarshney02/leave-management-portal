@@ -1,5 +1,5 @@
 export default function OfficePortalAccordionData({ item }) {
-	if (item?.position == 'pg') {
+	if (item?.position.includes('pg')) {
 		return  (
 			<>
 			<li style={{ textAlign: "left" }}>

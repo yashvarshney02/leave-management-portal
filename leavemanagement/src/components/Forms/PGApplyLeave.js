@@ -19,12 +19,7 @@ export default function PGApplyLeave({ toast }) {
 	const [fileName, setFileName] = useState("");
 	const [displaySpecialFields, setDisplaySpecialFields] = useState("none");
 	const [displayStationLeaveDates, setDisplayStationLeaveDates] = useState("")
-	const [formData, setFormData] = useState({
-		"form_duration": 0,
-		"form_name": currentUser.name,
-		"form_email": currentUser.email,
-		"form_isStation": "Yes"
-	});
+	const [dateErrorMessage, setDateErrorMessage] = useState("");
 	const [formLoading, setFormLoading] = useState(false);
 	const [sigUrl, setSigUrl] = useState("");
 
@@ -104,8 +99,19 @@ export default function PGApplyLeave({ toast }) {
 				setFormLoading(false);
 				return;
 			}
-			// return;
-			setFormLoading(true);			
+			if (form_data['form_sdate'] && form_data['form_edate'] && (form_data['form_edate'] < form_data['form_sdate'])) {
+				setDateErrorMessage('Start date must be less than end date');
+				return;
+			}			
+			if (form_data['form_station_sdate'] && form_data['form_station_edate'] && (form_data['form_station_sdate'] > form_data['form_station_edate'])) {
+				setDateErrorMessage('Station Start date must be less than end date');
+				return;
+			}
+			if (form_data['form_duty_start'] && form_data['form_duty_end'] && (form_data['form_duty_start']  > form_data['form_duty_end'])) {
+				setDateErrorMessage('Duty Start date must be less than end date');
+				return;
+			}
+			setFormLoading(true);
 
 			const arrayBuffer = await dataURItoBlob(sigUrl).arrayBuffer();
 			const binaryData = new Uint8Array(arrayBuffer);
@@ -273,7 +279,7 @@ export default function PGApplyLeave({ toast }) {
 													</textarea>
 												</Col>
 											</Row>
-											<Row className='row-al'>
+											<Row className='row-al' style={{ display: displaySpecialFields }}>
 												<Col className="col-al">
 													<legend htmlFor="form_venue" style={{ fontSize: "18px" }}>Name of the venue of Conference/Workshop (in case of Duty Leave)</legend>
 													<textarea id="form_venue" className="form-control" onChange={(e) => { handleInputChange(e) }}>
@@ -286,6 +292,14 @@ export default function PGApplyLeave({ toast }) {
 												<Col className="col-al">
 													<legend htmlFor="form_address" style={{ fontSize: "18px" }}>Address </legend>
 													<textarea id="form_address" className="form-control" onChange={(e) => { handleInputChange(e) }}>
+
+													</textarea>
+												</Col>
+											</Row>
+											<Row className="row-al">
+												<Col className="col-al">
+													<legend htmlFor="form_remarks" style={{ fontSize: "18px" }}>Remarks(if any) </legend>
+													<textarea id="form_remarks" className="form-control" onChange={(e) => { handleInputChange(e) }}>
 
 													</textarea>
 												</Col>
@@ -312,13 +326,18 @@ export default function PGApplyLeave({ toast }) {
 
 											<Row className='row-al'>
 												<div className='signature-box'>
-													<img src={sigUrl}>
+													<img src={sigUrl} style={{
+														maxHeight: "60px",
+														maxWidth: "450px",
+														width: "40%",
+													}}>
 													</img>
 												</div>
 											</Row>
 											<Row className="row-al">
 												<Col>
 													<button type="submit" className="btn btn-primary btn-block">{formLoading ? <LoadingIndicator color={"white"}></LoadingIndicator> : "Apply Leave"}</button>
+													<span style={{ color: "red" }}><br /> {dateErrorMessage}</span>
 												</Col>
 											</Row>
 										</div>

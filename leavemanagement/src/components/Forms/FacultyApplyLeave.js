@@ -18,13 +18,8 @@ export default function ApplyLeave({ toast }) {
 	const [document, setDocument] = useState();
 	const [fileName, setFileName] = useState("");
 	const [displaySpecialFields, setDisplaySpecialFields] = useState("none");
-	const [displayStationLeaveDates, setDisplayStationLeaveDates] = useState("")
-	const [formData, setFormData] = useState({
-		"form_duration": 0,
-		"form_name": currentUser.name,
-		"form_email": currentUser.email,
-		"form_isStation": "Yes"
-	});
+	const [displayStationLeaveDates, setDisplayStationLeaveDates] = useState("");
+	const [dateErrorMessage, setDateErrorMessage] = useState("");
 	const [formLoading, setFormLoading] = useState(false);
 	const [sigUrl, setSigUrl] = useState("");
 
@@ -100,6 +95,22 @@ export default function ApplyLeave({ toast }) {
 			if (!sigUrl) {
 				toast.error("Signature can't be kept empty", toast.POSITION.BOTTOM_RIGHT);
 				setFormLoading(false);
+				return;
+			}
+			if (form_data['form_sdate'] && form_data['form_edate'] && (form_data['form_edate'] < form_data['form_sdate'])) {
+				setDateErrorMessage('Start date must be less than end date');
+				return;
+			}			
+			if (form_data['form_station_sdate'] && form_data['form_station_edate'] && (form_data['form_station_sdate'] > form_data['form_station_edate'])) {
+				setDateErrorMessage('Station Start date must be less than end date');
+				return;
+			}
+			if (form_data['form_suffs'] && form_data['form_suffe'] && (form_data['form_suffs']  > form_data['form_suffe'])) {
+				setDateErrorMessage('Suffix Start date must be less than end date');
+				return;
+			}
+			if (form_data['form_pres'] && form_data['form_pree'] && (form_data['form_pres']  > form_data['form_pree'])) {
+				setDateErrorMessage('Prefix Start date must be less than end date');
 				return;
 			}
 			// return;
@@ -347,13 +358,18 @@ export default function ApplyLeave({ toast }) {
 
 											<Row className='row-al'>
 												<div className='signature-box'>
-													<img src={sigUrl}>
+													<img src={sigUrl} style={{
+														maxHeight: "60px",
+														maxWidth: "450px",
+														width: "40%",
+													}}>
 													</img>
 												</div>
 											</Row>
 											<Row className="row-al">
 												<Col>
 													<button type="submit" className="btn btn-primary btn-block">{formLoading ? <LoadingIndicator color={"white"}></LoadingIndicator> : "Apply Leave"}</button>
+													<span style={{color: "red"}}><br />{dateErrorMessage}</span>
 												</Col>
 											</Row>
 										</div>

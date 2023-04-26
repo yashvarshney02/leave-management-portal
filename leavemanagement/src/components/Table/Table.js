@@ -21,25 +21,7 @@ export default function Table({ title, headers, initialData, from }) {
 	for (let head in headers) {
 		initColSearchKey[headers[head]] = "";
 	}
-	// let pendingTopData = [
-	// 	//prepData(headers,initialData,status,pending)
-	// 	// this returns an array of leaves for which status === pending
-	// 	// note that where status stricly equals to pending
-	// 	//similarly for all others
-	// 	...prepData(headers, initialData, "Status", "pending"),
-	// 	...prepData(headers, initialData, "Status", "pending withdrawn"),
-	// 	...prepData(headers, initialData, "Status", "approved withdrawn"),
-	// 	...prepData(headers, initialData, "Status", "approved by hod"),
-	// 	...prepData(headers, initialData, "Status", "approved by dean"),
-	// 	...prepData(headers, initialData, "Status", "approved by faculty"),
-	// 	...prepData(headers, initialData, "Status", "approved by dean, hod"),
-	// 	...prepData(headers, initialData, "Status", "approved by hod, dean"),
-	// 	...prepData(headers, initialData, "Status", "disapproved by dean"),
-	// 	...prepData(headers, initialData, "Status", "disapproved by hod"),
-	// 	...prepData(headers, initialData, "Status", "disapproved by faculty"),
-	// ];
 
-	// initialData = pendingTopData;
 
 	const [colSearchKey, setColSearchKey] = useState({ initColSearchKey });
 	const [data, setData] = useState(initialData);
@@ -57,20 +39,19 @@ export default function Table({ title, headers, initialData, from }) {
 		if (displayTab === 2) toShow = "approved";
 		if (displayTab === 3) toShow = "withdrawn";
 		let finalData = [];
-
+		let arrpos = headers.findIndex((x) => x === colHeading), temp_data = [];
 		if (toShow === "") {
 			finalData = initialData;
 		} else if (toShow === "pending") {
 			finalData = [...prepData(headers, initialData, "Status", "pending")];
 		} else if (toShow === "approved") {
-			finalData = [
-				...prepData(headers, initialData, "Status", "approved by hod"),
-				...prepData(headers, initialData, "Status", "approved by dean"),
-				...prepData(headers, initialData, "Status", "approved by faculty"),
-				...prepData(headers, initialData, "Status", "disapproved by dean"),
-				...prepData(headers, initialData, "Status", "disapproved by hod"),
-				...prepData(headers, initialData, "Status", "disapproved by faculty")
-			];
+			
+			for (let idx in initialData) {
+				if (initialData[idx][arrpos]?.toLowerCase().includes("approved") || initialData[idx][arrpos]?.toLowerCase().includes("disapproved")) {
+					temp_data.push(initialData[idx]);
+				}
+			}
+			finalData = temp_data;
 		} else if (toShow === "withdrawn") {
 			finalData = [
 				...prepData(headers, initialData, "Status", "Withdrawn"),
@@ -182,12 +163,8 @@ export default function Table({ title, headers, initialData, from }) {
 
 	function getActions(title, row) {
 		let position = row[row.length - 1], status;
-		for (let i in row) {
-			if (["pending", "approved", "disapproved"].includes(String(row[i])?.toLowerCase())) {
-				status = row[i];
-				break;
-			}
-		}
+		let arrpos = headers.findIndex((x) => x === "Status");
+		status = row[arrpos].toLowerCase()
 		if (title == "Applied Leaves") {
 			return (
 				<td>
@@ -195,7 +172,7 @@ export default function Table({ title, headers, initialData, from }) {
 						style={{ cursor: "pointer" }}
 						color="green"
 						onClick={(e) => {
-							if (position != 'pg')
+							if (position.includes('pg') == false)
 								navigate(`/${from}/${row[1].toLowerCase().startsWith("casual") ? "casual" : "non_casual"}/${row[0]}`);
 							else
 								navigate(`/${from}/${"pg_applications"}/${row[0]}`);
@@ -206,6 +183,7 @@ export default function Table({ title, headers, initialData, from }) {
 						style={{ cursor: "pointer" }}
 						color="red"
 						onClick={(e) => {
+							console.log(status)
 							setDeleteLeaveID(row[0]);
 							setCurrentLeaveStatus(status)
 							handleShow();
@@ -221,7 +199,7 @@ export default function Table({ title, headers, initialData, from }) {
 						style={{ cursor: "pointer" }}
 						color="green"
 						onClick={(e) => {
-							if (position != 'pg')
+							if (position.includes('pg') == false)
 								navigate(`/${from}/${row[1].toLowerCase().startsWith("casual") ? "casual" : "non_casual"}/${row[0]}`);
 							else
 								navigate(`/${from}/${"pg_applications"}/${row[0]}`);
@@ -247,8 +225,8 @@ export default function Table({ title, headers, initialData, from }) {
 					<Modal.Title>Confirmation</Modal.Title>
 				</Modal.Header>
 				<Modal.Body>
-					{`Are you sure you want to delete the leave with ID: ${deleteLeaveID}`}{" "}
-					{currentLeaveStatus?.startsWith("Approved") ? (
+					{`Are you sure you want to delete the leave with ID: ${deleteLeaveID}`}{" "}					
+					{(currentLeaveStatus?.toLowerCase().includes("approved") && currentLeaveStatus?.toLowerCase().includes("disapproved") == false) ? (
 						<div>
 							<br />
 							<p>Enter the reason for withdraw:</p>

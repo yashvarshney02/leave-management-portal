@@ -167,7 +167,7 @@ export default function Dashboard({ toast }) {
                     autoFocus
                   />
                   {
-                    currentUser?.position == 'pg' ? (
+                    currentUser?.position.includes('pg') ? (
                       <div>
                         <Form.Label>Entry Number</Form.Label>
                         <Form.Control
@@ -181,7 +181,7 @@ export default function Dashboard({ toast }) {
                     ) : ('')
                   }
                   {
-                    currentUser?.position == 'pg' ? (
+                    currentUser?.position.includes('pg') ? (
                       <div>
                         <Form.Label>TA instructor(Email ID)</Form.Label>
                         <Form.Control
@@ -195,7 +195,7 @@ export default function Dashboard({ toast }) {
                     ) : ('')
                   }
                   {
-                    currentUser?.position == 'pg' ? (
+                    currentUser?.position.includes('pg') ? (
                       <div>
                         <Form.Label>Advisor(Email ID)</Form.Label>
                         <Form.Control
@@ -314,7 +314,7 @@ export default function Dashboard({ toast }) {
                       <span>{currentUser.email}</span>
                       <br />
                       {
-                        currentUser?.position == 'pg' ? (
+                        currentUser?.position.includes('pg') ? (
                           <ProgressBar value={leavesData?.total_pg_leaves - leavesData?.taken_pg_leaves} max={leavesData?.total_pg_leaves} type="Leaves" />
                         ) : (
                           <>
@@ -327,7 +327,7 @@ export default function Dashboard({ toast }) {
                       }
                       <br />
                       {
-                        (currentUser.position == 'hod' || currentUser.position == 'faculty' || currentUser.position == 'pg') ? (<button
+                        (currentUser.position == 'hod' || currentUser.position == 'faculty' || currentUser.position.includes('pg')) ? (<button
                           type="button"
                           class="btn btn-success"
                           onClick={() => {
@@ -339,7 +339,7 @@ export default function Dashboard({ toast }) {
                       }
                       <br />
                       {
-                        (currentUser.position == 'hod' || currentUser.position == 'faculty' || currentUser.position == 'pg') ? (<button
+                        (currentUser.position == 'hod' || currentUser.position == 'faculty' || currentUser.position.includes('pg')) ? (<button
                           type="button"
                           class="btn btn-success"
                           onClick={() => {

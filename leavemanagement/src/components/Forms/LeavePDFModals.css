@@ -2,6 +2,18 @@
 	width: fit-content;
 }
 
+.nature-container {
+  display: flex;
+  align-items: center;
+}
+
+.arrow {
+  margin-left: 5px;
+  font-size: 20px;
+  line-height: 1;
+  position: relative;
+  top: -5px;
+}
 
 
 

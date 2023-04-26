@@ -1061,7 +1061,11 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                   <Col>
                     <span style={{ textAlign: "left" }}>Your signature will appear here if you have updated this in you profile section<br /></span>
                     <div className={"signature-box"}>
-                      <img src={sigUrl} />
+                      <img src={sigUrl} style={{
+                        maxHeight: "60px",
+                        maxWidth: "450px",
+                        width: "40%",
+                      }}/>
                     </div>
                   </Col>
 
