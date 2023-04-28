@@ -31,10 +31,10 @@ const LeavePDFModals = ({ toast, from }) => {
   }
 
   const approveLeave = async (leave_id) => {
-    if (!sigUrl) {
-      toast.error("Signature can't be kept empty in approval", toast.POSITION.BOTTOM_RIGHT);
-      return;
-    }
+    // if (!sigUrl) {
+    //   toast.error("Signature can't be kept empty in approval", toast.POSITION.BOTTOM_RIGHT);
+    //   return;
+    // }
     try {
       const arrayBuffer = await dataURItoBlob(sigUrl).arrayBuffer();
       const binaryData = new Uint8Array(arrayBuffer);
