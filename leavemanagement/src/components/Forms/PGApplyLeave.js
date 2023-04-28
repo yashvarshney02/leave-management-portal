@@ -95,9 +95,15 @@ export default function PGApplyLeave({ toast }) {
 			form_data['form_advisor'] = currentUser.advisor
 			form_data['form_ta_instructor'] = currentUser.ta_instructor
 			if (!sigUrl) {
-				toast.error("Signature can't be kept empty", toast.POSITION.BOTTOM_RIGHT);
-				setFormLoading(false);
-				return;
+				form_data['signature'] = null;
+				// toast.error("Signature can't be kept empty", toast.POSITION.BOTTOM_RIGHT);
+				// setFormLoading(false);
+				// return;
+			} else {
+				const arrayBuffer = await dataURItoBlob(sigUrl).arrayBuffer();
+				const binaryData = new Uint8Array(arrayBuffer);			
+				// return;
+				form_data['signature'] = binaryData;
 			}
 			if (form_data['form_sdate'] && form_data['form_edate'] && (form_data['form_edate'] < form_data['form_sdate'])) {
 				setDateErrorMessage('Start date must be less than end date');
