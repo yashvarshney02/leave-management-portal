@@ -31,13 +31,15 @@ const LeavePDFModals = ({ toast, from }) => {
   }
 
   const approveLeave = async (leave_id) => {
-    // if (!sigUrl) {
-    //   toast.error("Signature can't be kept empty in approval", toast.POSITION.BOTTOM_RIGHT);
-    //   return;
-    // }
+    let binaryData = "";
+    if (!sigUrl) {
+      binaryData = null;
+    } else {
+      let arrayBuffer = await dataURItoBlob(sigUrl).arrayBuffer();
+      binaryData = new Uint8Array(arrayBuffer);
+    }
     try {
-      const arrayBuffer = await dataURItoBlob(sigUrl).arrayBuffer();
-      const binaryData = new Uint8Array(arrayBuffer);
+      
       const resp = await httpClient.post(
         `${process.env.REACT_APP_API_HOST}/approve_leave`,
         { leave_id, level: currentUser.level, signature: binaryData, applicant_id: leave.user_id }
@@ -51,6 +53,7 @@ const LeavePDFModals = ({ toast, from }) => {
         window.location.reload()
       }, 3000);
     } catch (error) {
+      console.log(error)
       toast.error("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
     }
   };
@@ -202,13 +205,13 @@ const LeavePDFModals = ({ toast, from }) => {
   function get_status_element(leave) {
     if (!leave) return ''
     let status = leave?.status.toLowerCase();
-    let imageUrl = "";
+    let imageUrl = "";    
     if (status.startsWith("approved") && status.includes("hod")) {
-      if (leave.hod_sig) {
+      if (leave.hod_sig && leave.hod_sig[0]) {
         imageUrl = "data:image/png;base64," + String(leave.hod_sig);
       }
     } else if (status.startsWith("approved") && status.includes("dean")) {
-      if (leave.dean_sig) {
+      if (leave.dean_sig && leave.dean_sig[0]) {
         imageUrl = "data:image/png;base64," + String(leave.dean_sig);
       }
     }

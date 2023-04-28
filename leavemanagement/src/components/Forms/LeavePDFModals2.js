@@ -35,10 +35,13 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
 
 
   const approveLeave = async (leave_id) => {
-    // if (!sigUrl) {
-    //   toast.error("Signature can't be kept empty in approval", toast.POSITION.BOTTOM_RIGHT);
-    //   return;
-    // }
+    let binaryData = "";
+    if (!sigUrl) {
+      binaryData = null;
+    } else {
+      let arrayBuffer = await dataURItoBlob(sigUrl).arrayBuffer();
+      binaryData = new Uint8Array(arrayBuffer);
+    }
     try {
       const arrayBuffer = await dataURItoBlob(sigUrl).arrayBuffer();
       const binaryData = new Uint8Array(arrayBuffer);
@@ -217,11 +220,11 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
     } else if (position == "dean" && leave.dean_sig && leave.dean_sig[0]) {
       imageUrl = "data:image/png;base64," + String(leave.dean_sig);
     } else if (!position && status.startsWith("approved") && status.includes("hod")) {
-      if (leave.hod_sig) {
+      if (leave.hod_sig && leave.hod_sig[0]) {
         imageUrl = "data:image/png;base64," + String(leave.hod_sig);
       }
     } else if (!position && status.startsWith("approved") && status.includes("dean")) {
-      if (leave.dean_sig) {
+      if (leave.dean_sig && leave.dean_sig[0]) {
         imageUrl = "data:image/png;base64," + String(leave.dean_sig);
       }
     }
@@ -1065,7 +1068,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                         maxHeight: "60px",
                         maxWidth: "450px",
                         width: "40%",
-                      }}/>
+                      }} />
                     </div>
                   </Col>
 

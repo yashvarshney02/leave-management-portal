@@ -32,10 +32,13 @@ const PGLeavePdfModal = ({ toast, from }) => {
 
 
   const approveLeave = async (leave_id) => {
-    // if (!sigUrl) {
-    //   toast.error("Signature can't be kept empty in approval", toast.POSITION.BOTTOM_RIGHT);
-    //   return;
-    // }
+    let binaryData = "";
+    if (!sigUrl) {
+      binaryData = null;
+    } else {
+      let arrayBuffer = await dataURItoBlob(sigUrl).arrayBuffer();
+      binaryData = new Uint8Array(arrayBuffer);
+    }
     try {
       const arrayBuffer = await dataURItoBlob(sigUrl).arrayBuffer();
       const binaryData = new Uint8Array(arrayBuffer);
@@ -52,7 +55,8 @@ const PGLeavePdfModal = ({ toast, from }) => {
         window.location.reload()
       }, 3000);
     } catch (error) {
-      toast.error("Something went wrong", toast.POSITION.BOTTOM_RIGHT);
+      console.log(error)
+      toast.error(error, toast.POSITION.BOTTOM_RIGHT);
     }
   };
 
