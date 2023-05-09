@@ -23,14 +23,18 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
 
 
   function dataURItoBlob(dataURI) {
-    const byteString = atob(dataURI.split(',')[1]);
-    const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
-    const ab = new ArrayBuffer(byteString.length);
-    const ia = new Uint8Array(ab);
-    for (let i = 0; i < byteString.length; i++) {
-      ia[i] = byteString.charCodeAt(i);
+    try {
+      const byteString = atob(dataURI.split(',')[1]);
+      const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+      }
+      return new Blob([ab], { type: mimeString });
+    } catch {
+      return null
     }
-    return new Blob([ab], { type: mimeString });
   }
 
 
@@ -121,8 +125,10 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
           setSigUrl(currentUser.signature)
         }
         setLeave(data);
-        const imageUrl = "data:image/png;base64," + String(data.signature);
-        setSignatureDataUrl(imageUrl);
+        if (data.signature && data.signature[0]) {
+          const imageUrl = "data:image/png;base64," + String(data.signature);
+          setSignatureDataUrl(imageUrl);
+        }
         if (data.filename) {
           await handleDownloadClick('leave_document', data.filename)
         }
@@ -892,17 +898,19 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                   style={{ alignItems: "center", padding: "10px" }}
                 >
                   <div className="img-cont">
-                    {signatureDataURL && (
-                      <img
-                        style={{
-                          maxHeight: "60px",
-                          maxWidth: "450px",
-                          width: "40%",
-                        }}
-                        src={signatureDataURL}
-                        alt="Signature"
-                      />
-                    )}
+                    {
+                      signatureDataURL ? (
+                        <img
+                          style={{
+                            maxHeight: "60px",
+                            maxWidth: "450px",
+                            width: "40%",
+                          }}
+                          src={signatureDataURL}
+                          alt="Signature"
+                        />
+                      ) : (<b>{leave?.name}</b>)
+                    }
                   </div>
                   <br />
                   आवेदक के हस्ताक्षर तारीख साहित/Signature with date of the

@@ -20,28 +20,31 @@ const PGLeavePdfModal = ({ toast, from }) => {
 
 
   function dataURItoBlob(dataURI) {
-    const byteString = atob(dataURI.split(',')[1]);
-    const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
-    const ab = new ArrayBuffer(byteString.length);
-    const ia = new Uint8Array(ab);
-    for (let i = 0; i < byteString.length; i++) {
-      ia[i] = byteString.charCodeAt(i);
+    try {
+      const byteString = atob(dataURI.split(',')[1]);
+      const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+      }
+      return new Blob([ab], { type: mimeString });
+    } catch {
+      return null
     }
-    return new Blob([ab], { type: mimeString });
   }
 
 
   const approveLeave = async (leave_id) => {
     let binaryData = "";
+    console.log(!sigUrl)
     if (!sigUrl) {
       binaryData = null;
     } else {
-      let arrayBuffer = await dataURItoBlob(sigUrl).arrayBuffer();
+      let arrayBuffer = await dataURItoBlob(sigUrl)?.arrayBuffer();
       binaryData = new Uint8Array(arrayBuffer);
     }
     try {
-      const arrayBuffer = await dataURItoBlob(sigUrl).arrayBuffer();
-      const binaryData = new Uint8Array(arrayBuffer);
       const resp = await httpClient.post(
         `${process.env.REACT_APP_API_HOST}/approve_leave`,
         { leave_id, level: currentUser.level, signature: binaryData, applicant_id: leave.user_id }
@@ -117,8 +120,10 @@ const PGLeavePdfModal = ({ toast, from }) => {
         }
         setLeaveNature()
         setLeave(data);
-        const imageUrl = "data:image/png;base64," + String(data.signature);
-        setSignatureDataUrl(imageUrl);
+        if (data.signature && data.signature[0]) {
+          const imageUrl = "data:image/png;base64," + String(data.signature);
+          setSignatureDataUrl(imageUrl);
+        }
         if (data.filename) {
           await handleDownloadClick('leave_document', data.filename)
         }
@@ -252,10 +257,10 @@ const PGLeavePdfModal = ({ toast, from }) => {
     test();
   }, []);
 
-  function DisplayNature(nature ) {
+  function DisplayNature(nature) {
     if (!nature) return;
     nature = nature.split(" ")[0].toUpperCase();
-    
+
     return (
       <div className="nature-container">
         <span className="nature">{nature}</span>
@@ -831,17 +836,19 @@ const PGLeavePdfModal = ({ toast, from }) => {
                   style={{ alignItems: "center", padding: "10px" }}
                 >
                   <div className="img-cont">
-                    {signatureDataURL && (
-                      <img
-                        style={{
-                          maxHeight: "60px",
-                          maxWidth: "450px",
-                          width: "40%",
-                        }}
-                        src={signatureDataURL}
-                        alt="Signature"
-                      />
-                    )}
+                    {
+                      signatureDataURL ? (
+                        <img
+                          style={{
+                            maxHeight: "60px",
+                            maxWidth: "450px",
+                            width: "40%",
+                          }}
+                          src={signatureDataURL}
+                          alt="Signature"
+                        />
+                      ) : (<b>{leave?.name}</b>)
+                    }
                   </div>
                   <br />
                   Signature with date of the

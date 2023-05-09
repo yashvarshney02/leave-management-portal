@@ -20,18 +20,23 @@ const LeavePDFModals = ({ toast, from }) => {
   const [sigUrl, setSigUrl] = useState();
 
   function dataURItoBlob(dataURI) {
-    const byteString = atob(dataURI.split(',')[1]);
-    const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
-    const ab = new ArrayBuffer(byteString.length);
-    const ia = new Uint8Array(ab);
-    for (let i = 0; i < byteString.length; i++) {
-      ia[i] = byteString.charCodeAt(i);
+    try {
+      const byteString = atob(dataURI.split(',')[1]);
+      const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+      }
+      return new Blob([ab], { type: mimeString });
+    } catch {
+      return null
     }
-    return new Blob([ab], { type: mimeString });
   }
 
   const approveLeave = async (leave_id) => {
     let binaryData = "";
+    console.log(sigUrl)
     if (!sigUrl) {
       binaryData = null;
     } else {
@@ -39,7 +44,7 @@ const LeavePDFModals = ({ toast, from }) => {
       binaryData = new Uint8Array(arrayBuffer);
     }
     try {
-      
+
       const resp = await httpClient.post(
         `${process.env.REACT_APP_API_HOST}/approve_leave`,
         { leave_id, level: currentUser.level, signature: binaryData, applicant_id: leave.user_id }
@@ -116,8 +121,11 @@ const LeavePDFModals = ({ toast, from }) => {
           setSigUrl(currentUser.signature)
         }
         setLeave(data);
-        const imageUrl = "data:image/png;base64," + String(data.signature);
-        setSignatureDataUrl(imageUrl);
+        if (data.signature && data.signature[0]) {
+          const imageUrl = "data:image/png;base64," + String(data.signature);
+          setSignatureDataUrl(imageUrl);
+        }
+
         if (data.filename) {
           await handleDownloadClick('leave_document', data.filename)
         }
@@ -205,7 +213,7 @@ const LeavePDFModals = ({ toast, from }) => {
   function get_status_element(leave) {
     if (!leave) return ''
     let status = leave?.status.toLowerCase();
-    let imageUrl = "";    
+    let imageUrl = "";
     if (status.startsWith("approved") && status.includes("hod")) {
       if (leave.hod_sig && leave.hod_sig[0]) {
         imageUrl = "data:image/png;base64," + String(leave.hod_sig);
@@ -440,17 +448,19 @@ const LeavePDFModals = ({ toast, from }) => {
                   style={{ alignItems: "center", padding: "10px" }}
                 >
                   <div className="img-cont">
-                    {signatureDataURL && (
-                      <img
-                        style={{
-                          maxHeight: "60px",
-                          maxWidth: "450px",
-                          width: "40%",
-                        }}
-                        src={signatureDataURL}
-                        alt="Signature"
-                      />
-                    )}
+                    {
+                      signatureDataURL ? (
+                        <img
+                          style={{
+                            maxHeight: "60px",
+                            maxWidth: "450px",
+                            width: "40%",
+                          }}
+                          src={signatureDataURL}
+                          alt="Signature"
+                        />
+                      ) : (<b>{leave?.name}</b>)
+                    }
                   </div>
                   <br />
                   आवेदक के हस्ताक्षर तारीख साहित/Signature with date of the

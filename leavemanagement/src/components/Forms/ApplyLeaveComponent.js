@@ -5,7 +5,7 @@ import PGApplyLeave from "./PGApplyLeave";
 
 export default function ApplyLeaveComponent({toast}) {
 	const { currentUser } = useAuth();
-	if (currentUser.position == 'pg') {
+	if (currentUser.position.includes('pg')) {
 		return <PGApplyLeave toast={toast} />
 	} else {
 		return <FacultyApplyLeave toast={toast}/>

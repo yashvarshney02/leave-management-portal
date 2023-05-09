@@ -117,12 +117,21 @@ export default function PGApplyLeave({ toast }) {
 				setDateErrorMessage('Duty Start date must be less than end date');
 				return;
 			}
+			// console.log(form_data);
+			// return;
 			setFormLoading(true);
 
-			const arrayBuffer = await dataURItoBlob(sigUrl).arrayBuffer();
-			const binaryData = new Uint8Array(arrayBuffer);
-			// return;
-			form_data['signature'] = binaryData;
+			if (!sigUrl) {
+				form_data['signature'] = null;
+				// toast.error("Signature can't be kept empty", toast.POSITION.BOTTOM_RIGHT);
+				// setFormLoading(false);
+				// return;
+			} else {
+				const arrayBuffer = await dataURItoBlob(sigUrl).arrayBuffer();
+				const binaryData = new Uint8Array(arrayBuffer);			
+				// return;
+				form_data['signature'] = binaryData;
+			}
 			form_data['form_filename'] = fileName;
 			// return;
 			const form = new FormData();

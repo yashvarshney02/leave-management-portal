@@ -221,6 +221,7 @@ export default function Dashboard({ toast }) {
                       style={{ border: "none" }}
                       onChange={handleImageChange}
                     />
+                    {/* <a>Clear your signature ?</a> */}
                   </div>
                 </Form.Group>
               </Form>
