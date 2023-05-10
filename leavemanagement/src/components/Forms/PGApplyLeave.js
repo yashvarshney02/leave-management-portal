@@ -198,7 +198,7 @@ export default function PGApplyLeave({ toast }) {
 											<Row className="row-al">
 												<Col className="col-al">
 													<legend htmlFor="form_entry_number" style={{ fontSize: "18px" }}>Entry Number</legend>
-													<input required type="tel" className="form-control" style={{ cursor: "not-allowed" }} id="form_entry_number" defaultValue={currentUser.entry_number} onChange={(e) => { handleInputChange(e) }} placeholder="Phone Number" disabled />
+													<input required type="tel" className="form-control" style={{ cursor: "not-allowed" }} id="form_entry_number" defaultValue={currentUser.entry_number} onChange={(e) => { handleInputChange(e) }} placeholder="Entry Number" disabled />
 												</Col >
 												<Col className="col-al">
 													<legend htmlFor="form_nature" style={{ fontSize: "18px" }}>Nature of leave</legend>

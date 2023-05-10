@@ -66,10 +66,14 @@ export default function Dashboard({ toast }) {
       let dic = {};
       for (let i = 0; i < temp_data.length; i++) {
         let start_date = new Date(temp_data[i].start_date);
+        start_date.setDate(start_date.getDate() - 1);
         let end_date = new Date(temp_data[i].end_date);
+        end_date.setDate(end_date.getDate() - 1);
+        
         let status = temp_data[i].status
         while (start_date <= end_date) {
           let currentDate = start_date.toISOString().slice(0, 10);
+          console.log(currentDate)
           dic[currentDate] = status
           start_date.setDate(start_date.getDate() + 1);
         }
@@ -403,7 +407,7 @@ export default function Dashboard({ toast }) {
                             <div class="card-title text-primary">End Date</div>
                             <div class="date">
                               {new Date(
-                                recentApplication.start_date
+                                recentApplication.end_date
                               ).toLocaleDateString()}
                             </div>
                           </div>
