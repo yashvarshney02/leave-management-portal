@@ -1,4 +1,4 @@
-from flask import Flask,send_file, jsonify, render_template, url_for, request, session, redirect, Response, send_from_directory
+from flask import Flask,send_file, request, session, Response
 import mysql.connector
 import os
 from flask_cors import CORS, cross_origin
@@ -16,29 +16,31 @@ app = Flask(__name__)
 CORS(app, supports_credentials=True)
 
 app.secret_key='secret123'
-root_directory = 'mysite'
-app.config.update(SESSION_COOKIE_SAMESITE="None", SESSION_COOKIE_SECURE=True)
+root_directory = ''
+document_directory = 'documents'
 
-no_auth_routes = ['/edit_user_info','/check_auth','/send_otp','/validate_otp','/login_oauth','/login_oauth','/logout','/logout','/sample_csvs', '/get_user_info', '/get_leave_info_by_id']
+from datetime import timedelta
+
+
+# this is final, don't change this please, in case of issue check network and see the warning in 
+# cookied handling in response headers
+app.config['SESSION_COOKIE_EXPIRES'] = timedelta(days=7)
+app.config['SESSION_COOKIE_SECURE'] = False
+# app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+
 
 # db = mysql.connector.connect(
-#     host="sql12.freemysqlhosting.net",
-#     user="sql12599367",
-#     passwd="41XYHlH5lg",
-#     database="sql12599367"
+# 	host="yashiitrpr.mysql.pythonanywhere-services.com",
+# 	user="yashiitrpr",
+# 	passwd="password@dep123",
+# 	database="yashiitrpr$dep"
 # )
 db = mysql.connector.connect(
-	host="yashiitrpr.mysql.pythonanywhere-services.com",
-	user="yashiitrpr",
-	passwd="password@dep123",
-	database="yashiitrpr$dep"
+	host="localhost",
+	user="root",
+	passwd="abcd@123",
+	database="LMP"
 )
-# db = mysql.connector.connect(
-# 	host="localhost",
-# 	user="root",
-# 	passwd="root_user@dep2023",
-# 	database="yash_db"
-# )
 
 success_code = Response(status=200)
 failure_code = Response(status=400)
@@ -47,12 +49,14 @@ def get_default_number_of_leaves():
 	return {
 		"total_casual_leaves": 8,
 		"taken_casual_leaves": 0,
+		"total_non_casual_leave": 8,
+		"taken_non_casual_leave": 0,
 		"total_restricted_leaves": 2,
 		"taken_restricted_leaves": 0,
 		"total_scl_leaves": 15,
 		"taken_scl_leaves": 0,
-		"total_non_casual_leave": 8,
-		"taken_non_casual_leave": 0,
+		"total_pg_leaves": 30,
+		"taken_pg_leaves": 0
 	}
 
 def get_error_response(error):
@@ -80,6 +84,7 @@ def check_user(email):
 		db.reconnect()
 		cursor = db.cursor()
 		cursor.execute("SELECT * FROM users")
+		email = email.lower()
 		data = cursor.fetchall()
 		for info in data:
 			if (info[2] == email):
@@ -93,6 +98,7 @@ def insert_user(columns,values):
 	cursor = db.cursor()
 	query = "INSERT INTO users ({}) VALUES ({})".format(
 			', '.join(columns), ', '.join(['%s'] * len(values)))
+	print(query)
 	cursor.execute(query, tuple(values))
 	db.commit()
 	db.close()
@@ -100,6 +106,7 @@ def insert_user(columns,values):
 
 def update_user(columns,values, user_id):
 	db.reconnect()
+	print("update", columns, values, user_id)
 	cursor = db.cursor()
 	query = "UPDATE users SET "
 	for i in range(len(columns)):
@@ -107,7 +114,7 @@ def update_user(columns,values, user_id):
 		if i < len(columns)-1:
 			query += ", "
 	query += f" WHERE user_id={user_id};"
-	print("debug:", query)
+	print(query)
 	cursor.execute(query)
 	db.commit()
 	db.close()
@@ -115,6 +122,7 @@ def update_user(columns,values, user_id):
 
 def update_leave_balance(columns,values, user_id, year):
 	query = "UPDATE leaves_data SET "
+	print(columns,values, user_id, year)
 
 	# Add the column names and values to the query
 	for i in range(len(columns)):
@@ -124,6 +132,7 @@ def update_leave_balance(columns,values, user_id, year):
 
 	# Add the condition to the query
 	query += f" WHERE user_id={user_id} and year={year}"
+	print(query)
 	db.reconnect()
 	cursor = db.cursor()
 	cursor.execute(query)
@@ -132,15 +141,15 @@ def update_leave_balance(columns,values, user_id, year):
 	return cursor.rowcount
 
 
-def get_columns_for_user_table(name, email_id, position, department, mobile):
+def get_columns_for_user_table(name, email_id, position, department, mobile,entry_number,ta_instructor,advisor):
 	columns = ['email_id']
 	values = [email_id]
 	if not pd.isna(name):
 		columns.append('name')
 		values.append(name)
-	else:
-		columns.append('name')
-		values.append(f'User - {position}')
+# 	else:
+# 		columns.append('name')
+# 		values.append(f'User - {position}')
 	if not pd.isna(position):
 		columns.append('position')
 		values.append(position)
@@ -150,6 +159,15 @@ def get_columns_for_user_table(name, email_id, position, department, mobile):
 	if not pd.isna(mobile):
 		columns.append('mobile')
 		values.append(str(mobile))
+	if not pd.isna(entry_number):
+		columns.append('entry_number')
+		values.append(str(entry_number))
+	if not pd.isna(ta_instructor):
+		columns.append('ta_instructor')
+		values.append(str(ta_instructor))
+	if not pd.isna(advisor):
+		columns.append('advisor')
+		values.append(str(advisor))
 	return columns, values
 
 def get_columns_for_leaves_table(email_id,nature,duration,is_station,start_date,end_date,status,type_of_leave):
@@ -175,6 +193,7 @@ def get_user_data(email):
 
 def get_user_dic(email):
 	data = get_user_data(email)[0]
+	email = email.lower()
 	dic = {}
 	dic['user_id'] = data[0]
 	dic['name'] = data[1]
@@ -182,6 +201,9 @@ def get_user_dic(email):
 	dic['position'] = data[3]
 	dic['department'] = data[4]
 	dic['mobile'] = data[5]
+	dic['entry_number'] = data[7]
+	dic['ta_instructor'] = data[8]
+	dic['advisor'] = data[9]
 	return dic
 
 def get_user_signature(email):
@@ -202,6 +224,9 @@ def get_user_dic_by_user_id(user_id):
 	dic['position'] = data[3]
 	dic['department'] = data[4]
 	dic['mobile'] = data[5]
+	dic['entry_number'] = data[7]
+	dic['ta_instructor'] = data[8]
+	dic['advisor'] = data[9]
 	return dic
 
 def get_new_leave_id(cursor):
@@ -222,6 +247,24 @@ def get_new_leave_id(cursor):
 		new_leave_id = 'LMP_1'
 	return new_leave_id
 
+def get_new_pg_leave_id(cursor):
+	cursor.execute("SELECT leave_id FROM pg_leaves ORDER BY leave_id DESC LIMIT 1")
+	result = cursor.fetchone()
+	if result is not None:
+		last_leave_id = result[0]
+	else:
+		last_leave_id = None
+	# Generate the new leave_id value
+	if last_leave_id is not None:
+		numeric_part = int(last_leave_id.split('_')[1])
+		new_numeric_part = numeric_part + 1
+		# Generate the new leave_id value
+		new_leave_id = 'PG_' + str(new_numeric_part)
+	else:
+	# If there are no rows in the table, set the new leave_id value to LMP_1
+		new_leave_id = 'PG_1'
+	return new_leave_id
+
 def insert_leave(leave, signature, document):
 	try:
 		db.reconnect()
@@ -231,10 +274,13 @@ def insert_leave(leave, signature, document):
 		user_id = data['user_id']
 		department = data['department']
 		position = data['position']
-		signature_binary = bytes(signature.values())
+		if signature:
+			signature_binary = bytes(signature.values())
+		else:
+			signature_binary = signature
 		if leave.get('form_filename'):
 			file_name = leave['form_filename']
-			document.save(os.path.join(root_directory, file_name))
+			document.save(os.path.join(document_directory, file_name))
 		else:
 			file_name = ''
 		if leave.get('form_filedata'):
@@ -249,8 +295,8 @@ def insert_leave(leave, signature, document):
 					(new_leave_id,department, user_id, leave['form_nature'], leave['form_purpose'], leave['form_isStation'], leave['form_rdate'], leave['form_sdate'], leave['form_edate'], leave['form_duration'], 'Pending', position, '', leave['form_type_of_leave'], file_name, file_data,signature_binary
 					,leave.get('form_address'), leave.get('form_pres'), leave.get('form_pree'), leave.get('form_suffs'), leave.get('form_suffe'), leave.get('form_altArrangements'), leave.get('form_station_sdate'), leave.get('form_station_edate')))
 		connect.commit()
-		cols = ["Leave ID"]
-		vals = [new_leave_id]
+		cols = ["Applicant Email ID", "Leave ID"]
+		vals = [leave['form_email'],new_leave_id]
 		for key in util.apply_leave_keys:
 			if leave.get(key) and len(leave.get(key)):
 				cols.append(util.apply_leave_keys[key])
@@ -261,7 +307,7 @@ def insert_leave(leave, signature, document):
 			url = f"casual/{new_leave_id}"
 		else:
 			url = f"non_casual/{new_leave_id}"
-		message = util.process_leave_message(cols, vals, url)
+		message = util.process_leave_message( cols, vals, url)
 		if (position == "hod"):
 			cursor.execute("SELECT email_id FROM users where position='dean'")
 			data = cursor.fetchall()
@@ -286,6 +332,56 @@ def insert_leave(leave, signature, document):
 	except Exception as E:
 		exc_type, exc_obj, exc_tb = sys.exc_info()
 		fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+		return "first" + str(E) + str(exc_tb.tb_lineno)
+
+def insert_pg_leave(leave, signature, document):
+	try:
+		db.reconnect()
+		connect = db
+		cursor = connect.cursor()
+		data = get_user_dic(leave['form_email'])
+		user_id = data['user_id']
+		department = data['department']
+		position = data['position']
+		if signature:
+			signature_binary = bytes(signature.values())
+		else:
+			signature_binary = signature
+		if leave.get('form_filename'):
+			file_name = leave['form_filename']
+			document.save(os.path.join(document_directory, file_name))
+		else:
+			file_name = ''
+		if leave.get('form_filedata'):
+			file_data = leave['form_filedata']
+		else:
+			file_data = ''
+		cursor.execute("UPDATE users SET signature = %s WHERE user_id = %s", (signature_binary, user_id ))
+		new_leave_id = get_new_pg_leave_id(cursor)
+		cursor.execute("INSERT INTO pg_leaves\
+			(leave_id, department, user_id, nature, purpose, is_station, request_date, start_date, end_date, duration, status, level, filename, signature, address, venue, duty_start_date,duty_end_date,prefix_suffix,station_start_date, station_end_date, advisor, ta_instructor, remarks) \
+			VALUES (%s,%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+					(new_leave_id,department, user_id, leave['form_nature'], leave['form_purpose'], leave['form_isStation'], leave['form_rdate'], leave['form_sdate'], leave['form_edate'], leave['form_duration'], 'Pending', position, file_name,signature_binary
+					,leave.get('form_address'), leave.get('form_venue'), leave.get('form_duty_start'), leave.get('form_duty_end'), leave.get('form_prefix_suffix'), leave.get('form_station_sdate'), leave.get('form_station_edate'),leave['form_advisor'],leave['form_ta_instructor'],leave['form_remarks']))
+		connect.commit()
+		cols = ["Applicant Email ID", "Leave ID"]
+		vals = [leave['form_email'],new_leave_id]
+		# 		leave applied now send email
+		for key in util.apply_pg_leave_keys:
+			if leave.get(key) and len(leave.get(key)):
+				cols.append(util.apply_pg_leave_keys[key])
+				vals.append(leave.get(key))
+		message = util.apply_leave_message(cols, vals)
+		util.send_email(leave['form_email'], message, "Leave Applied Successfully")
+		url = f"pg_applications/{new_leave_id}"
+		message = util.process_leave_message( cols, vals, url)
+		email_ids = set({leave['form_advisor'], leave['form_ta_instructor']})
+		for email in email_ids:
+			util.send_email(email, message, "New Leave Application Submitted")
+		return True, new_leave_id
+	except Exception as E:
+		exc_type, exc_obj, exc_tb = sys.exc_info()
+		fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
 		return str(E) + str(exc_tb.tb_lineno)
 
 def leaves_data_util(user_id):
@@ -296,19 +392,23 @@ def leaves_data_util(user_id):
 	data = cursor.fetchall()
 	default_leaves = get_default_number_of_leaves()
 	columns = get_columns_of_table('leaves_data')
+	default_columns = columns.copy()
+	columns.remove("year")
 	columns.append("year")
 	if len(data) == 0:
 		values = [user_id]
 		for e in default_leaves:
 			values.append(default_leaves[e])
 		values.append(year)
+		print(values)
 		query = "INSERT INTO leaves_data ({}) VALUES ({})".format(
 		', '.join(columns), ', '.join(['%s'] * len(values)))
+		print(query)
 		cursor.execute(query, tuple(values))
 		connect.commit()
 		return default_leaves
 	else:
-		payload = {key: val for key,val in zip(columns,data[0])}
+		payload = {key: val for key,val in zip(default_columns,data[0])}
 		return payload
 
 @app.before_request
@@ -327,16 +427,19 @@ def home():
 @cross_origin(supports_credentials=True)
 def sample_csvs():
 	try:
+		print("test", os.getcwd())
 		mode = request.json['name']
 		file_name = f'{mode}.csv' if not request.json.get('file_name') else request.json.get('file_name')
 		if mode == "users_sample":
-			return send_file(file_name, as_attachment=True, attachment_filename=file_name)
+			return send_file(file_name, as_attachment=True)
 		elif mode == "leaves_sample":
-			return send_file(file_name, as_attachment=True, attachment_filename=file_name)
+			return send_file(file_name, as_attachment=True)
 		elif mode == "leaves_balance":
-			return send_file(file_name, as_attachment=True, attachment_filename=file_name)
+			return send_file(file_name, as_attachment=True)
 		elif mode == "leave_document":
-			return send_file(file_name, as_attachment=False, attachment_filename=file_name, mimetype='application/pdf')
+			# return get_error_response("ERROR")
+			# return get_success_response(r"documents\\"+file_name)
+			return send_file(os.path.join('documents',file_name), as_attachment=False, mimetype='application/pdf')
 	except Exception as E:
 		return get_error_response(E)
 
@@ -346,17 +449,19 @@ def process_query():
 	try:
 		file = request.files['file']
 		mode = request.form.get('name')
-		sample_data = pd.read_csv(f"{root_directory}//{mode}.csv")
+		sample_data = pd.read_csv(f"{mode}.csv")
 		data = pd.read_csv(file)
+		print(data)
 		records_updated = 0
 		if list(data.columns) != list(sample_data):
 			return get_error_response("Wrong Data, Kindly Match the sample data provided in the link")
 		if mode == "users_sample":
 			inserted_users = {}
-			for name, email_id, position, department, mobile in zip(data.name.values, data.email_id.values, data.position.values, data.department.values, data.mobile.values):
+			for name, email_id, position, department, mobile, entry_number, ta_instructor, advisor in zip(data.name.values, data.email_id.values, data.position.values, data.department.values, data.mobile.values, data.entry_number.values, data.ta_instructor.values, data.advisor.values):
 				if pd.isna(email_id) or pd.isna(position) or pd.isna(department):
 					continue
-				columns, values = get_columns_for_user_table(name, email_id.lower(), position.lower(), department.lower(), mobile)
+				email_id = email_id.lower()
+				columns, values = get_columns_for_user_table(name, email_id.lower(), position.lower(), department.lower(), mobile,entry_number,ta_instructor,advisor)
 				if check_user(email_id):
 					user = get_user_dic(email_id)
 					user_id = user['user_id']
@@ -375,14 +480,15 @@ def process_query():
 					continue
 				if not check_user(email_id):
 					continue
+				email_id = email_id.lower()
 				columns,values = get_columns_for_leaves_table(email_id,nature,duration,is_station,start_date,end_date,status,type_of_leave)
 				insert_leave_application(columns,values)
 		elif mode == "leaves_balance":
-			for email_id,total_casual_leaves,taken_casual_leaves,total_non_casual_leave,taken_non_casual_leave,total_restricted_leaves,taken_restricted_leaves,total_scl_leaves,taken_scl_leaves,year in zip(data.email_id.values, data.total_casual_leaves.values,data.taken_casual_leaves.values, data.total_non_casual_leave.values, data.taken_non_casual_leave.values,data.total_restricted_leaves,data.taken_restricted_leaves,data.total_scl_leaves,data.taken_scl_leaves,data.year.values):
+			for email_id,total_casual_leaves,taken_casual_leaves,total_non_casual_leave,taken_non_casual_leave,total_restricted_leaves,taken_restricted_leaves,total_scl_leaves,taken_scl_leaves,total_pg_leaves,taken_pg_leaves,year in zip(data.email_id.values, data.total_casual_leaves.values,data.taken_casual_leaves.values, data.total_non_casual_leave.values, data.taken_non_casual_leave.values,data.total_restricted_leaves,data.taken_restricted_leaves,data.total_scl_leaves,data.taken_scl_leaves,data.total_pg_leaves.values,data.taken_pg_leaves.values,data.year.values):
 				if pd.isna(email_id) or pd.isna(year):
 					continue
+				email_id = email_id.lower()
 				user = get_user_dic(email_id)
-				print(user)
 				user_id = user['user_id']
 				columns = []
 				values = []
@@ -404,14 +510,18 @@ def process_query():
 				if not pd.isna(taken_scl_leaves):
 					columns.append('taken_scl_leaves')
 					values.append(taken_scl_leaves)
-				if not pd.isna(taken_scl_leaves):
-					columns.append('taken_scl_leaves')
-					values.append(taken_scl_leaves)
+				if not pd.isna(total_non_casual_leave):
+					columns.append('total_non_casual_leave')
+					values.append(total_non_casual_leave)
 				if not pd.isna(taken_non_casual_leave):
 					columns.append('taken_non_casual_leave')
 					values.append(taken_non_casual_leave)
-				print(columns)
-				print(values)
+				if not pd.isna(total_pg_leaves):
+					columns.append('total_pg_leaves')
+					values.append(total_pg_leaves)
+				if not pd.isna(taken_pg_leaves):
+					columns.append('taken_pg_leaves')
+					values.append(taken_pg_leaves)
 				records_updated+=update_leave_balance(columns,values,user_id, year)
 
 		return get_success_response(f"{records_updated} updated")
@@ -434,12 +544,14 @@ def check_auth():
 def send_otp():
 	try:
 		session.clear()
-		email = request.json['email']
+		print(session)
+		email = request.json['email'].lower()
 		if (not check_user(email)):
 			return get_error_response("User not Allowed")
 		OTP = random.randint(10**5,10**6-1)
 		session['otp'] = OTP
 		message = util.otp_message(OTP)
+		print(session)
 		util.send_email(email, message, "OTP Verification")
 		return get_success_response(f"OTP has been sent to {email}")
 	except Exception as E:
@@ -451,17 +563,18 @@ def send_otp():
 def validate_otp():
 	try:
 		otp = request.json['otp']
-		email = request.json['email']
+		email = request.json['email'].lower()
+		print("TRY",session)
 		if str(otp) == str(session['otp']):
 			session['logged_in'] = True
 			session['user_info'] = {
 				"email": email,
 				"picture" : ""
 			}
+			
 			session['user_info'].update(get_user_dic(email=email))
 			return get_success_response("OTP verified")
 		else:
-			session.clear()
 			return get_error_response("Wrong OTP")
 	except Exception as E:
 		return get_error_response(E)
@@ -485,7 +598,9 @@ def login_oauth():
 @cross_origin(supports_credentials=True)
 def logout():
 	try:
+		print(session)
 		session.clear()
+		print(session)
 		return get_success_response("Logout Successfull")
 	except Exception as E:
 		return get_error_response("Logout Failed")
@@ -494,7 +609,9 @@ def logout():
 @cross_origin(supports_credentials=True)
 def get_user_info():
 	try:
-		email = session['user_info']['email']
+		if (not session.get('user_info') or not check_user(session.get('user_info')['email'])):
+			return get_error_response("Forbidden")
+		email = session['user_info']['email'].lower()
 		session['user_info'].update(get_user_dic(email=email))
 		session['user_info'].update(get_user_signature(email=email))
 		return get_success_response(session.get('user_info'))
@@ -505,14 +622,25 @@ def get_user_info():
 @cross_origin(supports_credentials=True)
 def edit_user_info():
 	try:
+		if (not session.get('user_info') or not check_user(session.get('user_info')['email'])):
+			return get_error_response("Forbidden")
 		name = request.json['name']
 		mobile = request.json['mobile']
+		signature = request.json.get('signature')
+		entry_number = request.json.get('entry_number')
+		ta_instructor = request.json.get('ta_instructor')
+		advisor = request.json.get('advisor')
 		db.reconnect()
 		connect = db
 		cursor = connect.cursor()
-		email = session['user_info']['email']
-		query = 'UPDATE users set name = %s, mobile = %s WHERE email_id = %s'
-		cursor.execute(query,(name, mobile, email,))
+		email = session['user_info']['email'].lower()
+		if not signature:
+			query = 'UPDATE users set name = %s, mobile = %s,entry_number = %s,ta_instructor = %s,advisor = %s  WHERE email_id = %s'
+			cursor.execute(query,(name, mobile, entry_number, ta_instructor, advisor, email))
+		else:
+			signature = bytes(signature.values())
+			query = 'UPDATE users set name = %s, mobile = %s,signature=%s,entry_number = %s,ta_instructor = %s,advisor = %s WHERE email_id = %s'
+			cursor.execute(query,(name, mobile, signature, entry_number, ta_instructor, advisor, email))
 		connect.commit()
 		return get_success_response("Profile Edit successful")
 	except Exception as E:
@@ -523,13 +651,18 @@ def edit_user_info():
 @cross_origin(supports_credentials=True)
 def apply_leave():
 	try:
+		if (not session.get('user_info') or not check_user(session.get('user_info')['email'])):
+			return get_error_response("Forbidden")
 		data = json.loads(request.form.get('data'))
 		signature = data['signature']
 		try:
 			document = request.files['file']
 		except:
 			document = None
-		ret = insert_leave(data, signature,document)
+		if 'pg' not in session['user_info']['position']:
+			ret = insert_leave(data, signature,document)
+		else:
+			ret = insert_pg_leave(data, signature,document)
 		if ret[0] == True:
 			return get_success_response(f"Leave Applied Successfully ID: {ret[1]}")
 		else:
@@ -539,29 +672,49 @@ def apply_leave():
 
 import base64
 
+def get_permission_for_past_applications(position, curr_user_email, applicant_email):
+    return True
+
+    # if 'office' in position.lower():
+    #     return True
+    # elif curr_user_email == applicant_email:
+    #     return True
+    
+    # return False
+
 @app.route('/past_applications', methods=['POST'])
 @cross_origin(supports_credentials=True)
 def past_applications():
 	try:
-		email = session['user_info']['email']
+		if (not session.get('user_info') or not check_user(session.get('user_info')['email'])):
+			return get_error_response("Forbidden")
 		user_id = session['user_info']['user_id']
+		position = session['user_info']['position']
+		curr_user_email = session['user_info']['email']
 		db.reconnect()
 		connect = db
-		cursor = connect.cursor()
-		cursor.execute("SELECT * FROM leaves WHERE user_id = %s", (user_id, ))
-		data = cursor.fetchall()
+		cursor = connect.cursor()		
+		if 'pg' in position:
+			cursor.execute("SELECT * FROM pg_leaves WHERE user_id = %s", (user_id, ))
+			data = cursor.fetchall()
+			columns = get_columns_of_table('pg_leaves')
+		else:
+			cursor.execute("SELECT * FROM leaves WHERE user_id = %s", (user_id, ))
+			data = cursor.fetchall()
+			columns = get_columns_of_table('leaves')
 		payload = []
-		columns = get_columns_of_table('leaves')
+		applicant_data = get_user_dic_by_user_id(user_id)		
 		for i in data:
 			content = {}
 			for col, val in zip(columns, i):
 				if col in ['file_data', 'signature'] or "_sig" in col:
-					val = base64.b64encode(val).decode('utf-8') if val else None,
+					continue
 				content[col] = val
-			content['name'] = session['user_info'].get('name')
-			content['email'] = session['user_info'].get('email')
-			content['mobile'] = session['user_info'].get('mobile')
-			content['position'] = session['user_info'].get('position')
+			content['name'] = applicant_data.get('name')
+			content['email'] = applicant_data.get('email')
+			content['mobile'] = applicant_data.get('mobile')
+			content['position'] = applicant_data.get('position')
+			content['entry_number'] = applicant_data.get('entry_number')
 
 			payload.append(content)
 		connect.close()
@@ -577,21 +730,33 @@ def past_applications():
 		payload = pending_leaves + other_leaves
 		return get_success_response(payload)
 	except Exception as E:
-		return get_error_response(E)
+		exc_type, exc_obj, exc_tb = sys.exc_info()
+		fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+		return get_error_response(f"{E} {exc_tb.tb_lineno}")
 
 
 @app.route('/get_leave_info_by_id', methods=['POST', 'OPTIONS'])
 @cross_origin(supports_credentials=True)
 def get_leave_info_by_id():
 	try:
+		if (not session.get('user_info') or not check_user(session.get('user_info')['email'])):
+			return get_error_response("Forbidden")
+		curr_user_email = session.get('user_info')['email']
+		position = session.get('user_info')['position']
 		leave_id = request.json['leave_id']
 		db.reconnect()
 		connect = db
 		cursor = connect.cursor()
 		cursor.execute('SELECT * FROM leaves WHERE leave_id = %s', (leave_id,))
 		leaves = cursor.fetchall()
-		print(leaves)
 		columns = get_columns_of_table('leaves')
+		if len(leaves) == 0:
+			cursor.execute('SELECT * FROM pg_leaves WHERE leave_id = %s', (leave_id,))
+			leaves = cursor.fetchall()
+			columns = get_columns_of_table('pg_leaves')
+   
+		
+
 		payload = []
 		for i in leaves:
 			content = {}
@@ -600,10 +765,13 @@ def get_leave_info_by_id():
 					val = base64.b64encode(val).decode('utf-8') if val else None,
 				content[col] = val
 			applicant = get_user_dic_by_user_id(content['user_id'])
+			if not get_permission_for_past_applications(position, curr_user_email, applicant.get('email')):
+				return payload
 			content['name'] = applicant['name']
 			content['email'] = applicant['email']
 			content['mobile'] = applicant['mobile']
 			content['position'] = applicant['position']
+			content['entry_number'] = applicant.get('entry_number')
 			leaves_data = leaves_data_util(i[2])
 			content.update(leaves_data)
 			payload.append(content)
@@ -615,6 +783,8 @@ def get_leave_info_by_id():
 @cross_origin(supports_credentials=True)
 def check_applications():
 	try:
+		if (not session.get('user_info') or not check_user(session.get('user_info')['email'])):
+			return get_error_response("Forbidden")
 		email = session['user_info']['email']
 		data = get_user_dic(email)
 		user_id = data['user_id']
@@ -626,19 +796,25 @@ def check_applications():
 		if position == "hod":
 			cursor.execute('SELECT * FROM leaves WHERE\
 				department = %s and level = %s', (department, "faculty"))
+			leaves = cursor.fetchall()
 		elif position == 'dean':
 			cursor.execute('SELECT * FROM leaves WHERE\
-				level = %s', ("hod",))
+				level = %s or nature = %s', ("hod", "Non Casual Leave"))
+			leaves = cursor.fetchall()
 		elif position == 'office':
 			cursor.execute("SELECT * FROM leaves where department=%s", (department,))
-		leaves = cursor.fetchall()
+			leaves = cursor.fetchall()
+		else:
+			leaves = []
+
 		payload = []
 		columns = get_columns_of_table('leaves')
 		for i in leaves:
 			content = {}
 			for col, val in zip(columns, i):
 				if col in ['file_data', 'signature'] or "_sig" in col:
-					val = base64.b64encode(val).decode('utf-8') if val else None,
+					continue
+				# 	val = base64.b64encode(val).decode('utf-8') if val else None,
 				content[col] = val
 			cursor.execute('SELECT email_id FROM users WHERE user_id = %s', (i[2], ))
 			data = cursor.fetchall()
@@ -646,14 +822,33 @@ def check_applications():
 			cur_user = get_user_dic(email)
 			content['email'] = cur_user['email']
 			content['name'] = cur_user['name']
-			applicant_position = cur_user['position']
-			content['position'] = applicant_position
-			if position == 'dean' and applicant_position == 'hod':
-				payload.append(content)
-			elif position == 'hod' and applicant_position == 'faculty':
-				payload.append(content)
-			elif position == 'office':
-				payload.append(content)
+			content['position'] = cur_user['position']
+			content['entry_number'] = cur_user['entry_number']
+			payload.append(content)
+
+		# now process pg leaves
+		if not position == 'office':
+			cursor.execute('SELECT * FROM pg_leaves WHERE advisor = %s or ta_instructor = %s', (session['user_info']['email'], session['user_info']['email']))
+		else:
+			cursor.execute('SELECT * FROM pg_leaves WHERE department =%s', (department, ))
+		leaves = cursor.fetchall()
+		columns = get_columns_of_table('pg_leaves')
+		for i in leaves:
+			content = {}
+			for col, val in zip(columns, i):
+				if col in ['file_data', 'signature'] or "_sig" in col:
+					# print(col, "continue")
+					continue
+				content[col] = val
+			cursor.execute('SELECT email_id FROM users WHERE user_id = %s', (i[2], ))
+			data = cursor.fetchall()
+			email = data[0][0]
+			cur_user = get_user_dic(email)
+			content['email'] = cur_user['email']
+			content['name'] = cur_user['name']
+			content['position'] = cur_user['position']
+			content['entry_number'] = cur_user['entry_number']
+			payload.append(content)
 
 		sorted_leaves = sorted(payload, key=lambda k: k['leave_id'], reverse=True)
 		pending_leaves = []
@@ -675,6 +870,8 @@ def check_applications():
 @cross_origin(supports_credentials=True)
 def fetch_remaining_leaves():
 	try:
+		if (not session.get('user_info') or not check_user(session.get('user_info')['email'])):
+			return get_error_response("Forbidden")
 		email = session['user_info']['email']
 		data = get_user_data(email)[0]
 		user_id = data[0]
@@ -687,6 +884,8 @@ def fetch_remaining_leaves():
 @cross_origin(supports_credentials=True)
 def fetch_number_of_leaves():
 	try:
+		if (not session.get('user_info') or not check_user(session.get('user_info')['email'])):
+			return get_error_response("Forbidden")
 		email = session['user_info']['email']
 		data = get_user_data(email)[0]
 		if data[3] !='dean':
@@ -709,22 +908,44 @@ def fetch_number_of_leaves():
 @cross_origin(supports_credentials=True)
 def approve_withdraw_leave():
 	try:
+		if (not session.get('user_info') or not check_user(session.get('user_info')['email'])):
+			return get_error_response("Forbidden")
 		leave_id = request.json['leave_id']
 		db.reconnect()
 		connect = db
 		cursor = connect.cursor()
-		cursor.execute("SELECT nature, status, user_id, duration from leaves WHERE leave_id = %s", (leave_id, ))
-		results = cursor.fetchall()[0]
-		curr_nature_of_leave = results[0]
-		curr_user_id = results[2]
-		curr_leave_duration = results[3]
-		cursor.execute("UPDATE leaves SET status = 'Withdrawn', withdraw_reason=NULL WHERE leave_id = %s", (leave_id,))
-		connect.commit()
-		if curr_nature_of_leave.lower().startswith("casual"):
-			query = "Update leaves_data set taken_casual_leaves = taken_casual_leaves-%s where user_id = %s" % (curr_leave_duration, curr_user_id)
+		if leave_id.startswith("LMP"):
+			cursor.execute("SELECT nature, status, user_id, duration, type_of_leave from leaves WHERE leave_id = %s", (leave_id, ))
+			results = cursor.fetchall()[0]
+			curr_nature_of_leave = results[0]
+			curr_type_of_leave = results[4]
+			curr_user_id = results[2]
+			curr_leave_duration = results[3]
+			cursor.execute("UPDATE leaves SET status = 'Withdrawn', withdraw_reason=NULL WHERE leave_id = %s", (leave_id,))
+			if curr_nature_of_leave.lower().startswith("casual"):
+				u_st2 = util.leaves_data_map[curr_type_of_leave]
+				query = "Update leaves_data set %s = %s-%s where user_id = %s" % (u_st2,u_st2,curr_leave_duration, curr_user_id)
+				cursor.execute(query)
+			else:
+				u_st2 = util.leaves_data_map["non_casual_leave"]
+				query = "Update leaves_data set %s = %s-%s where user_id = %s" % (u_st2,u_st2,curr_leave_duration, curr_user_id)
+				cursor.execute(query)
+			connect.commit()
+			connect.close()
+			return get_success_response(f"Withdraw Request for Leave with ID: {leave_id} is approved")
+		else:
+			cursor.execute("SELECT nature, status, user_id, duration from pg_leaves WHERE leave_id = %s", (leave_id, ))
+			results = cursor.fetchall()[0]
+			curr_nature_of_leave = results[0]
+			curr_user_id = results[2]
+			curr_leave_duration = results[3]
+			cursor.execute("UPDATE pg_leaves SET status = 'Withdrawn', withdraw_reason=NULL WHERE leave_id = %s", (leave_id,))
+			u_st2 = util.leaves_data_map["PG"]
+			query = "Update leaves_data set %s = %s-%s where user_id = %s" % (u_st2,u_st2,curr_leave_duration, curr_user_id)
 			cursor.execute(query)
-		connect.close()
-		return get_success_response(f"Withdraw Request for Leave with ID: {leave_id} is approved")
+			connect.commit()
+			connect.close()
+			return get_success_response(f"Withdraw Request for Leave with ID: {leave_id} is approved")
 	except Exception as E:
 		return get_error_response(E)
 
@@ -732,11 +953,16 @@ def approve_withdraw_leave():
 @cross_origin(supports_credentials=True)
 def disapprove_withdraw_leave():
 	try:
+		if (not session.get('user_info') or not check_user(session.get('user_info')['email'])):
+			return get_error_response("Forbidden")
 		leave_id = request.json['leave_id']
 		db.reconnect()
 		connect = db
 		cursor = connect.cursor()
-		cursor.execute("UPDATE leaves SET withdraw_reason='' WHERE leave_id = %s", (leave_id,))
+		if leave_id.startswith("LMP"):
+			cursor.execute("UPDATE leaves SET withdraw_reason='' WHERE leave_id = %s", (leave_id,))
+		else:
+			cursor.execute("UPDATE pg_leaves SET withdraw_reason='' WHERE leave_id = %s", (leave_id,))
 		connect.commit()
 		return get_success_response(f"Withdraw Request for Leave with ID: {leave_id} is disapproved")
 	except Exception as E:
@@ -786,13 +1012,13 @@ def approve_non_casual_leave(cursor, leave_id,user, applicant, signature_binary,
 		cursor.execute("UPDATE users SET signature = %s WHERE user_id = %s", (signature_binary, user["user_id"] ))
 	new_status = new_status.lower()
 	reduce_leaves = False
-	if new_status.includes('approved by dean') and new_status.includes('approved by dean') and applicant['position'] == 'faculty'):
+	if 'approved by dean' in new_status and 'approved by hod' in new_status and applicant['position'] == 'faculty':
 		reduce_leaves = True
-	elif new_status.includes('approved by dean') and applicant['position'] == 'hod'):
+	elif 'approved by dean' in new_status and applicant['position'] == 'hod':
 		reduce_leaves = True
 	if not reduce_leaves:
 		return by
-	u_st2 = util.leaves_data_map[type_of_leave]
+	u_st2 = util.leaves_data_map[nature]
 	query = "Select %s from leaves_data where user_id = %s" % (u_st2, applicant['user_id'])
 	cursor.execute(query)
 	data = cursor.fetchall()[0]
@@ -802,40 +1028,104 @@ def approve_non_casual_leave(cursor, leave_id,user, applicant, signature_binary,
 	cursor.execute(query)
 	return by
 
+def approve_pg_leave(cursor,temp, leave_id,user, applicant, signature_binary, nature, duration,int_status,should_approve):
+	by = f'Approved By {temp}'
+	print(int_status)
+	if int_status:
+		int_status += f"|{by}"
+	else:
+		int_status = by
+	print("test", int_status)
+	if temp == 'TA Ins':
+		cursor.execute(
+		"UPDATE pg_leaves SET int_status = %s, ta_sig= %s WHERE leave_id = %s", (int_status,signature_binary, leave_id ))
+		cursor.execute("UPDATE users SET signature = %s WHERE user_id = %s", (signature_binary, user["user_id"] ))
+	elif temp == 'Advisor':
+		cursor.execute(
+		"UPDATE pg_leaves SET int_status = %s, advisor_sig= %s WHERE leave_id = %s", (int_status,signature_binary, leave_id ))
+	if int_status.count("Approved") == 2:
+		should_approve = True
+	cursor.execute("UPDATE users SET signature = %s WHERE user_id = %s", (signature_binary, user["user_id"] ))
+	u_st2 = util.leaves_data_map["PG"]
+	query = "Select %s from leaves_data where user_id = %s" % (u_st2, applicant['user_id'])
+	cursor.execute(query)
+	data = cursor.fetchall()[0]
+	taken_cnt = float(data[0]) + duration
+	if should_approve:
+		cursor.execute(
+		"UPDATE pg_leaves SET status = %s WHERE leave_id = %s", ("Approved", leave_id ))
+		query = "Update leaves_data set %s = %s where user_id = %s" % (
+			u_st2, taken_cnt, applicant['user_id'])
+		cursor.execute(query)
+	return int_status
+
 @app.route('/approve_leave', methods=['POST'])
 @cross_origin(supports_credentials=True)
 def approve_leave():
 	try:
+		if (not session.get('user_info') or not check_user(session.get('user_info')['email'])):
+			return get_error_response("Forbidden")
 		leave_id = request.json['leave_id']
 		applicant_id = request.json['applicant_id']
 		signature = request.json['signature']
-		signature_binary = bytes(signature.values())
+		try:
+			signature_binary = bytes(signature.values())
+		except:
+			signature_binary = signature
 		db.reconnect()
 		connect = db
 		cursor = connect.cursor()
 		applicant = get_user_dic_by_user_id(applicant_id)
-		cursor.execute(
-			"Select user_id, nature, duration,type_of_leave,status  from leaves where leave_id = %s", (leave_id, ))
-		data = cursor.fetchall()[0]
-		user_id = data[0]
-		nature = data[1]
-		duration = float(data[2])
-		type_of_leave = data[3]
-		curr_status = data[4]
-		nature = nature.lower().split()
-		nature = '_'.join(nature)
-		if (nature == 'casual_leave'):
-			by = approve_casual_leave(cursor, leave_id, session['user_info'],applicant, signature_binary, nature, type_of_leave,duration)
-		elif (nature == 'non_casual_leave'):
-			by = approve_non_casual_leave(cursor, leave_id, session['user_info'],applicant, signature_binary, nature, type_of_leave,duration,curr_status)
+		user_id = applicant_id
+		if 'pg' in applicant['position']:
+			cursor.execute("Select user_id, nature, duration,status, advisor, ta_instructor,int_status  from pg_leaves where leave_id = %s", (leave_id, ))
+			data = cursor.fetchall()[0]
+			nature = data[1]
+			duration = float(data[2])
+			curr_status = data[3]
+			advisor = data[4]
+			ta_instructor = data[5]
+			int_status = data[6]
+			nature = nature.lower().split()
+			nature = '_'.join(nature)
+			temp = ''
+			should_approve = False
+			if ta_instructor == session['user_info']['email']:
+				temp = 'TA Ins'
+			elif advisor == session['user_info']['email']:
+				temp = 'Advisor'
+			if ta_instructor == advisor:
+				should_approve = True
+			by = approve_pg_leave(cursor,temp, leave_id, session['user_info'],applicant, signature_binary, nature,duration, int_status, should_approve)
+			connect.commit()
+			cols = ["Leave ID", "Status"]
+			vals = [leave_id, by]
+			message = util.leave_status_message(cols, vals)
+			util.send_email(applicant['email'], message, "Leave Status Updated")
+			connect.commit()
+
 		else:
-			return get_error_response("Leave Status Not Updated")
-		connect.commit()
-		cols = ["Leave ID", "Status"]
-		vals = [leave_id, by]
-		message = util.leave_status_message(cols, vals)
-		util.send_email(applicant['email'], message, "Leave Status Updated")
-		connect.commit()
+			cursor.execute(
+			"Select user_id, nature, duration,type_of_leave,status  from leaves where leave_id = %s", (leave_id, ))
+			data = cursor.fetchall()[0]
+			nature = data[1]
+			duration = float(data[2])
+			type_of_leave = data[3]
+			curr_status = data[4]
+			nature = nature.lower().split()
+			nature = '_'.join(nature)
+			if (nature == 'casual_leave'):
+				by = approve_casual_leave(cursor, leave_id, session['user_info'],applicant, signature_binary, nature, type_of_leave,duration)
+			elif (nature == 'non_casual_leave'):
+				by = approve_non_casual_leave(cursor, leave_id, session['user_info'],applicant, signature_binary, nature, type_of_leave,duration,curr_status)
+			else:
+				return get_error_response("Leave Status Not Updated")
+			connect.commit()
+			cols = ["Leave ID", "Status"]
+			vals = [leave_id, by]
+			message = util.leave_status_message(cols, vals)
+			util.send_email(applicant['email'], message, "Leave Status Updated")
+			connect.commit()
 
 
 		return get_success_response(f"Leave with ID: {leave_id} is approved")
@@ -846,6 +1136,8 @@ def approve_leave():
 @cross_origin(supports_credentials=True)
 def submit_office_signature():
 	try:
+		if (not session.get('user_info') or not check_user(session.get('user_info')['email'])):
+			return get_error_response("Forbidden")
 		leave_id = request.json['leave_id']
 		signature = request.json['signature']
 		signature_binary = bytes(signature.values())
@@ -865,44 +1157,80 @@ def submit_office_signature():
 @cross_origin(supports_credentials=True)
 def disapprove_leave():
 	try:
+		if (not session.get('user_info') or not check_user(session.get('user_info')['email'])):
+			return get_error_response("Forbidden")
 		leave_id = request.json['leave_id']
 		applicant_id = request.json['applicant_id']
 		user = get_user_dic(session['user_info']['email'])
 		db.reconnect()
 		connect = db
 		cursor = connect.cursor()
-		cursor.execute("SELECT nature, status, user_id, duration, type_of_leave from leaves WHERE leave_id = %s", (leave_id, ))
-		results = cursor.fetchall()[0]
-		curr_nature_of_leave = results[0]
-		curr_status_of_leave = results[1]
-		curr_type_of_leave = results[4]
-		curr_user_id = results[2]
-		curr_leave_duration = results[3]
-		applicant = get_user_dic_by_user_id(applicant_id)
-		if user["position"] == "hod":
-			by = f'Disapproved By Hod-{user["name"]}'
-			cursor.execute(
-				"UPDATE leaves SET status = %s WHERE leave_id = %s", (by, leave_id ))
-			connect.commit()
-		elif user["position"] == "dean":
-			by = f'Disapproved By Dean-{user["name"]}'
-			cursor.execute(
-				"UPDATE leaves SET status = %s WHERE leave_id = %s", (by, leave_id ))
-			connect.commit()
-		else:
-			return get_error_response("Leave Status Not Updated")
-		cols = ["Leave ID", "Status"]
-		vals = [leave_id, by]
-		message = util.leave_status_message(cols, vals)
-		util.send_email(applicant['email'], message, "Leave Status Updated")
+		if leave_id.startswith("LMP"):
+			cursor.execute("SELECT nature, status, user_id, duration, type_of_leave from leaves WHERE leave_id = %s", (leave_id, ))
+			results = cursor.fetchall()[0]
+			curr_nature_of_leave = results[0]
+			curr_status_of_leave = results[1]
+			curr_type_of_leave = results[4]
+			curr_user_id = results[2]
+			curr_leave_duration = results[3]
+			applicant = get_user_dic_by_user_id(applicant_id)
+			if user["position"] == "hod":
+				by = f'Disapproved By Hod-{user["name"]}'
+				cursor.execute(
+					"UPDATE leaves SET status = %s WHERE leave_id = %s", (by, leave_id ))
+				connect.commit()
+			elif user["position"] == "dean":
+				by = f'Disapproved By Dean-{user["name"]}'
+				cursor.execute(
+					"UPDATE leaves SET status = %s WHERE leave_id = %s", (by, leave_id ))
+				connect.commit()
+			else:
+				return get_error_response("Leave Status Not Updated")
+			cols = ["Leave ID", "Status"]
+			vals = [leave_id, by]
+			message = util.leave_status_message(cols, vals)
+			util.send_email(applicant['email'], message, "Leave Status Updated")
 
-		if curr_nature_of_leave.lower().startswith("casual") and curr_status_of_leave.lower().startswith("approved"):
-			u_st2 = util.leaves_data_map[curr_type_of_leave]
-			query = "Update leaves_data set %s = %s-%s where user_id = %s" % (u_st2,u_st2,curr_leave_duration, curr_user_id)
-			cursor.execute(query)
+			if curr_nature_of_leave.lower().startswith("casual") and curr_status_of_leave.lower().startswith("approved"):
+				u_st2 = util.leaves_data_map[curr_type_of_leave]
+				query = "Update leaves_data set %s = %s-%s where user_id = %s" % (u_st2,u_st2,curr_leave_duration, curr_user_id)
+				cursor.execute(query)
+				connect.commit()
+			if curr_nature_of_leave.lower().startswith("non casual") and curr_status_of_leave.lower().count("approved") == 2:
+				u_st2 = util.leaves_data_map["non_casual_leave"]
+				query = "Update leaves_data set %s = %s-%s where user_id = %s" % (u_st2,u_st2,curr_leave_duration, curr_user_id)
+				cursor.execute(query)
+				connect.commit()
+			connect.close()
+			return get_success_response(f"Leave with ID: {leave_id} is disapproved")
+		else:
+			cursor.execute("SELECT nature, status, user_id, duration, int_status from pg_leaves WHERE leave_id = %s", (leave_id, ))
+			results = cursor.fetchall()[0]
+			curr_nature_of_leave = results[0]
+			curr_status_of_leave = results[1]
+			curr_user_id = results[2]
+			curr_leave_duration = results[3]
+			curr_int_status = results[4]
+			applicant = get_user_dic_by_user_id(applicant_id)
+			by = f'Disapproved By {user["name"]}'
+			if curr_int_status:
+				curr_int_status += f"|{by}"
+			else:
+				curr_int_status = by
+			cursor.execute(
+					"UPDATE pg_leaves SET status = %s, int_status=%s WHERE leave_id = %s", (by,curr_int_status, leave_id ))
+			cols = ["Leave ID", "Status"]
+			vals = [leave_id, by]
+			message = util.leave_status_message(cols, vals)
+			util.send_email(applicant['email'], message, "Leave Status Updated")
+			if curr_status_of_leave.lower().startswith("approved"):
+				u_st2 = util.leaves_data_map["PG"]
+				query = "Update leaves_data set %s = %s-%s where user_id = %s" % (u_st2,u_st2,curr_leave_duration, curr_user_id)
+				cursor.execute(query)
 			connect.commit()
-		connect.close()
-		return get_success_response(f"Leave with ID: {leave_id} is disapproved")
+			connect.close()
+			return get_success_response(f"Leave with ID: {leave_id} is disapproved")
+
 	except Exception as E:
 		exc_type, exc_obj, exc_tb = sys.exc_info()
 		fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -911,6 +1239,8 @@ def disapprove_leave():
 @app.route('/add_comment', methods=['POST'])
 def add_comment():
 	try:
+		if (not session.get('user_info') or not check_user(session.get('user_info')['email'])):
+			return get_error_response("Forbidden")
 		leave_id = request.json['leave_id']
 		applicant_id = request.json['applicant_id']
 		comment = request.json['comment']
@@ -933,22 +1263,37 @@ def add_comment():
 @app.route('/delete_application', methods=['POST'])
 def delete_application():
 	try:
+		if (not session.get('user_info') or not check_user(session.get('user_info')['email'])):
+			return get_error_response("Forbidden")
 		leave_id = request.json['leave_id']
 		db.reconnect()
 		connect = db
 		cursor = connect.cursor()
-		cursor.execute("SELECT status FROM leaves where leave_id = %s", (leave_id,))
+		if leave_id.startswith("LMP"):
+			cursor.execute("SELECT status FROM leaves where leave_id = %s", (leave_id,))
+		else:
+			cursor.execute("SELECT status FROM pg_leaves where leave_id = %s", (leave_id,))
 		results = cursor.fetchall()
 		status = results[0][0]
 		if ("Approved" in status):
 			reason = request.json['reason']
-			cursor.execute("UPDATE leaves set withdraw_reason=%s where leave_id=%s", (reason, leave_id))
+			if leave_id.startswith("LMP"):
+				cursor.execute("UPDATE leaves set withdraw_reason=%s where leave_id=%s", (reason, leave_id))
+			else:
+				cursor.execute("UPDATE pg_leaves set withdraw_reason=%s where leave_id=%s", (reason, leave_id))
+				cols = ["Leave ID", "Reason"]
+				vals = [leave_id, reason]
+				message = util.withdraw_leave_message(cols, vals)
+				util.send_email(session['user_info']['email'], message, "Leave Submitted for Withdrawl")
 			connect.commit()
 			return get_success_response(f"Leave with id : {leave_id} has been submitted for withdrawl")
 		if ("Disapproved" in status):
 			return get_error_response("This leave has already been disapproved, can't be deleted")
 		if ("Pending" in status):
-			cursor.execute("DELETE from leaves where leave_id = %s", (leave_id,))
+			if leave_id.startswith("LMP"):
+				cursor.execute("DELETE from leaves where leave_id = %s", (leave_id,))
+			else:
+				cursor.execute("DELETE from pg_leaves where leave_id = %s", (leave_id,))
 			connect.commit()
 			return get_success_response(f"Leave with id : {leave_id} has been deleted")
 	except Exception as E:
@@ -957,6 +1302,8 @@ def delete_application():
 @app.route('/get_holidays_info', methods=['GET'])
 def get_holiday_info():
 	try:
+		if (not session.get('user_info') or not check_user(session.get('user_info')['email'])):
+			return get_error_response("Forbidden")
 		curr_year = dt.datetime.now().year
 		db.reconnect()
 		connect = db
@@ -984,6 +1331,8 @@ def get_holiday_info():
 @app.route('/add_holiday', methods=['POST'])
 def add_holiday():
 	try:
+		if (not session.get('user_info') or not check_user(session.get('user_info')['email'])):
+			return get_error_response("Forbidden")
 		curr_year = request.json['year']
 		new_holidays = request.json['holidays']
 		db.reconnect()
@@ -1004,6 +1353,8 @@ def add_holiday():
 @cross_origin(supports_credentials=True)
 def get_emails():
 	try:
+		if (not session.get('user_info') or not check_user(session.get('user_info')['email'])):
+			return get_error_response("Forbidden")
 		db.reconnect()
 		connect = db
 		cursor = connect.cursor()
@@ -1023,32 +1374,32 @@ def get_emails():
 @cross_origin(supports_credentials=True)
 def collective_data():
 	try:
+		if (not session.get('user_info') or not check_user(session.get('user_info')['email'])):
+			return get_error_response("Forbidden")
 		email = session['user_info']['email']
-		data = get_user_dic(email)
-		department = data['department']
+		department = session['user_info']['department']
 		db.reconnect()
 		connect = db
 		cursor = connect.cursor()
-		cursor.execute('SHOW columns from users')
-		users_cols = cursor.fetchall()   # list of tuples whose first value of tuple is the column name
-		users_cols = [e[0] for e in users_cols if e[0]!='signature']
 		cursor.execute('SELECT * FROM users WHERE department = %s', (department,))
 		users = cursor.fetchall()
 		users_data = []
 		for data in users:
-			if data[4] != department:
-				continue
-			dic = {key: value for key, value in zip(users_cols,data)}
+			dic = get_user_dic_by_user_id(data[0])
 			uid = dic['user_id']
 			# get total number of leaves from here
 			leaves_dic = leaves_data_util(uid)
 			dic.update(leaves_dic)
 			# now get the ids of all leaves of that user_id
-			cursor.execute('SELECT leave_id, status, nature FROM leaves WHERE user_id = %s', (uid,))
+			if 'pg' in dic['position']:
+				cursor.execute('SELECT leave_id, status, nature FROM pg_leaves WHERE user_id = %s', (uid,))
+			else:
+				cursor.execute('SELECT leave_id, status, nature FROM leaves WHERE user_id = %s', (uid,))
 			leave_ids = cursor.fetchall()
 			leave_ids = [[e[0],e[1],e[2]] for e in leave_ids]
 			dic.update({"leave_ids": leave_ids})
 			users_data.append(dic)
+			print(users_data)
 		return get_success_response(users_data)
 	except Exception as E:
 		exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -1057,6 +1408,9 @@ def collective_data():
 
 
 
-if __name__ == '__main__':
-	app.secret_key='secret123'
-	app.run(host='0.0.0.0: 3001')
+# if __name__ == '__main__':
+# 	app.secret_key='secret123'
+	# app.config['SESSION_COOKIE_SECURE'] = True
+	# app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.run('0.0.0.0', port=5000, debug=True, threaded=True)
+	# app.run()
