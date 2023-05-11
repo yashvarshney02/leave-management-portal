@@ -18,6 +18,7 @@ const LeavePDFModals = ({ toast, from }) => {
   const [signatureDataURL, setSignatureDataUrl] = useState(null)
   const [downloadLink, setDownloadLink] = useState(null);
   const [sigUrl, setSigUrl] = useState();
+  const [disablButton, setDisableButton] = useState(false);
 
   function dataURItoBlob(dataURI) {
     try {
@@ -588,20 +589,28 @@ const LeavePDFModals = ({ toast, from }) => {
                 </Row>
 
                 <button
+                  disabled={disablButton}
+                  style={{display: (leave?.status.toLowerCase().startsWith("approved") ? "none": "")}}
                   type="button"
                   className="btn btn-outline-success"
                   onClick={async () => {
+                    setDisableButton(true);
                     await approveLeave(leave?.leave_id);
+                    setDisableButton(false);
                   }}
                 >
                   Approve
                 </button>
                 &nbsp;&nbsp;&nbsp;&nbsp;
                 <button
+                  disabled={disablButton}
+                  style={{display: (leave?.status.toLowerCase().startsWith("disapproved")? "none": "")}}
                   type="button"
                   className="btn btn-outline-danger"
                   onClick={async () => {
+                    setDisableButton(true);
                     await disapproveLeave(leave?.leave_id);
+                    setDisableButton(false);
                   }}
                 >
                   Disapprove
@@ -609,9 +618,12 @@ const LeavePDFModals = ({ toast, from }) => {
                 &nbsp;&nbsp;&nbsp;&nbsp;
                 <button
                   type="button"
+                  disabled={disablButton}
                   className="btn btn-outline-primary"
-                  onClick={() => {
-                    addComment(leave?.leave_id);
+                  onClick={async () => {
+                    setDisableButton(true);
+                    await addComment(leave?.leave_id);
+                    setDisableButton(false);
                   }}
                 >
                   Add Comment

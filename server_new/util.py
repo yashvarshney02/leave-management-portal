@@ -4,7 +4,7 @@ from email.mime.multipart import MIMEMultipart
 
 admin_mail = "head.dep2023@gmail.com"
 admin_pass = "gthqszvacmcjmunk"
-base_url = "http://172.30.8.214:8080/"
+base_url = "http://172.30.8.214/"
 
 def insert_user_message(columns, values):
     message = "<h3>Your account has been updated for the Leave Management Portal (IIT Ropar) with the following details:</h3>"
@@ -67,7 +67,8 @@ def withdraw_leave_message(columns, values):
     return message
 
 def otp_message(otp):
-    message = f"Your one time password for Leave Management Portal is {otp}"
+    message = "<h3>Your one time password for Leave Management Portal is:</h3>"
+    message += f"<span  style='color: blue; font-weight: bold;text-align: center;'>{otp}</span>"
     return message
 
 def send_email(email, message, subject=""):

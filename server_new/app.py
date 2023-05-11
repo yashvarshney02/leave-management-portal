@@ -230,40 +230,20 @@ def get_user_dic_by_user_id(user_id):
 	return dic
 
 def get_new_leave_id(cursor):
-	cursor.execute("SELECT leave_id FROM leaves ORDER BY leave_id DESC LIMIT 1")
-	result = cursor.fetchone()
-	if result is not None:
-		last_leave_id = result[0]
-	else:
-		last_leave_id = None
-	# Generate the new leave_id value
-	if last_leave_id is not None:
-		numeric_part = int(last_leave_id.split('_')[1])
-		new_numeric_part = numeric_part + 1
-		# Generate the new leave_id value
-		new_leave_id = 'LMP_' + str(new_numeric_part)
-	else:
-	# If there are no rows in the table, set the new leave_id value to LMP_1
-		new_leave_id = 'LMP_1'
-	return new_leave_id
+	cursor.execute("SELECT leave_id FROM leaves")
+	result = cursor.fetchall()
+	last_id = 0
+	for res in result:
+		last_id = max(last_id, int(res[0].split("_")[1]))
+	return f"LMP_{last_id+1}"
 
 def get_new_pg_leave_id(cursor):
-	cursor.execute("SELECT leave_id FROM pg_leaves ORDER BY leave_id DESC LIMIT 1")
-	result = cursor.fetchone()
-	if result is not None:
-		last_leave_id = result[0]
-	else:
-		last_leave_id = None
-	# Generate the new leave_id value
-	if last_leave_id is not None:
-		numeric_part = int(last_leave_id.split('_')[1])
-		new_numeric_part = numeric_part + 1
-		# Generate the new leave_id value
-		new_leave_id = 'PG_' + str(new_numeric_part)
-	else:
-	# If there are no rows in the table, set the new leave_id value to LMP_1
-		new_leave_id = 'PG_1'
-	return new_leave_id
+	cursor.execute("SELECT leave_id FROM pg_leaves")
+	result = cursor.fetchall()
+	last_id = 0
+	for res in result:
+		last_id = max(last_id, int(res[0].split("_")[1]))
+	return f"PG_{last_id+1}"
 
 def insert_leave(leave, signature, document):
 	try:
@@ -288,7 +268,7 @@ def insert_leave(leave, signature, document):
 		else:
 			file_data = ''
 		cursor.execute("UPDATE users SET signature = %s WHERE user_id = %s", (signature_binary, user_id ))
-		new_leave_id = get_new_leave_id(cursor)
+		new_leave_id = get_new_leave_id(cursor)		
 		cursor.execute("INSERT INTO leaves\
 			(leave_id, department, user_id, nature, purpose, is_station, request_date, start_date, end_date, duration, status, level,file_uploaded, type_of_leave, filename, file_data, signature, address, prefix_start_date, prefix_end_date,suffix_start_date,suffix_end_date, alt_arrangements,station_start_date, station_end_date) \
 			VALUES (%s,%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
@@ -377,7 +357,10 @@ def insert_pg_leave(leave, signature, document):
 		message = util.process_leave_message( cols, vals, url)
 		email_ids = set({leave['form_advisor'], leave['form_ta_instructor']})
 		for email in email_ids:
-			util.send_email(email, message, "New Leave Application Submitted")
+			try:
+				util.send_email(email, message, "New Leave Application Submitted")
+			except:
+				pass
 		return True, new_leave_id
 	except Exception as E:
 		exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -564,16 +547,26 @@ def validate_otp():
 	try:
 		otp = request.json['otp']
 		email = request.json['email'].lower()
-		print("TRY",session)
 		if str(otp) == str(session['otp']):
 			session['logged_in'] = True
 			session['user_info'] = {
 				"email": email,
 				"picture" : ""
 			}
-			
-			session['user_info'].update(get_user_dic(email=email))
-			return get_success_response("OTP verified")
+			data = get_user_dic(email=email)
+			session['user_info'].update(data)
+			message = 'OTP Verified!'
+			# if 'pg' in data['position']:
+			# 	if not data['ta_instructor'] or not data['advisor'] or not data['entry_number'] or not data['name']:
+			# 		message = 'Kindly Complete Profile Before Applying for Leave!!'
+			# 	if not len(data['ta_instructor']) or not len(data['advisor']) or not len(data['entry_number']) or not len(data['name']):
+			# 		message = 'Kindly Complete Profile Before Applying for Leave!!'
+			# else:
+			# 	if not data['name']:
+			# 		message = 'Kindly Complete Profile Before Applying for Leave!!'
+			# 	if not len(data['name']):
+			# 		message = 'Kindly Complete Profile Before Applying for Leave!!'
+			return get_success_response(message)
 		else:
 			return get_error_response("Wrong OTP")
 	except Exception as E:
@@ -590,7 +583,13 @@ def login_oauth():
 		session['logged_in'] = True
 		session['user_info'] = data
 		session['user_info'].update(get_user_dic(email=data.get('email')))
-		return get_success_response("Details Saved")
+		message = ''
+		# if 'pg' in data['position']:
+		# 	if not data['ta_instructor'] or not data['advisor'] or not data['entry_number'] or not data['name']:
+		# 		message = 'Kindly Complete Profile Before Applying for Leave!!'
+		# 	if not len(data['ta_instructor']) or not len(data['advisor']) or not len(data['entry_number']) or not len(data['name']):
+		# 		message = 'Kindly Complete Profile Before Applying for Leave!!'
+		return get_success_response(message)
 	except Exception as E:
 		return get_error_response(E)
 
@@ -673,14 +672,14 @@ def apply_leave():
 import base64
 
 def get_permission_for_past_applications(position, curr_user_email, applicant_email):
-    return True
+	return True
 
-    # if 'office' in position.lower():
-    #     return True
-    # elif curr_user_email == applicant_email:
-    #     return True
-    
-    # return False
+	# if 'office' in position.lower():
+	#     return True
+	# elif curr_user_email == applicant_email:
+	#     return True
+	
+	# return False
 
 @app.route('/past_applications', methods=['POST'])
 @cross_origin(supports_credentials=True)
@@ -1035,7 +1034,6 @@ def approve_pg_leave(cursor,temp, leave_id,user, applicant, signature_binary, na
 		int_status += f"|{by}"
 	else:
 		int_status = by
-	print("test", int_status)
 	if temp == 'TA Ins':
 		cursor.execute(
 		"UPDATE pg_leaves SET int_status = %s, ta_sig= %s WHERE leave_id = %s", (int_status,signature_binary, leave_id ))
@@ -1281,10 +1279,10 @@ def delete_application():
 				cursor.execute("UPDATE leaves set withdraw_reason=%s where leave_id=%s", (reason, leave_id))
 			else:
 				cursor.execute("UPDATE pg_leaves set withdraw_reason=%s where leave_id=%s", (reason, leave_id))
-				cols = ["Leave ID", "Reason"]
-				vals = [leave_id, reason]
-				message = util.withdraw_leave_message(cols, vals)
-				util.send_email(session['user_info']['email'], message, "Leave Submitted for Withdrawl")
+			cols = ["Leave ID", "Reason"]
+			vals = [leave_id, reason]
+			message = util.withdraw_leave_message(cols, vals)
+			util.send_email(session['user_info']['email'], message, "Leave Submitted for Withdrawl")
 			connect.commit()
 			return get_success_response(f"Leave with id : {leave_id} has been submitted for withdrawl")
 		if ("Disapproved" in status):
@@ -1412,5 +1410,7 @@ def collective_data():
 # 	app.secret_key='secret123'
 	# app.config['SESSION_COOKIE_SECURE'] = True
 	# app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-app.run('0.0.0.0', port=5000, debug=True, threaded=True)
+app.run('0.0.0.0', port=5000, threaded=True)
+# app.run(host='127.0.0.1', port=5000)
+
 	# app.run()

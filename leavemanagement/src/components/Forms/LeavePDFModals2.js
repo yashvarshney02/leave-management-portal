@@ -18,6 +18,7 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
   const [signatureDataURL, setSignatureDataUrl] = useState(null)
   const [downloadLink, setDownloadLink] = useState(null);
   const navigate = useNavigate();
+  const [disablButton, setDisableButton] = useState(false);
 
   const [sigUrl, setSigUrl] = useState();
 
@@ -1084,9 +1085,13 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
 
                 <button
                   type="button"
+                  disabled={disablButton}
+                  style={{display: (leave?.status.toLowerCase().startsWith("approved")? "none": "")}}
                   className="btn btn-outline-success"
                   onClick={async () => {
+                    setDisableButton(true);
                     await approveLeave(leave?.leave_id);
+                    setDisableButton(false);
                   }}
                 >
                   Approve
@@ -1094,19 +1099,26 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                 &nbsp;&nbsp;&nbsp;&nbsp;
                 <button
                   type="button"
+                  disabled={disablButton}
+                  style={{display: (leave?.status.toLowerCase().startsWith("disapproved")? "none": "")}}
                   className="btn btn-outline-danger"
                   onClick={async () => {
+                    setDisableButton(true);
                     await disapproveLeave(leave?.leave_id);
+                    setDisableButton(false);
                   }}
                 >
                   Disapprove
                 </button>{" "}
                 &nbsp;&nbsp;&nbsp;&nbsp;
                 <button
+                  disabled={disablButton}
                   type="button"
                   className="btn btn-outline-primary"
-                  onClick={() => {
-                    addComment(leave?.leave_id);
+                  onClick={async () => {
+                    setDisableButton(true);
+                    await addComment(leave?.leave_id);
+                    setDisableButton(false);
                   }}
                 >
                   Add Comment
@@ -1121,7 +1133,11 @@ const LeavePDFModalsNonCasual = ({ toast, from }) => {
                   <Col>
                     <span style={{ textAlign: "left" }}>Your signature will appear here if you have updated this in you profile section<br /></span>
                     <div className={"signature-box"}>
-                      <img src={sigUrl} />
+                      <img src={sigUrl} style={{
+                        maxHeight: "60px",
+                        maxWidth: "450px",
+                        width: "40%",
+                      }} />
                     </div>
                   </Col>
                 </Row>

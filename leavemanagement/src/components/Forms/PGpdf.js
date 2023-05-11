@@ -17,6 +17,7 @@ const PGLeavePdfModal = ({ toast, from }) => {
   const [downloadLink, setDownloadLink] = useState(null);
   const [leaveNature, setLeaveNature] = useState("")
   const [sigUrl, setSigUrl] = useState();
+  const [disablButton, setDisableButton] = useState(false);
 
 
   function dataURItoBlob(dataURI) {
@@ -224,7 +225,7 @@ const PGLeavePdfModal = ({ toast, from }) => {
         />
       )
     }
-    return leave?.status
+    return leave?.int_status
   }
 
   function get_office_status_element(leave) {
@@ -945,9 +946,13 @@ const PGLeavePdfModal = ({ toast, from }) => {
 
                 <button
                   type="button"
+                  disabled={disablButton}
+                  style={{display: (leave?.status.toLowerCase().startsWith("approved")? "none": "")}}
                   className="btn btn-outline-success"
                   onClick={async () => {
+                    setDisableButton(true);
                     await approveLeave(leave?.leave_id);
+                    setDisableButton(true);
                   }}
                 >
                   Approve
@@ -955,9 +960,13 @@ const PGLeavePdfModal = ({ toast, from }) => {
                 &nbsp;&nbsp;&nbsp;&nbsp;
                 <button
                   type="button"
+                  disabled={disablButton}
+                  style={{display: (leave?.status.toLowerCase().startsWith("disapproved")? "none": "")}}
                   className="btn btn-outline-danger"
                   onClick={async () => {
+                    setDisableButton(true);
                     await disapproveLeave(leave?.leave_id);
+                    setDisableButton(false);
                   }}
                 >
                   Disapprove
@@ -972,7 +981,11 @@ const PGLeavePdfModal = ({ toast, from }) => {
                   <Col>
                     <span style={{ textAlign: "left" }}>Your signature will appear here if you have updated this in you profile section<br /></span>
                     <div className={"signature-box"}>
-                      <img src={sigUrl} />
+                      <img src={sigUrl} style={{
+                        maxHeight: "60px",
+                        maxWidth: "450px",
+                        width: "40%",
+                      }} />
                     </div>
                   </Col>
                 </Row>

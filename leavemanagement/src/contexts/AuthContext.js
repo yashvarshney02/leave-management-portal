@@ -82,7 +82,9 @@ export function AuthProvider({ children }) {
 		const res = await auth.signInWithPopup(googleProvider);
 	}
 	async function refresh_user() {
+		console.log(`Firing ${process.env.REACT_APP_API_HOST}/get_user_info`)
 		let res = await httpClient.get(`${process.env.REACT_APP_API_HOST}/get_user_info`);
+		console.log(res)
 		if (res.data.data && res.data.data.signature) {
 			const imageUrl = "data:image/png;base64," + String(res.data.data.signature);
 			res.data.data.signature = imageUrl
@@ -93,6 +95,7 @@ export function AuthProvider({ children }) {
 
 	useEffect(() => {
 		async function test() {
+			console.log(`Firing ${process.env.REACT_APP_API_HOST}/get_user_info`)
 			let user_data = await httpClient.get(`${process.env.REACT_APP_API_HOST}/get_user_info`);		
 			if (user_data.data.data && user_data.data.data.signature) {
 				const imageUrl = "data:image/png;base64," + String(user_data.data.data.signature);

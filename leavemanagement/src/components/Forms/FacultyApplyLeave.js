@@ -22,6 +22,7 @@ export default function ApplyLeave({ toast }) {
 	const [dateErrorMessage, setDateErrorMessage] = useState("");
 	const [formLoading, setFormLoading] = useState(false);
 	const [sigUrl, setSigUrl] = useState("");
+	const [disablButton, setDisableButton] = useState(false);
 
 	const sigPadRef = useRef();
 	const formRef = useRef()
@@ -172,18 +173,22 @@ export default function ApplyLeave({ toast }) {
 				<Card.Body style={{ width: "100%" }}>
 					<Card.Title className="title-al" >Apply Leave</Card.Title>
 					<Card.Text>
-						<form ref={formRef} onSubmit={async (e) => { await handleSubmit(e) }}>
+						<form ref={formRef} onSubmit={async (e) => { 
+							setDisableButton(true);
+							await handleSubmit(e)
+							setDisableButton(false);
+							}}>
 							<Container className="content-al">
 								<div className="user-details-al">
 									<div className="input-box-al">
 										<div className="details-al">
 											<Row className="row-al">
 												<Col className="col-al">
-													<legend htmlFor="form_name" style={{ fontSize: "18px" }}>Name</legend>
+													<legend htmlFor="form_name" style={{ fontSize: "18px" }}>Name  <span style={{color: "red"}}>*</span></legend>
 													<input required type="text" className="form-control" style={{ cursor: "not-allowed" }} id="form_name" value={currentUser.name} onChange={(e) => { handleInputChange(e) }} placeholder="Name" readonly disabled />
 												</Col >
 												<Col className="col-al">
-													<legend htmlFor="form_email" style={{ fontSize: "18px" }}>Email</legend>
+													<legend htmlFor="form_email" style={{ fontSize: "18px" }}>Email  <span style={{color: "red"}}>*</span></legend>
 													<input required type="email" className="form-control" style={{ cursor: "not-allowed" }} id="form_email" value={currentUser.email} onChange={(e) => { handleInputChange(e) }} placeholder="Email" readonly disabled />
 												</Col >
 											</Row >
@@ -193,7 +198,7 @@ export default function ApplyLeave({ toast }) {
 													<input required type="tel" className="form-control" id="form_phone" defaultValue={currentUser.mobile} onChange={(e) => { handleInputChange(e) }} placeholder="Phone Number" />
 												</Col >
 												<Col className="col-al">
-													<legend htmlFor="form_nature" style={{ fontSize: "18px" }}>Nature of leave</legend>
+													<legend htmlFor="form_nature" style={{ fontSize: "18px" }}>Nature of leave  <span style={{color: "red"}}>*</span></legend>
 													<select required className="form-control" id="form_nature" onChange={(e) => { handleInputChange(e); handleTypeOfLeave(e) }}>
 														<option value="">-- Select an option --</option>
 														<option>Casual Leave</option>
@@ -203,7 +208,7 @@ export default function ApplyLeave({ toast }) {
 											</Row >
 											<Row className="row-al">
 												<Col className="col-al">
-													<legend htmlFor="form_type_of_leave" style={{ fontSize: "18px" }}>Type of leave</legend>
+													<legend htmlFor="form_type_of_leave" style={{ fontSize: "18px" }}>Type of leave  <span style={{color: "red"}}>*</span></legend>
 													<select required className="form-control" id="form_type_of_leave" onChange={(e) => { handleInputChange(e) }}>
 														<option value="">-- Select an option --</option>
 														{
@@ -229,7 +234,7 @@ export default function ApplyLeave({ toast }) {
 													</select>
 												</Col >
 												<Col className="col-al">
-													<legend htmlFor="form_duration" style={{ fontSize: "18px" }}>Duration of leave</legend>
+													<legend htmlFor="form_duration" style={{ fontSize: "18px" }}>Duration of leave  <span style={{color: "red"}}>*</span></legend>
 													<input required type="number" className="form-control" id="form_duration" placeholder="Duration" />
 												</Col >
 											</Row >
@@ -250,11 +255,11 @@ export default function ApplyLeave({ toast }) {
 
 											<Row className="row-al">
 												<Col className="col-al">
-													<legend htmlFor="form_sdate" style={{ fontSize: "18px" }}>Start Date</legend>
+													<legend htmlFor="form_sdate" style={{ fontSize: "18px" }}>Start Date  <span style={{color: "red"}}>*</span></legend>
 													<input required type="date" id="form_sdate" placeholder="Pick start date" className="form-control" onChange={async (e) => { handleInputChange(e) }}></input>
 												</Col >
 												<Col className="col-al">
-													<legend htmlFor="form_edate" style={{ fontSize: "18px" }}>End Date</legend>
+													<legend htmlFor="form_edate" style={{ fontSize: "18px" }}>End Date  <span style={{color: "red"}}>*</span></legend>
 													<input required type="date" id="form_edate" placeholder="Pick end date" className="form-control" onChange={async (e) => { handleInputChange(e) }} ></input>
 												</Col >
 											</Row >
@@ -320,7 +325,7 @@ export default function ApplyLeave({ toast }) {
 
 											<Row className="row-al">
 												<Col className="col-al">
-													<legend htmlFor="form_address" style={{ fontSize: "18px" }}>Address </legend>
+													<legend htmlFor="form_address" style={{ fontSize: "18px" }}>Address During Leave</legend>
 													<textarea id="form_address" className="form-control" onChange={(e) => { handleInputChange(e) }}>
 
 													</textarea>
@@ -336,6 +341,7 @@ export default function ApplyLeave({ toast }) {
 													accept=".pdf"
 													style={{ border: "none" }}
 													onChange={handleFileInputChange}
+													max="1000000"
 												/>
 												
 											</div>
@@ -370,7 +376,7 @@ export default function ApplyLeave({ toast }) {
 											</Row>
 											<Row className="row-al">
 												<Col>
-													<button type="submit" className="btn btn-primary btn-block">{formLoading ? <LoadingIndicator color={"white"}></LoadingIndicator> : "Apply Leave"}</button>
+													<button type="submit" disabled={disablButton} className="btn btn-primary btn-block">{formLoading ? <LoadingIndicator color={"white"}></LoadingIndicator> : "Apply Leave"}</button>
 													<span style={{color: "red"}}><br />{dateErrorMessage}</span>
 												</Col>
 											</Row>

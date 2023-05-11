@@ -215,8 +215,15 @@ export default function Dashboard({ toast }) {
 
                   <Form.Label>Your signature</Form.Label>
                   <div className='signature-box'>
-                    <img src={sigUrl}>
-                    </img>
+                     <img
+                      style={{
+                        maxHeight: "60px",
+                        maxWidth: "450px",
+                        width: "40%",
+                      }}
+                      src={sigUrl}
+                      alt="Signature"
+                    />
                     <br />
                     <br />
                     <input
@@ -317,6 +324,14 @@ export default function Dashboard({ toast }) {
                         ""
                       )}
                       <span>{currentUser.email}</span>
+                      {/* {
+                        (currentUser?.mobile == undefined || currentUser?.mobile.length == 0 || currentUser?.ta_instructor==undefined 
+                        || currentUser?.advisor==undefined 
+                        || currentUser?.ta_instructor.length == 0
+                        || currentUser?.advisor.length == 0
+                        || currentUser?.entryNumber == undefined
+                        || currentUser?.entry_number.length == 0 ) ? (<span style={{'color': "red"}}><br />Please Complete Your Profile</span>) : ('')
+                      } */}
                       <br />
                       {
                         currentUser?.position.includes('pg') ? (

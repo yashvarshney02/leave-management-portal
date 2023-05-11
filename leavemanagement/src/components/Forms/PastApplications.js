@@ -44,7 +44,7 @@ export default function PastApplications({ toast }) {
 				}
 				// remember last item is for url don't change it
 				if (currentUser.position.includes('pg')) {
-					temp.push([temp_data[i].leave_id, temp_data[i].nature,new Date(temp_data[i].request_date).toDateString(), temp_data[i].start_date?.slice(0, -12), temp_data[i].duration, temp_data[i].int_status ? temp_data[i].int_status : status, temp_data[i].level]);
+					temp.push([temp_data[i].leave_id, temp_data[i].nature,new Date(temp_data[i].request_date).toDateString(), temp_data[i].start_date?.slice(0, -12), temp_data[i].duration, status, temp_data[i].level]);
 				} else {
 					temp.push([temp_data[i].leave_id, temp_data[i].nature,new Date(temp_data[i].request_date).toDateString(), temp_data[i].start_date?.slice(0, -12), temp_data[i].duration, status, temp_data[i].level]);
 				}				

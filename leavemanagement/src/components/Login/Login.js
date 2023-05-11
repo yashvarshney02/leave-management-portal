@@ -14,16 +14,19 @@ export default function Login(props) {
   const [email, setEmail] = useState("");
   const [otp, setOTP] = useState("");  
   const {send_otp, validate_otp, refresh_user} = useAuth();
+  const [disablButton, setDisableButton] = useState(false);
 
   const navigate = useNavigate();  
 
   async function sendOTP(e) {
     try {
+      setDisableButton(true);
       e.preventDefault();
       if (email == "") {
         props.toast.error("Email field can't be empty", {
           position: props.toast.POSITION.BOTTOM_RIGHT
         });
+        setDisableButton(false);
         return;
       }
       let res = await send_otp(email); 
@@ -36,21 +39,22 @@ export default function Login(props) {
         props.toast.error(`${res.data['emsg']}`, {
           position: props.toast.POSITION.BOTTOM_RIGHT
         });
-      }
-    } catch(error) {
+      }      
+    } catch(error) {      
       props.toast.error("Something went wrong!!"+error, {
         position: props.toast.POSITION.BOTTOM_RIGHT
       });
     }
+    setDisableButton(false);
   }
 
   async function verifyOTP(e) {
-    try {
+    try {      
       e.preventDefault();
       if (otp == "") {
         props.toast.error("OTP can't be empty", {
           position: props.toast.POSITION.BOTTOM_RIGHT
-        });
+        });        
         return;
       }
       let res = await validate_otp(email, otp)
@@ -148,26 +152,28 @@ export default function Login(props) {
                         >
                         </Form.Group>
                         <div className="d-grid submit-button" >
-                          <Button variant="primary" type="submit" style={{ width: "100px" }} onClick={
+                          <Button disabled={disablButton} variant="primary" type="submit" style={{ width: "100px" }} onClick={
                             (e) => {
-                              if (displayOTPBox == "none") {
-                                sendOTP(e);
+                              if (displayOTPBox == "none") {                                
+                                sendOTP(e);                                
                               } else {
+                                setDisableButton(true);
                                 verifyOTP(e);
+                                setDisableButton(false);
                               }
                             }
                           }>
                             Login
                           </Button>
                         </div>
-                        <span style={{color:"white"}}>or</span>
+                        {/* <span style={{color:"white"}}>or</span>
                         <div className="d-grid submit-button" >
                           <GoogleLogin
                             onSuccess={(data) => { handleLoginWithGoogle(data) }}
                             onError={handleGoogleLoginFailure}
                             useOneTap
                           />
-                        </div>
+                        </div> */}
                       </Form>
                     </div>
                   </div>
