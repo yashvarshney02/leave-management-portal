@@ -166,14 +166,14 @@ export default function Login(props) {
                             Login
                           </Button>
                         </div>
-                        {/* <span style={{color:"white"}}>or</span>
+                        <span style={{color:"white"}}>or</span>
                         <div className="d-grid submit-button" >
                           <GoogleLogin
                             onSuccess={(data) => { handleLoginWithGoogle(data) }}
                             onError={handleGoogleLoginFailure}
                             useOneTap
                           />
-                        </div> */}
+                        </div>
                       </Form>
                     </div>
                   </div>
